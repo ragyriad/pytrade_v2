@@ -1,0 +1,37 @@
+{
+  "name": "@repo/db",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "db:generate": "dotenv -e ../../../.env -- drizzle-kit generate",
+    "db:generate:debug": "dotenv -e ../../../.env  NODE_OPTIONS='--stack-trace-limit=100' drizzle-kit generate 2>&1",
+    "db:update": "dotenv -e ../../../.env -- drizzle-kit up",
+    "db:migrate": "dotenv -e ../../../.env -- drizzle-kit migrate",
+    "db:push": "dotenv -e ../../../.env -- drizzle-kit push",
+    "db:studio": "dotenv -e ../../../.env -- drizzle-kit studio",
+    "db:pull": "dotenv -e ../../../.env -- drizzle-kit pull"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "pg": "^8.20.0",
+    "postgres": "3.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.39",
+    "dotenv-cli": "7.4.4",
+    "drizzle-kit": "1.0.0-beta.22",
+    "drizzle-orm": "1.0.0-beta.22",
+    "tsup": "^8.5.1",
+    "typescript": "^5.0.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  }
+}

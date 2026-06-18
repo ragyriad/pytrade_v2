@@ -1,0 +1,1883 @@
+[
+  {
+    "symbol": {
+      "symbol": {
+        "id": "c15a817e-7171-4940-9ae7-f7b4a95408ee",
+        "symbol": "AAPL",
+        "description": "Apple Inc.",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "ff4b2ffc-5a0e-4471-9cf5-95c0c30cdedd",
+          "code": "NASDAQ",
+          "mic_code": "XNAS",
+          "name": "NASDAQ",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "515c27d1-8471-4dec-a234-af12184c51d4",
+          "code": "cs",
+          "description": "Common Stock",
+          "is_supported": true
+        },
+        "raw_symbol": "AAPL",
+        "logo_url": "https://api.twelvedata.com/logo/apple.com",
+        "figi_code": "BBG000B9Y5X2",
+        "figi_instrument": {
+          "figi_code": "BBG000B9Y5X2",
+          "figi_share_class": "BBG001S5N8V8"
+        }
+      },
+      "id": "efb7c329-a7fb-45ee-a632-6bce25ae436f",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 277.07,
+    "open_pnl": 565.41726,
+    "fractional_units": 7.018,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 7.018,
+    "average_purchase_price": 196.503277286976,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "2b9ec7c2-a075-49ee-ba43-a82ab9877237",
+        "symbol": "AMD",
+        "description": "Advanced Micro Devices, Inc.",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "ff4b2ffc-5a0e-4471-9cf5-95c0c30cdedd",
+          "code": "NASDAQ",
+          "mic_code": "XNAS",
+          "name": "NASDAQ",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "515c27d1-8471-4dec-a234-af12184c51d4",
+          "code": "cs",
+          "description": "Common Stock",
+          "is_supported": true
+        },
+        "raw_symbol": "AMD",
+        "logo_url": "https://api.twelvedata.com/logo/amd.com",
+        "figi_code": "BBG000BBQPP1",
+        "figi_instrument": {
+          "figi_code": "BBG000BBQPP1",
+          "figi_share_class": "BBG001S5NN36"
+        }
+      },
+      "id": "f1579638-0646-4507-b9c9-4af5d8ac2a74",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 344.5,
+    "open_pnl": 1656.837369003905,
+    "fractional_units": null,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 7,
+    "average_purchase_price": 107.808947285156,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "42887cdd-db98-495c-b827-6ec7233f4b21",
+        "symbol": "CASH.TO",
+        "description": "Global X High Interest Savings ETF",
+        "currency": {
+          "code": "CAD",
+          "name": "Canadian Dollar",
+          "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+        },
+        "exchange": {
+          "id": "77de8509-63ff-4c73-8d92-98c9fd3e207f",
+          "code": "TSX",
+          "mic_code": "XTSE",
+          "name": "Toronto Stock Exchange",
+          "suffix": "TO",
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "CASH",
+        "logo_url": "",
+        "figi_code": "BBG013971R79",
+        "figi_instrument": {
+          "figi_code": "BBG013971R79",
+          "figi_share_class": "BBG013971S86"
+        }
+      },
+      "id": "262e8dfe-d944-437e-8d9e-d16df5a72071",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 50.01,
+    "open_pnl": -17.665800742396,
+    "fractional_units": 618.7374,
+    "currency": {
+      "code": "CAD",
+      "name": "Canadian Dollar",
+      "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+    },
+    "units": 618.7374,
+    "average_purchase_price": 50.038551370488,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "7be63bdb-f517-4ba4-b509-b7de77d96fd3",
+        "symbol": "GOOGL",
+        "description": "Alphabet Inc.",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "ff4b2ffc-5a0e-4471-9cf5-95c0c30cdedd",
+          "code": "NASDAQ",
+          "mic_code": "XNAS",
+          "name": "NASDAQ",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "515c27d1-8471-4dec-a234-af12184c51d4",
+          "code": "cs",
+          "description": "Common Stock",
+          "is_supported": true
+        },
+        "raw_symbol": "GOOGL",
+        "logo_url": "https://api.twelvedata.com/logo/abc.xyz",
+        "figi_code": "BBG009S4MT03",
+        "figi_instrument": {
+          "figi_code": "BBG009S4MT03",
+          "figi_share_class": "BBG009S39JY5"
+        }
+      },
+      "id": "9a10ae82-14f1-43b3-9019-813016b27ba8",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 383.85,
+    "open_pnl": 2160.681133478261,
+    "fractional_units": 8.9959,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 8.9959,
+    "average_purchase_price": 143.664900846134,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "8581dc98-df40-400b-85b8-76f0447d2cb3",
+        "symbol": "META",
+        "description": "Meta Platforms Inc Class A",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "ff4b2ffc-5a0e-4471-9cf5-95c0c30cdedd",
+          "code": "NASDAQ",
+          "mic_code": "XNAS",
+          "name": "NASDAQ",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "515c27d1-8471-4dec-a234-af12184c51d4",
+          "code": "cs",
+          "description": "Common Stock",
+          "is_supported": true
+        },
+        "raw_symbol": "META",
+        "logo_url": "https://logo.twelvedata.com/symbols/fb-meta.jpg",
+        "figi_code": "BBG002GPKKZ7",
+        "figi_instrument": {
+          "figi_code": "BBG002GPKKZ7",
+          "figi_share_class": "BBG001SQCQC5"
+        }
+      },
+      "id": "6bc7ab0c-6336-4271-ab5a-b83b88310b5a",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 611.25,
+    "open_pnl": 2256.860350226688,
+    "fractional_units": 5.4765,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 5.4765,
+    "average_purchase_price": 199.150967729994,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "5563d000-af45-47ba-a2ec-7be565340077",
+        "symbol": "MSFT",
+        "description": "Microsoft Corp.",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "ff4b2ffc-5a0e-4471-9cf5-95c0c30cdedd",
+          "code": "NASDAQ",
+          "mic_code": "XNAS",
+          "name": "NASDAQ",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "515c27d1-8471-4dec-a234-af12184c51d4",
+          "code": "cs",
+          "description": "Common Stock",
+          "is_supported": true
+        },
+        "raw_symbol": "MSFT",
+        "logo_url": "https://api.twelvedata.com/logo/microsoft.com",
+        "figi_code": "BBG000BPHFS9",
+        "figi_instrument": {
+          "figi_code": "BBG000BPHFS9",
+          "figi_share_class": "BBG001S5TD05"
+        }
+      },
+      "id": "9883f972-bf2a-4cc9-bbdf-b30cdd79fa43",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 413.81,
+    "open_pnl": 11.053606,
+    "fractional_units": 3.1726,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 3.1726,
+    "average_purchase_price": 410.325915652777,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "871612b0-a5ec-4361-820f-f3407b8ee86f",
+        "symbol": "O",
+        "description": "Realty Income Corporation",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "ebd63029-461e-4bed-bd4a-d0595f880b52",
+          "code": "NYSE",
+          "mic_code": "XNYS",
+          "name": "New York Stock Exchange",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "515c27d1-8471-4dec-a234-af12184c51d4",
+          "code": "cs",
+          "description": "Common Stock",
+          "is_supported": true
+        },
+        "raw_symbol": "O",
+        "logo_url": "https://api.twelvedata.com/logo/realtyincome.com",
+        "figi_code": "BBG000DHPPZ6",
+        "figi_instrument": {
+          "figi_code": "BBG000DHPPZ6",
+          "figi_share_class": "BBG001S884K0"
+        }
+      },
+      "id": "a01dd2c7-e490-406a-9896-5feb3aafeb78",
+      "description": "Realty Income Corp.",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 63.5,
+    "open_pnl": 229.36305,
+    "fractional_units": 28.0243,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 28.0243,
+    "average_purchase_price": 55.31556542001,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "7cc49f03-3901-43f6-8d00-11018209d4a7",
+        "symbol": "SCHD",
+        "description": "Schwab U.S. Dividend Equity ETF",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "9f3ea556-15c5-4321-8983-ad4033ff802b",
+          "code": "ARCA",
+          "mic_code": "ARCX",
+          "name": "NYSE Arca",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "SCHD",
+        "logo_url": "",
+        "figi_code": "BBG0025RWL17",
+        "figi_instrument": {
+          "figi_code": "BBG0025RWL17",
+          "figi_share_class": "BBG0025RWLM4"
+        }
+      },
+      "id": "f19e1a3c-2274-4afd-9fcf-c907ef6c1a14",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 31.54,
+    "open_pnl": 603.23109,
+    "fractional_units": 128.9585,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 128.9585,
+    "average_purchase_price": 26.862285153751,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "11b124c0-0ebb-4c44-a6bc-9db158c45447",
+        "symbol": "SCHG",
+        "description": "Schwab U.S. Large-Cap Growth ETF",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "9f3ea556-15c5-4321-8983-ad4033ff802b",
+          "code": "ARCA",
+          "mic_code": "ARCX",
+          "name": "NYSE Arca",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "SCHG",
+        "logo_url": "",
+        "figi_code": "BBG000Q0CVB6",
+        "figi_instrument": {
+          "figi_code": "BBG000Q0CVB6",
+          "figi_share_class": "BBG001T66WN0"
+        }
+      },
+      "id": "b2fd5219-de85-4f7e-8e40-e45cd5c7861d",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 33.13,
+    "open_pnl": 241.617385243865,
+    "fractional_units": 115.3969,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 115.3969,
+    "average_purchase_price": 31.036205580532,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "f8c81e40-d5eb-4f87-bd04-7eeeb10c9ace",
+        "symbol": "SGOV",
+        "description": "iShares Trust - iShares 0-3 Month Treasury Bond ETF",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "ebd63029-461e-4bed-bd4a-d0595f880b52",
+          "code": "NYSE",
+          "mic_code": "XNYS",
+          "name": "New York Stock Exchange",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "SGOV",
+        "logo_url": null,
+        "figi_code": "BBG00TZR7XT7",
+        "figi_instrument": {
+          "figi_code": "BBG00TZR7XT7",
+          "figi_share_class": "BBG00TZR7YF0"
+        }
+      },
+      "id": "e028b3b3-918d-40da-af9e-2fb8e06041bf",
+      "description": "iShares Trust - iShares 0-3 Month Treasury Bond ETF",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 100.42,
+    "open_pnl": -11.432824443147,
+    "fractional_units": 123.9921,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 123.9921,
+    "average_purchase_price": 100.512206071541,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "4bd5a903-1eaa-411c-ad4d-0bb93a6949a2",
+        "symbol": "SMH",
+        "description": "VanEck Semiconductor ETF",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "ff4b2ffc-5a0e-4471-9cf5-95c0c30cdedd",
+          "code": "NASDAQ",
+          "mic_code": "XNAS",
+          "name": "NASDAQ",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "SMH",
+        "logo_url": "https://api.twelvedata.com/logo/vaneck.com",
+        "figi_code": "BBG000BV82B3",
+        "figi_instrument": {
+          "figi_code": "BBG000BV82B3",
+          "figi_share_class": "BBG002D68GN8"
+        }
+      },
+      "id": "afaa2a47-323b-4896-b1b8-0266d014eebe",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 508.17,
+    "open_pnl": 929.642909,
+    "fractional_units": 3.0077,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 3.0077,
+    "average_purchase_price": 199.082355288094,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "1711a286-fbae-45d6-b93e-b59422d52e7d",
+        "symbol": "TD.TO",
+        "description": "The Toronto-Dominion Bank",
+        "currency": {
+          "code": "CAD",
+          "name": "Canadian Dollar",
+          "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+        },
+        "exchange": {
+          "id": "77de8509-63ff-4c73-8d92-98c9fd3e207f",
+          "code": "TSX",
+          "mic_code": "XTSE",
+          "name": "Toronto Stock Exchange",
+          "suffix": "TO",
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "515c27d1-8471-4dec-a234-af12184c51d4",
+          "code": "cs",
+          "description": "Common Stock",
+          "is_supported": true
+        },
+        "raw_symbol": "TD",
+        "logo_url": "https://api.twelvedata.com/logo/td.com",
+        "figi_code": "BBG000BCRN55",
+        "figi_instrument": {
+          "figi_code": "BBG000BCRN55",
+          "figi_share_class": "BBG001S60L15"
+        }
+      },
+      "id": "33a6a5c9-9681-4a5d-a336-5e512abdfafb",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 144.54,
+    "open_pnl": 4011.397122,
+    "fractional_units": 62.1443,
+    "currency": {
+      "code": "CAD",
+      "name": "Canadian Dollar",
+      "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+    },
+    "units": 62.1443,
+    "average_purchase_price": 79.990280685437,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "047e0c2f-f58a-4bbc-a86f-d1c98f581942",
+        "symbol": "TDOC",
+        "description": "Teladoc Health Inc.",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "ebd63029-461e-4bed-bd4a-d0595f880b52",
+          "code": "NYSE",
+          "mic_code": "XNYS",
+          "name": "New York Stock Exchange",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "515c27d1-8471-4dec-a234-af12184c51d4",
+          "code": "cs",
+          "description": "Common Stock",
+          "is_supported": true
+        },
+        "raw_symbol": "TDOC",
+        "logo_url": "https://api.twelvedata.com/logo/teladochealth.com",
+        "figi_code": "BBG008LTMFD3",
+        "figi_instrument": {
+          "figi_code": "BBG008LTMFD3",
+          "figi_share_class": "BBG001TG5PC6"
+        }
+      },
+      "id": "35a11a19-75eb-4f53-b169-f066a2f3d107",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 6.61,
+    "open_pnl": -265.93,
+    "fractional_units": null,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 62,
+    "average_purchase_price": 10.899193548387,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "95fddadb-e78a-4a50-b443-ff5738d73000",
+        "symbol": "VDY.TO",
+        "description": "Vanguard FTSE Canadian High Dividend Yield Index ETF",
+        "currency": {
+          "code": "CAD",
+          "name": "Canadian Dollar",
+          "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+        },
+        "exchange": {
+          "id": "77de8509-63ff-4c73-8d92-98c9fd3e207f",
+          "code": "TSX",
+          "mic_code": "XTSE",
+          "name": "Toronto Stock Exchange",
+          "suffix": "TO",
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "VDY",
+        "logo_url": "https://api.twelvedata.com/logo/vanguardcanada.ca",
+        "figi_code": "BBG003M5XN37",
+        "figi_instrument": {
+          "figi_code": "BBG003M5XN37",
+          "figi_share_class": "BBG003M5XNP3"
+        }
+      },
+      "id": "bb81d0fc-dadd-4945-9f07-48faef204e52",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 70.71,
+    "open_pnl": 2562.497569,
+    "fractional_units": 116.5839,
+    "currency": {
+      "code": "CAD",
+      "name": "Canadian Dollar",
+      "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+    },
+    "units": 116.5839,
+    "average_purchase_price": 48.730141983584,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "f6004a84-1052-4416-9a88-f212eddeef4c",
+        "symbol": "VFH",
+        "description": "Vanguard Financials ETF (primary ticker: VFH)",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "9f3ea556-15c5-4321-8983-ad4033ff802b",
+          "code": "ARCA",
+          "mic_code": "ARCX",
+          "name": "NYSE Arca",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "VFH",
+        "logo_url": "",
+        "figi_code": "BBG000HST105",
+        "figi_instrument": {
+          "figi_code": "BBG000HST105",
+          "figi_share_class": "BBG001SHTTM0"
+        }
+      },
+      "id": "a0047c43-d008-4b51-a855-e0f34bc12ea4",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 126.63,
+    "open_pnl": 55.562412,
+    "fractional_units": 9.9524,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 9.9524,
+    "average_purchase_price": 121.04718459869,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "cff56295-cd78-41a9-9cdb-dad70f71e737",
+        "symbol": "VFV.TO",
+        "description": "Vanguard S&P 500 Index ETF",
+        "currency": {
+          "code": "CAD",
+          "name": "Canadian Dollar",
+          "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+        },
+        "exchange": {
+          "id": "77de8509-63ff-4c73-8d92-98c9fd3e207f",
+          "code": "TSX",
+          "mic_code": "XTSE",
+          "name": "Toronto Stock Exchange",
+          "suffix": "TO",
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "VFV",
+        "logo_url": "",
+        "figi_code": "BBG003M5X6X1",
+        "figi_instrument": {
+          "figi_code": "BBG003M5X6X1",
+          "figi_share_class": "BBG003M5X7H7"
+        }
+      },
+      "id": "aecaed71-09d2-42b3-9b7b-e7975630de51",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 173.93,
+    "open_pnl": 59.852573,
+    "fractional_units": 6.1261,
+    "currency": {
+      "code": "CAD",
+      "name": "Canadian Dollar",
+      "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+    },
+    "units": 6.1261,
+    "average_purchase_price": 164.15990597607,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "9f7330fe-1604-4e41-8804-2dd408315b22",
+        "symbol": "XEQT.TO",
+        "description": "iShares Core Equity ETF Portfolio",
+        "currency": {
+          "code": "CAD",
+          "name": "Canadian Dollar",
+          "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+        },
+        "exchange": {
+          "id": "77de8509-63ff-4c73-8d92-98c9fd3e207f",
+          "code": "TSX",
+          "mic_code": "XTSE",
+          "name": "Toronto Stock Exchange",
+          "suffix": "TO",
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "XEQT",
+        "logo_url": "",
+        "figi_code": "BBG00PPX3Y33",
+        "figi_instrument": {
+          "figi_code": "BBG00PPX3Y33",
+          "figi_share_class": "BBG00PPX3Z67"
+        }
+      },
+      "id": "df6099e9-d67a-4a60-8229-159c1f9f85db",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 42.17,
+    "open_pnl": 728.235985,
+    "fractional_units": 164.9705,
+    "currency": {
+      "code": "CAD",
+      "name": "Canadian Dollar",
+      "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+    },
+    "units": 164.9705,
+    "average_purchase_price": 37.755659345156,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "82267b66-c803-4ccc-8abd-54d37e2ef888",
+        "symbol": "CAR.UN.TO",
+        "description": "Canadian Apartment Properties Real Estate Investment Trust",
+        "currency": {
+          "code": "CAD",
+          "name": "Canadian Dollar",
+          "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+        },
+        "exchange": {
+          "id": "77de8509-63ff-4c73-8d92-98c9fd3e207f",
+          "code": "TSX",
+          "mic_code": "XTSE",
+          "name": "Toronto Stock Exchange",
+          "suffix": "TO",
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "c75d6b73-7f5f-4b46-8006-8ee4ab0bdf1f",
+          "code": "ut",
+          "description": "Unit",
+          "is_supported": true
+        },
+        "raw_symbol": "CAR.UN",
+        "logo_url": "https://api.twelvedata.com/logo/capreit.ca",
+        "figi_code": "BBG000BGHK26",
+        "figi_instrument": {
+          "figi_code": "BBG000BGHK26",
+          "figi_share_class": "BBG001S7J3K2"
+        }
+      },
+      "id": "ae5fe5bf-74ff-4c48-9c0e-3707e7d649c0",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 36.27,
+    "open_pnl": -704.971099,
+    "fractional_units": 62.5263,
+    "currency": {
+      "code": "CAD",
+      "name": "Canadian Dollar",
+      "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+    },
+    "units": 62.5263,
+    "average_purchase_price": 47.544793151042,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "42887cdd-db98-495c-b827-6ec7233f4b21",
+        "symbol": "CASH.TO",
+        "description": "Global X High Interest Savings ETF",
+        "currency": {
+          "code": "CAD",
+          "name": "Canadian Dollar",
+          "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+        },
+        "exchange": {
+          "id": "77de8509-63ff-4c73-8d92-98c9fd3e207f",
+          "code": "TSX",
+          "mic_code": "XTSE",
+          "name": "Toronto Stock Exchange",
+          "suffix": "TO",
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "CASH",
+        "logo_url": "",
+        "figi_code": "BBG013971R79",
+        "figi_instrument": {
+          "figi_code": "BBG013971R79",
+          "figi_share_class": "BBG013971S86"
+        }
+      },
+      "id": "262e8dfe-d944-437e-8d9e-d16df5a72071",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 50.01,
+    "open_pnl": -10.565016900892,
+    "fractional_units": 192.1538,
+    "currency": {
+      "code": "CAD",
+      "name": "Canadian Dollar",
+      "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+    },
+    "units": 192.1538,
+    "average_purchase_price": 50.06498208675,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "871612b0-a5ec-4361-820f-f3407b8ee86f",
+        "symbol": "O",
+        "description": "Realty Income Corporation",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "ebd63029-461e-4bed-bd4a-d0595f880b52",
+          "code": "NYSE",
+          "mic_code": "XNYS",
+          "name": "New York Stock Exchange",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "515c27d1-8471-4dec-a234-af12184c51d4",
+          "code": "cs",
+          "description": "Common Stock",
+          "is_supported": true
+        },
+        "raw_symbol": "O",
+        "logo_url": "https://api.twelvedata.com/logo/realtyincome.com",
+        "figi_code": "BBG000DHPPZ6",
+        "figi_instrument": {
+          "figi_code": "BBG000DHPPZ6",
+          "figi_share_class": "BBG001S884K0"
+        }
+      },
+      "id": "a01dd2c7-e490-406a-9896-5feb3aafeb78",
+      "description": "Realty Income Corp.",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 63.5,
+    "open_pnl": 333.512184538319,
+    "fractional_units": 37.1748,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 37.1748,
+    "average_purchase_price": 54.528541255412,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "2dcba60a-58cc-4ce4-8ea0-41a31b326096",
+        "symbol": "POW.TO",
+        "description": "Power Corporation of Canada",
+        "currency": {
+          "code": "CAD",
+          "name": "Canadian Dollar",
+          "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+        },
+        "exchange": {
+          "id": "77de8509-63ff-4c73-8d92-98c9fd3e207f",
+          "code": "TSX",
+          "mic_code": "XTSE",
+          "name": "Toronto Stock Exchange",
+          "suffix": "TO",
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "515c27d1-8471-4dec-a234-af12184c51d4",
+          "code": "cs",
+          "description": "Common Stock",
+          "is_supported": true
+        },
+        "raw_symbol": "POW",
+        "logo_url": "https://api.twelvedata.com/logo/powercorporation.com",
+        "figi_code": "BBG000BCC2T1",
+        "figi_instrument": {
+          "figi_code": "BBG000BCC2T1",
+          "figi_share_class": "BBG001S601L7"
+        }
+      },
+      "id": "2f726c34-ec66-4b5c-88d1-5ab380483531",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 75.73,
+    "open_pnl": 77.569962,
+    "fractional_units": 15.9794,
+    "currency": {
+      "code": "CAD",
+      "name": "Canadian Dollar",
+      "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+    },
+    "units": 15.9794,
+    "average_purchase_price": 70.875627370239,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "7cc49f03-3901-43f6-8d00-11018209d4a7",
+        "symbol": "SCHD",
+        "description": "Schwab U.S. Dividend Equity ETF",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "9f3ea556-15c5-4321-8983-ad4033ff802b",
+          "code": "ARCA",
+          "mic_code": "ARCX",
+          "name": "NYSE Arca",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "SCHD",
+        "logo_url": "",
+        "figi_code": "BBG0025RWL17",
+        "figi_instrument": {
+          "figi_code": "BBG0025RWL17",
+          "figi_share_class": "BBG0025RWLM4"
+        }
+      },
+      "id": "f19e1a3c-2274-4afd-9fcf-c907ef6c1a14",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 31.54,
+    "open_pnl": 639.591082049309,
+    "fractional_units": 155.424,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 155.424,
+    "average_purchase_price": 27.424862813663,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "11b124c0-0ebb-4c44-a6bc-9db158c45447",
+        "symbol": "SCHG",
+        "description": "Schwab U.S. Large-Cap Growth ETF",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "9f3ea556-15c5-4321-8983-ad4033ff802b",
+          "code": "ARCA",
+          "mic_code": "ARCX",
+          "name": "NYSE Arca",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "SCHG",
+        "logo_url": "",
+        "figi_code": "BBG000Q0CVB6",
+        "figi_instrument": {
+          "figi_code": "BBG000Q0CVB6",
+          "figi_share_class": "BBG001T66WN0"
+        }
+      },
+      "id": "b2fd5219-de85-4f7e-8e40-e45cd5c7861d",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 33.13,
+    "open_pnl": 237.212684213382,
+    "fractional_units": 80.1589,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 80.1589,
+    "average_purchase_price": 30.170719318586,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "f8c81e40-d5eb-4f87-bd04-7eeeb10c9ace",
+        "symbol": "SGOV",
+        "description": "iShares Trust - iShares 0-3 Month Treasury Bond ETF",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "ebd63029-461e-4bed-bd4a-d0595f880b52",
+          "code": "NYSE",
+          "mic_code": "XNYS",
+          "name": "New York Stock Exchange",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "SGOV",
+        "logo_url": null,
+        "figi_code": "BBG00TZR7XT7",
+        "figi_instrument": {
+          "figi_code": "BBG00TZR7XT7",
+          "figi_share_class": "BBG00TZR7YF0"
+        }
+      },
+      "id": "e028b3b3-918d-40da-af9e-2fb8e06041bf",
+      "description": "iShares Trust - iShares 0-3 Month Treasury Bond ETF",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 100.42,
+    "open_pnl": -2.788865309964,
+    "fractional_units": 20.9064,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 20.9064,
+    "average_purchase_price": 100.553397682526,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "1711a286-fbae-45d6-b93e-b59422d52e7d",
+        "symbol": "TD.TO",
+        "description": "The Toronto-Dominion Bank",
+        "currency": {
+          "code": "CAD",
+          "name": "Canadian Dollar",
+          "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+        },
+        "exchange": {
+          "id": "77de8509-63ff-4c73-8d92-98c9fd3e207f",
+          "code": "TSX",
+          "mic_code": "XTSE",
+          "name": "Toronto Stock Exchange",
+          "suffix": "TO",
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "515c27d1-8471-4dec-a234-af12184c51d4",
+          "code": "cs",
+          "description": "Common Stock",
+          "is_supported": true
+        },
+        "raw_symbol": "TD",
+        "logo_url": "https://api.twelvedata.com/logo/td.com",
+        "figi_code": "BBG000BCRN55",
+        "figi_instrument": {
+          "figi_code": "BBG000BCRN55",
+          "figi_share_class": "BBG001S60L15"
+        }
+      },
+      "id": "33a6a5c9-9681-4a5d-a336-5e512abdfafb",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 144.54,
+    "open_pnl": 2780.619862,
+    "fractional_units": 43.4753,
+    "currency": {
+      "code": "CAD",
+      "name": "Canadian Dollar",
+      "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+    },
+    "units": 43.4753,
+    "average_purchase_price": 80.581387592495,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "95fddadb-e78a-4a50-b443-ff5738d73000",
+        "symbol": "VDY.TO",
+        "description": "Vanguard FTSE Canadian High Dividend Yield Index ETF",
+        "currency": {
+          "code": "CAD",
+          "name": "Canadian Dollar",
+          "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+        },
+        "exchange": {
+          "id": "77de8509-63ff-4c73-8d92-98c9fd3e207f",
+          "code": "TSX",
+          "mic_code": "XTSE",
+          "name": "Toronto Stock Exchange",
+          "suffix": "TO",
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "VDY",
+        "logo_url": "https://api.twelvedata.com/logo/vanguardcanada.ca",
+        "figi_code": "BBG003M5XN37",
+        "figi_instrument": {
+          "figi_code": "BBG003M5XN37",
+          "figi_share_class": "BBG003M5XNP3"
+        }
+      },
+      "id": "bb81d0fc-dadd-4945-9f07-48faef204e52",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 70.71,
+    "open_pnl": 1239.196331,
+    "fractional_units": 63.5061,
+    "currency": {
+      "code": "CAD",
+      "name": "Canadian Dollar",
+      "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+    },
+    "units": 63.5061,
+    "average_purchase_price": 51.196971629497,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "cff56295-cd78-41a9-9cdb-dad70f71e737",
+        "symbol": "VFV.TO",
+        "description": "Vanguard S&P 500 Index ETF",
+        "currency": {
+          "code": "CAD",
+          "name": "Canadian Dollar",
+          "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+        },
+        "exchange": {
+          "id": "77de8509-63ff-4c73-8d92-98c9fd3e207f",
+          "code": "TSX",
+          "mic_code": "XTSE",
+          "name": "Toronto Stock Exchange",
+          "suffix": "TO",
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "VFV",
+        "logo_url": "",
+        "figi_code": "BBG003M5X6X1",
+        "figi_instrument": {
+          "figi_code": "BBG003M5X6X1",
+          "figi_share_class": "BBG003M5X7H7"
+        }
+      },
+      "id": "aecaed71-09d2-42b3-9b7b-e7975630de51",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 173.93,
+    "open_pnl": 112.204251,
+    "fractional_units": 10.2507,
+    "currency": {
+      "code": "CAD",
+      "name": "Canadian Dollar",
+      "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+    },
+    "units": 10.2507,
+    "average_purchase_price": 162.983991337177,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "9f7330fe-1604-4e41-8804-2dd408315b22",
+        "symbol": "XEQT.TO",
+        "description": "iShares Core Equity ETF Portfolio",
+        "currency": {
+          "code": "CAD",
+          "name": "Canadian Dollar",
+          "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+        },
+        "exchange": {
+          "id": "77de8509-63ff-4c73-8d92-98c9fd3e207f",
+          "code": "TSX",
+          "mic_code": "XTSE",
+          "name": "Toronto Stock Exchange",
+          "suffix": "TO",
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "XEQT",
+        "logo_url": "",
+        "figi_code": "BBG00PPX3Y33",
+        "figi_instrument": {
+          "figi_code": "BBG00PPX3Y33",
+          "figi_share_class": "BBG00PPX3Z67"
+        }
+      },
+      "id": "df6099e9-d67a-4a60-8229-159c1f9f85db",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 42.17,
+    "open_pnl": 2129.247843,
+    "fractional_units": 230.9179,
+    "currency": {
+      "code": "CAD",
+      "name": "Canadian Dollar",
+      "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+    },
+    "units": 230.9179,
+    "average_purchase_price": 32.949199693917,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "02940cc1-7f89-42fe-81bf-ba648e16fde7",
+        "symbol": "XLF",
+        "description": "Financial Select Sector SPDR Fund",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "9f3ea556-15c5-4321-8983-ad4033ff802b",
+          "code": "ARCA",
+          "mic_code": "ARCX",
+          "name": "NYSE Arca",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "XLF",
+        "logo_url": "",
+        "figi_code": "BBG000BJ2H05",
+        "figi_instrument": {
+          "figi_code": "BBG000BJ2H05",
+          "figi_share_class": "BBG001S7T223"
+        }
+      },
+      "id": "034f1a0c-74b0-4cb6-83cf-6ff7063897e0",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 51.62,
+    "open_pnl": 491.783266,
+    "fractional_units": 25.8693,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 25.8693,
+    "average_purchase_price": 32.609695662426,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "7283990d-5422-4a2d-8922-5d13e72e83c5",
+        "symbol": "ZEB.TO",
+        "description": "BMO Equal Weight Banks Index Mutual Fund",
+        "currency": {
+          "code": "CAD",
+          "name": "Canadian Dollar",
+          "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+        },
+        "exchange": {
+          "id": "77de8509-63ff-4c73-8d92-98c9fd3e207f",
+          "code": "TSX",
+          "mic_code": "XTSE",
+          "name": "Toronto Stock Exchange",
+          "suffix": "TO",
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "ZEB",
+        "logo_url": "",
+        "figi_code": "BBG000PQL8H5",
+        "figi_instrument": {
+          "figi_code": "BBG000PQL8H5",
+          "figi_share_class": "BBG001T5W4Z2"
+        }
+      },
+      "id": "bd4f20e3-5518-41f9-a6f5-eb64c17afb9c",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 65.25,
+    "open_pnl": 1664.27605,
+    "fractional_units": 55.5322,
+    "currency": {
+      "code": "CAD",
+      "name": "Canadian Dollar",
+      "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+    },
+    "units": 55.5322,
+    "average_purchase_price": 35.280431893568,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "95fddadb-e78a-4a50-b443-ff5738d73000",
+        "symbol": "VDY.TO",
+        "description": "Vanguard FTSE Canadian High Dividend Yield Index ETF",
+        "currency": {
+          "code": "CAD",
+          "name": "Canadian Dollar",
+          "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+        },
+        "exchange": {
+          "id": "77de8509-63ff-4c73-8d92-98c9fd3e207f",
+          "code": "TSX",
+          "mic_code": "XTSE",
+          "name": "Toronto Stock Exchange",
+          "suffix": "TO",
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "VDY",
+        "logo_url": "https://api.twelvedata.com/logo/vanguardcanada.ca",
+        "figi_code": "BBG003M5XN37",
+        "figi_instrument": {
+          "figi_code": "BBG003M5XN37",
+          "figi_share_class": "BBG003M5XNP3"
+        }
+      },
+      "id": "bb81d0fc-dadd-4945-9f07-48faef204e52",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 70.71,
+    "open_pnl": 464.164583,
+    "fractional_units": 24.0473,
+    "currency": {
+      "code": "CAD",
+      "name": "Canadian Dollar",
+      "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+    },
+    "units": 24.0473,
+    "average_purchase_price": 51.407850361579,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "9f7330fe-1604-4e41-8804-2dd408315b22",
+        "symbol": "XEQT.TO",
+        "description": "iShares Core Equity ETF Portfolio",
+        "currency": {
+          "code": "CAD",
+          "name": "Canadian Dollar",
+          "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+        },
+        "exchange": {
+          "id": "77de8509-63ff-4c73-8d92-98c9fd3e207f",
+          "code": "TSX",
+          "mic_code": "XTSE",
+          "name": "Toronto Stock Exchange",
+          "suffix": "TO",
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "XEQT",
+        "logo_url": "",
+        "figi_code": "BBG00PPX3Y33",
+        "figi_instrument": {
+          "figi_code": "BBG00PPX3Y33",
+          "figi_share_class": "BBG00PPX3Z67"
+        }
+      },
+      "id": "df6099e9-d67a-4a60-8229-159c1f9f85db",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 42.17,
+    "open_pnl": 365.846143,
+    "fractional_units": 31.9079,
+    "currency": {
+      "code": "CAD",
+      "name": "Canadian Dollar",
+      "id": "f184bfe7-dd89-4abe-9095-6767bfaec387"
+    },
+    "units": 31.9079,
+    "average_purchase_price": 30.704308337434,
+    "cash_equivalent": false,
+    "tax_lots": []
+  },
+  {
+    "symbol": {
+      "symbol": {
+        "id": "f8c81e40-d5eb-4f87-bd04-7eeeb10c9ace",
+        "symbol": "SGOV",
+        "description": "iShares Trust - iShares 0-3 Month Treasury Bond ETF",
+        "currency": {
+          "code": "USD",
+          "name": "US Dollar",
+          "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+        },
+        "exchange": {
+          "id": "ebd63029-461e-4bed-bd4a-d0595f880b52",
+          "code": "NYSE",
+          "mic_code": "XNYS",
+          "name": "New York Stock Exchange",
+          "suffix": null,
+          "timezone": "America/New_York",
+          "start_time": "09:30:00",
+          "close_time": "16:00:00"
+        },
+        "currencies": [],
+        "type": {
+          "id": "8057ceb7-e073-4c77-8635-a1c9bc6442cb",
+          "code": "et",
+          "description": "ETF",
+          "is_supported": true
+        },
+        "raw_symbol": "SGOV",
+        "logo_url": null,
+        "figi_code": "BBG00TZR7XT7",
+        "figi_instrument": {
+          "figi_code": "BBG00TZR7XT7",
+          "figi_share_class": "BBG00TZR7YF0"
+        }
+      },
+      "id": "198bac09-dcd6-490e-ae40-919707e86a99",
+      "description": "",
+      "local_id": "",
+      "security_type": {},
+      "listing_exchange": {},
+      "is_quotable": true,
+      "is_tradable": true
+    },
+    "price": 100.655,
+    "open_pnl": 4.09,
+    "fractional_units": 36.0267,
+    "currency": {
+      "code": "USD",
+      "name": "US Dollar",
+      "id": "57f81c53-bdda-45a7-a51f-032afd1ae41b"
+    },
+    "units": 36.0267,
+    "average_purchase_price": 100.5364,
+    "cash_equivalent": false,
+    "tax_lots": []
+  }
+]

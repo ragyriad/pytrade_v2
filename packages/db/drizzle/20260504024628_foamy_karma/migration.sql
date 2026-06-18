@@ -1,0 +1,1 @@
+ALTER TABLE "transactions" ALTER COLUMN "type" SET DATA TYPE varchar(200) USING "type"::varchar(200);

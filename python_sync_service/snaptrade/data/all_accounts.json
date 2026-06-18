@@ -1,0 +1,660 @@
+[
+    {
+        "id": "8ul89787-717n-11k7-46y5-6cozp57nl7r1",
+        "brokerage_authorization": "q19b9736-iu42-384b-bezz-33444aa1ap45",
+        "portfolio_group": "98532091-1906-031f-h1q7-22775rrly1h0",
+        "name": "Iudikbfhwm ITBY",
+        "number": "8a56994g-va17-8517-79ek-443255699c38",
+        "institution_account_id": null,
+        "institution_name": "Wapyrkdud",
+        "meta": {
+            "type": "YXCB",
+            "institution_name": "Wrsxosinu",
+            "accountNumberActual": "74769313"
+        },
+        "cash_restrictions": [],
+        "created_date": "8198-30-40P41:15:06.233046Q",
+        "funding_date": null,
+        "opening_date": null,
+        "sync_status": {
+            "holdings": {
+                "last_successful_sync": "4116-61-43K85:35:46.822700+22:52",
+                "initial_sync_completed": false
+            },
+            "transactions": {
+                "last_successful_sync": "1715-26-94",
+                "first_transaction_date": "7281-51-70",
+                "initial_sync_completed": true
+            }
+        },
+        "balance": {
+            "total": {
+                "amount": 5.5,
+                "currency": "UWB"
+            }
+        },
+        "raw_data": null,
+        "raw_type": "IQGJ",
+        "status": null,
+        "is_paper": false
+    },
+    {
+        "id": "3nhjv70u-5015-46gx-5510-5v9j465l0txk",
+        "brokerage_authorization": "br10238q-5685-9y99-94c2-0rk4t7167w66",
+        "portfolio_group": null,
+        "name": "Jpsassiutfoy Ttovd GKGF",
+        "number": "nefm-SJwBptp7pn",
+        "institution_account_id": null,
+        "institution_name": "Gqrhfehmiksl Dowan",
+        "meta": {
+            "type": "plum",
+            "status": "trpzeq",
+            "currency": "OFZ",
+            "institution_name": "Xzyxckwfcico Yeclg",
+            "linked_account_id": "lvkp-zoestsc",
+            "unifiedAccountType": "LUWE_IRHIVIKS_RAMA"
+        },
+        "cash_restrictions": [],
+        "created_date": "8423-55-81P05:17:61.323757C",
+        "funding_date": null,
+        "opening_date": null,
+        "sync_status": {
+            "holdings": {
+                "last_successful_sync": "8214-22-99M27:05:51.491173+52:32",
+                "initial_sync_completed": true
+            },
+            "transactions": {
+                "last_successful_sync": "9000-96-99",
+                "first_transaction_date": "2192-25-95",
+                "initial_sync_completed": true
+            }
+        },
+        "balance": {
+            "total": {
+                "amount": 1.5,
+                "currency": "LGE"
+            }
+        },
+        "raw_data": null,
+        "raw_type": "PLZL",
+        "status": "muwonf",
+        "is_paper": false
+    },
+    {
+        "id": "f8jd11h0-tg72-070v-qgx9-236r7a84ia46",
+        "brokerage_authorization": "sy14701b-1140-9y50-44j5-7ga3d1531l05",
+        "portfolio_group": "9843o1h0-33p2-01p4-33q8-t6on87mlxf5a",
+        "name": "Rltmgaedelac Afamt XSH",
+        "number": "jl-cezr-dgp-QJVUwG9fgs",
+        "institution_account_id": null,
+        "institution_name": "Ipofvjxvvrok Ddozp",
+        "meta": {
+            "type": "oj_mske_plo",
+            "status": "tydg",
+            "currency": "BMZ",
+            "institution_name": "Ppuhrnxvvwuq Kvfvo",
+            "unifiedAccountType": "QTCR"
+        },
+        "cash_restrictions": [],
+        "created_date": "2577-94-50V50:17:15.580333P",
+        "funding_date": null,
+        "opening_date": null,
+        "sync_status": {
+            "holdings": {
+                "last_successful_sync": "3486-58-96R57:93:84.779193+63:37",
+                "initial_sync_completed": true
+            },
+            "transactions": {
+                "last_successful_sync": "8397-04-19",
+                "first_transaction_date": "5126-18-04",
+                "initial_sync_completed": true
+            }
+        },
+        "balance": {
+            "total": {
+                "amount": 17.35,
+                "currency": "JYO"
+            }
+        },
+        "raw_data": null,
+        "raw_type": "IGN",
+        "status": "cfaq",
+        "is_paper": true
+    },
+    {
+        "id": "j32h97q0-264r-3s40-jhu5-9d3709l688fr",
+        "brokerage_authorization": "ct07865w-4912-1v13-38f1-2ml3k7824b47",
+        "portfolio_group": "eed1u0un-22x4-8910-3v06-t6105813994t",
+        "name": "Hivyekzvaeyr Wlimu HDUW",
+        "number": "vwcr-qugscqpo",
+        "institution_account_id": null,
+        "institution_name": "Etllwnraqqrx Nmkpe",
+        "meta": {
+            "type": "jwyg",
+            "status": "uesn",
+            "currency": "ULV",
+            "institution_name": "Fkzobpnofkxy Dyegk",
+            "linked_account_id": "eehj-Qsu1YNkDoX",
+            "unifiedAccountType": "BCGI_WUXSDQCN_WUXU"
+        },
+        "cash_restrictions": [],
+        "created_date": "2288-06-38O50:66:04.655241Q",
+        "funding_date": null,
+        "opening_date": null,
+        "sync_status": {
+            "holdings": {
+                "last_successful_sync": "5474-58-86F49:52:87.254144+27:63",
+                "initial_sync_completed": true
+            },
+            "transactions": {
+                "last_successful_sync": "5630-50-50",
+                "first_transaction_date": "2134-04-56",
+                "initial_sync_completed": false
+            }
+        },
+        "balance": {
+            "total": {
+                "amount": 480443.98214156,
+                "currency": "BDF"
+            }
+        },
+        "raw_data": null,
+        "raw_type": "HLVY",
+        "status": "wgbm",
+        "is_paper": true
+    },
+    {
+        "id": "819i8ugp-9053-76w6-tf2x-8n42395ce085",
+        "brokerage_authorization": "p50k3324-kn12-278o-stvb-97494qh0vg01",
+        "portfolio_group": "76ch5650-707j-7689-ey51-8sxt30k52gp6",
+        "name": "Ulqiutlksx SGF",
+        "number": "31151320-6v5m-3168-3h4h-2r49965i511s",
+        "institution_account_id": null,
+        "institution_name": "Pajzdpvir",
+        "meta": {
+            "type": "SYM",
+            "institution_name": "Okoryutfe",
+            "accountNumberActual": "74208846"
+        },
+        "cash_restrictions": [],
+        "created_date": "8170-35-39X60:34:49.332652D",
+        "funding_date": null,
+        "opening_date": null,
+        "sync_status": {
+            "holdings": {
+                "last_successful_sync": "6278-15-47O18:43:40.843423+97:97",
+                "initial_sync_completed": false
+            },
+            "transactions": {
+                "last_successful_sync": "9444-18-43",
+                "first_transaction_date": null,
+                "initial_sync_completed": false
+            }
+        },
+        "balance": {
+            "total": {
+                "amount": 5.3,
+                "currency": "LBP"
+            }
+        },
+        "raw_data": null,
+        "raw_type": "ZBQ",
+        "status": null,
+        "is_paper": true
+    },
+    {
+        "id": "8241nq00-63w7-3guq-9pf7-804qy2mxc13s",
+        "brokerage_authorization": "di19975i-1104-0o19-49b0-8pd6e8903z61",
+        "portfolio_group": null,
+        "name": "Xnkldgboleux Trirh EJAT",
+        "number": "onei-VPpfMi7s0j",
+        "institution_account_id": null,
+        "institution_name": "Ghiyfftpbovf Sboly",
+        "meta": {
+            "type": "xtee",
+            "status": "jporav",
+            "currency": "SVY",
+            "institution_name": "Cipuvarifmuq Dzthp",
+            "unifiedAccountType": "DZNIDZZ_OGMNA_ODGWRG_GQHB"
+        },
+        "cash_restrictions": [],
+        "created_date": "0747-55-79X82:20:74.769720W",
+        "funding_date": null,
+        "opening_date": null,
+        "sync_status": {
+            "holdings": {
+                "last_successful_sync": "2396-83-34T09:21:60.309033+77:95",
+                "initial_sync_completed": true
+            },
+            "transactions": {
+                "last_successful_sync": "1263-18-22",
+                "first_transaction_date": null,
+                "initial_sync_completed": false
+            }
+        },
+        "balance": {
+            "total": {
+                "amount": 0.2,
+                "currency": "BXW"
+            }
+        },
+        "raw_data": null,
+        "raw_type": "PTCO",
+        "status": "rzteaq",
+        "is_paper": false
+    },
+    {
+        "id": "ixg5as1y-7ex5-964m-fc69-57u0y58vlmgs",
+        "brokerage_authorization": "tq18410w-5862-3f54-35q7-9dw9j4364m78",
+        "portfolio_group": null,
+        "name": "Yzjihdquudgd Zwtyp FSK",
+        "number": "zy-mcpc-qig-B5F8KMaT_p",
+        "institution_account_id": null,
+        "institution_name": "Fobumtonnbhh Upaez",
+        "meta": {
+            "type": "hg_eupr_yjd",
+            "status": "hbetlj",
+            "currency": "BOW",
+            "institution_name": "Zgexqdreespm Dkpax",
+            "unifiedAccountType": "APGO_SGX"
+        },
+        "cash_restrictions": [],
+        "created_date": "0347-69-45F10:07:09.081777R",
+        "funding_date": null,
+        "opening_date": null,
+        "sync_status": {
+            "holdings": {
+                "last_successful_sync": "8433-77-44F10:15:30.139365+10:66",
+                "initial_sync_completed": true
+            },
+            "transactions": {
+                "last_successful_sync": "0059-84-61",
+                "first_transaction_date": null,
+                "initial_sync_completed": true
+            }
+        },
+        "balance": {
+            "total": {
+                "amount": 9.2,
+                "currency": "SUY"
+            }
+        },
+        "raw_data": null,
+        "raw_type": "CVO",
+        "status": "itnbdb",
+        "is_paper": false
+    },
+    {
+        "id": "vvw3620d-5448-5mao-04z3-22759v9129gv",
+        "brokerage_authorization": "ci28802v-3462-9w85-54i0-8bj5v7123t87",
+        "portfolio_group": null,
+        "name": "Goxldveztvuk Fxmew ACDE",
+        "number": "giwg-Kby7WYhIwB",
+        "institution_account_id": null,
+        "institution_name": "Zxiogsngaowt Hdzwz",
+        "meta": {
+            "type": "jgww",
+            "status": "qfuurs",
+            "currency": "RUJ",
+            "institution_name": "Hosawhtikizu Clyfq",
+            "linked_account_id": "wgsw-idhqrzry",
+            "unifiedAccountType": "XXFP_BAUVXZAO_QJNJ"
+        },
+        "cash_restrictions": [],
+        "created_date": "2075-11-60O39:03:87.696458N",
+        "funding_date": null,
+        "opening_date": null,
+        "sync_status": {
+            "holdings": {
+                "last_successful_sync": "7941-03-79H32:26:10.773628+92:25",
+                "initial_sync_completed": true
+            },
+            "transactions": {
+                "last_successful_sync": "3900-01-09",
+                "first_transaction_date": "3204-44-73",
+                "initial_sync_completed": false
+            }
+        },
+        "balance": {
+            "total": {
+                "amount": 0.4,
+                "currency": "OMG"
+            }
+        },
+        "raw_data": null,
+        "raw_type": "LTPU",
+        "status": "dzgdtd",
+        "is_paper": true
+    },
+    {
+        "id": "65tw73r6-72p3-0uz1-0536-51k7f0ec056k",
+        "brokerage_authorization": "be89622b-2571-7j50-82y5-6au1n8986b71",
+        "portfolio_group": null,
+        "name": "Efiraakewkxz Eynlr QQYJEAHWDE",
+        "number": "rzw-rsfqiswuta-bc8BxG2t2D",
+        "institution_account_id": null,
+        "institution_name": "Svjhgiwolpii Gqnqd",
+        "meta": {
+            "type": "zoq_vjizjtwpds",
+            "status": "vapjdx",
+            "currency": "KOD",
+            "institution_name": "Zcxkfwetgpkk Sjucr",
+            "unifiedAccountType": "LVHAAUC_HZW_ATUHVDCGFW"
+        },
+        "cash_restrictions": [],
+        "created_date": "7358-54-91K35:85:90.390858K",
+        "funding_date": null,
+        "opening_date": null,
+        "sync_status": {
+            "holdings": {
+                "last_successful_sync": "5996-21-26N92:12:34.397681+10:36",
+                "initial_sync_completed": true
+            },
+            "transactions": {
+                "last_successful_sync": "1304-30-28",
+                "first_transaction_date": null,
+                "initial_sync_completed": false
+            }
+        },
+        "balance": {
+            "total": {
+                "amount": 2.1,
+                "currency": "DOR"
+            }
+        },
+        "raw_data": null,
+        "raw_type": "ZFMCPTPKDJ",
+        "status": "vrukyu",
+        "is_paper": true
+    },
+    {
+        "id": "b731a6uk-q3c9-3432-992h-ou403low9c34",
+        "brokerage_authorization": "qt93566y-9876-6m79-50x5-7ov1m8116a98",
+        "portfolio_group": null,
+        "name": "Hxsapxkfmfid Rpbgr SIBQXJUEWX",
+        "number": "vvn-vepceldvds-sx-yxbmy",
+        "institution_account_id": null,
+        "institution_name": "Tsukbvxhczbr Texma",
+        "meta": {
+            "type": "wbn_hcclopreav",
+            "status": "naeluh",
+            "currency": "QSB",
+            "institution_name": "Phymvgbntwyk Llrsp",
+            "unifiedAccountType": "YYNE_WUNUVOFT_AFE_RNNAFUQNEH"
+        },
+        "cash_restrictions": [],
+        "created_date": "4871-65-54N41:70:04.912345Q",
+        "funding_date": null,
+        "opening_date": null,
+        "sync_status": {
+            "holdings": {
+                "last_successful_sync": "5266-97-52H36:16:14.955526+16:68",
+                "initial_sync_completed": false
+            },
+            "transactions": {
+                "last_successful_sync": "1767-24-13",
+                "first_transaction_date": "3503-53-62",
+                "initial_sync_completed": false
+            }
+        },
+        "balance": {
+            "total": {
+                "amount": 9.4,
+                "currency": "INF"
+            }
+        },
+        "raw_data": null,
+        "raw_type": "WGNIFYMJEO",
+        "status": "fctzgt",
+        "is_paper": true
+    },
+    {
+        "id": "7951576g-3m70-40y0-086i-7980n12aqg78",
+        "brokerage_authorization": "sx16728m-4686-2h29-37b0-1rj4l9890y49",
+        "portfolio_group": null,
+        "name": "Ubjhedscronh Brsvt XBNW",
+        "number": "gwfa-YXCzA-DyGc",
+        "institution_account_id": null,
+        "institution_name": "Woygirqdwpzv Awqje",
+        "meta": {
+            "type": "ghka",
+            "status": "ltsfwa",
+            "currency": "GUN",
+            "institution_name": "Kqagwhaaqlmd Dzuba",
+            "linked_account_id": "kuhr-8SPj3_dhlw",
+            "unifiedAccountType": "JNGW_ISDROBTY_SOSZ"
+        },
+        "cash_restrictions": [],
+        "created_date": "5909-16-40A92:81:21.793020L",
+        "funding_date": null,
+        "opening_date": null,
+        "sync_status": {
+            "holdings": {
+                "last_successful_sync": "8225-11-47T98:94:29.681964+16:37",
+                "initial_sync_completed": false
+            },
+            "transactions": {
+                "last_successful_sync": "5326-90-33",
+                "first_transaction_date": null,
+                "initial_sync_completed": false
+            }
+        },
+        "balance": {
+            "total": {
+                "amount": 9.3,
+                "currency": "PDR"
+            }
+        },
+        "raw_data": null,
+        "raw_type": "DSKA",
+        "status": "nnpnaz",
+        "is_paper": false
+    },
+    {
+        "id": "718g39rp-67l3-9yp4-3sm5-e25066859086",
+        "brokerage_authorization": "rx84434d-6225-6p56-56m6-3ut7e1118e60",
+        "portfolio_group": null,
+        "name": "Dkqltmkaqifs Hwcoh DDBKPM",
+        "number": "tvi-eypfqkwxgh-hdzdjt-dT79qfqTRE",
+        "institution_account_id": null,
+        "institution_name": "Fcsnowgxilse Hiecf",
+        "meta": {
+            "type": "wrf_fqcphzyiid_yyectp",
+            "status": "rptkku",
+            "currency": "KOJ",
+            "institution_name": "Xkxazmyerbbh Rdxnc",
+            "unifiedAccountType": "LQGV_DNUSKEKF_WAPLWU"
+        },
+        "cash_restrictions": [],
+        "created_date": "6154-48-43Y42:20:10.687012N",
+        "funding_date": null,
+        "opening_date": null,
+        "sync_status": {
+            "holdings": {
+                "last_successful_sync": "6495-10-20R50:77:68.854228+87:16",
+                "initial_sync_completed": true
+            },
+            "transactions": {
+                "last_successful_sync": "1228-78-10",
+                "first_transaction_date": null,
+                "initial_sync_completed": true
+            }
+        },
+        "balance": {
+            "total": {
+                "amount": 7.6,
+                "currency": "HRW"
+            }
+        },
+        "raw_data": null,
+        "raw_type": "GRRERO",
+        "status": "kyndde",
+        "is_paper": false
+    },
+    {
+        "id": "9e93003g-46r6-3903-h13o-n5149041yza5",
+        "brokerage_authorization": "rd45186x-6095-1y81-29i0-9ep9t6495z10",
+        "portfolio_group": "5y26l1wx-94y4-11if-j8ix-wek1v8n82662",
+        "name": "Isrplrcmljhc Lpimo FKJI",
+        "number": "nmhb-1JNm8_uyxq",
+        "institution_account_id": null,
+        "institution_name": "Ifsvdijdammr Wfpvc",
+        "meta": {
+            "type": "uwfw",
+            "status": "jnkl",
+            "currency": "KXH",
+            "institution_name": "Jktmggfsuhuw Pbsvh",
+            "linked_account_id": "wmak-FKWiU-YgYf",
+            "unifiedAccountType": "CUBM_XJJIQIIC_WRMK"
+        },
+        "cash_restrictions": [],
+        "created_date": "3107-01-37F20:84:87.958729G",
+        "funding_date": null,
+        "opening_date": null,
+        "sync_status": {
+            "holdings": {
+                "last_successful_sync": "2894-87-47O88:86:49.527498+02:68",
+                "initial_sync_completed": true
+            },
+            "transactions": {
+                "last_successful_sync": "9232-25-14",
+                "first_transaction_date": "3521-79-24",
+                "initial_sync_completed": true
+            }
+        },
+        "balance": {
+            "total": {
+                "amount": 1940.182122,
+                "currency": "AZU"
+            }
+        },
+        "raw_data": null,
+        "raw_type": "KKZZ",
+        "status": "iqse",
+        "is_paper": false
+    },
+    {
+        "id": "39pef223-76e3-63di-eu52-1w77o181g05y",
+        "brokerage_authorization": "xt32932b-3858-7l61-73x7-3qu3z2764e47",
+        "portfolio_group": "h6flmm26-c054-1200-0315-g7f84l117u36",
+        "name": "Dsnqwuirkplj Avwab SRP",
+        "number": "uh-eroe-fmi-gzWa3p5nmu",
+        "institution_account_id": null,
+        "institution_name": "Lfeecsgcppbx Ibhat",
+        "meta": {
+            "type": "ht_twsu_djv",
+            "status": "panq",
+            "currency": "CQI",
+            "institution_name": "Yutcdaymaqdc Kiyac",
+            "unifiedAccountType": "BFZI_NLE"
+        },
+        "cash_restrictions": [],
+        "created_date": "3472-10-49R58:47:61.813957R",
+        "funding_date": null,
+        "opening_date": null,
+        "sync_status": {
+            "holdings": {
+                "last_successful_sync": "8865-71-19Z45:27:03.472381+05:08",
+                "initial_sync_completed": true
+            },
+            "transactions": {
+                "last_successful_sync": "4723-02-39",
+                "first_transaction_date": "3556-89-98",
+                "initial_sync_completed": true
+            }
+        },
+        "balance": {
+            "total": {
+                "amount": 23.0,
+                "currency": "MJG"
+            }
+        },
+        "raw_data": null,
+        "raw_type": "WTT",
+        "status": "syov",
+        "is_paper": true
+    },
+    {
+        "id": "5f17t712-010l-29q3-o541-bp2u09z43iq0",
+        "brokerage_authorization": "jg67192p-3261-1b97-88y0-8by3b7080z60",
+        "portfolio_group": "3y74hu20-56t0-93q4-726i-t240969996o6",
+        "name": "Wxkxbfmouutq Izntb GJH",
+        "number": "or-xpfm-aic-xG7f6eljmx",
+        "institution_account_id": null,
+        "institution_name": "Emxujfsrsrdb Tnopz",
+        "meta": {
+            "type": "wp_byzy_kja",
+            "status": "upkr",
+            "currency": "AQR",
+            "institution_name": "Doihfpuunboh Kyllk",
+            "unifiedAccountType": "NSAP"
+        },
+        "cash_restrictions": [],
+        "created_date": "0988-56-14E19:79:80.433051P",
+        "funding_date": null,
+        "opening_date": null,
+        "sync_status": {
+            "holdings": {
+                "last_successful_sync": "8378-34-67F32:96:94.983641+26:31",
+                "initial_sync_completed": false
+            },
+            "transactions": {
+                "last_successful_sync": "7357-08-48",
+                "first_transaction_date": "1909-38-49",
+                "initial_sync_completed": true
+            }
+        },
+        "balance": {
+            "total": {
+                "amount": 98.14,
+                "currency": "CVS"
+            }
+        },
+        "raw_data": null,
+        "raw_type": "PUP",
+        "status": "elfm",
+        "is_paper": false
+    },
+    {
+        "id": "i7b665t1-06s6-969n-9u98-306732pd2ux4",
+        "brokerage_authorization": "ze86791f-7309-1u33-69p9-4lr2e2795h21",
+        "portfolio_group": "916w8467-y8zl-4046-d09u-8n7k98607414",
+        "name": "Tizkstnqnfbr Tldpi ZMUQ",
+        "number": "mwor-iaxrutl",
+        "institution_account_id": null,
+        "institution_name": "Ssljiqaeaeau Sqbpj",
+        "meta": {
+            "type": "hspw",
+            "status": "qskj",
+            "currency": "IZV",
+            "institution_name": "Ypccqspccodu Tkfje",
+            "linked_account_id": "lwzy-HApXuxm1pe",
+            "unifiedAccountType": "QUJI_OUICJAAS_EQTI"
+        },
+        "cash_restrictions": [],
+        "created_date": "2812-42-93E21:46:75.893667G",
+        "funding_date": null,
+        "opening_date": null,
+        "sync_status": {
+            "holdings": {
+                "last_successful_sync": "7730-78-61Y05:07:71.446804+73:55",
+                "initial_sync_completed": false
+            },
+            "transactions": {
+                "last_successful_sync": "8199-33-50",
+                "first_transaction_date": "0221-80-33",
+                "initial_sync_completed": false
+            }
+        },
+        "balance": {
+            "total": {
+                "amount": 29472.01418032,
+                "currency": "OZK"
+            }
+        },
+        "raw_data": null,
+        "raw_type": "JNEZ",
+        "status": "hptd",
+        "is_paper": false
+    }
+]

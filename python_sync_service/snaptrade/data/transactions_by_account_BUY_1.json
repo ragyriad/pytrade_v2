@@ -1,0 +1,1730 @@
+[
+    {
+        "id": "3t12u58r-6f50-8m9i-3c2t-s62713217ky4",
+        "symbol": {
+            "description": "Pugmaz Thsvzjaaf Lzvny - Alltjx XQ Ktnrbgwe Caozkv WWC",
+            "id": "1nf83q08-5408-18r3-0r69-11261880k9u0",
+            "symbol": "SYTL",
+            "raw_symbol": "MEBW",
+            "currency": {
+                "code": "YAH",
+                "name": "PE Aukyeo",
+                "id": "77d81r09-ceem-30b7-j64z-295zlu9nv96k"
+            },
+            "exchange": {
+                "id": "8p0cm639-37v4-2736-1125-rq5565fp582w",
+                "code": "GSVM",
+                "mic_code": "RZSH",
+                "name": "TWQX Ogox",
+                "suffix": null,
+                "timezone": "Lcsurtl/Ise_Wkfx",
+                "start_time": "59:65:19",
+                "close_time": "17:64:99"
+            },
+            "logo_url": "",
+            "type": {
+                "id": "6187cpm9-v250-2o61-8781-m9o8cy4103vy",
+                "code": "mj",
+                "description": "YYL",
+                "is_supported": false
+            },
+            "figi_code": "DGL1620UFQ44",
+            "figi_instrument": {
+                "figi_code": "YTO8998IVI55",
+                "figi_share_class": "WCP2871OWJC7"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "ULG",
+            "name": "QP Wktzzk",
+            "id": "91k17p91-yemq-83t2-y85f-493hpp2lc61n"
+        },
+        "type": "UWI",
+        "description": "Pmlehi 74.8412 cu QWMG be $55.94",
+        "amount": -264.19,
+        "price": 29.66,
+        "units": 27.0,
+        "fee": 7.2,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "3654-22-30K38:06:61.428708L",
+        "trade_date": "4298-91-42X18:75:60.224039U",
+        "institution": "Uaovbqqkccdv Rsmvc",
+        "option_type": ""
+    },
+    {
+        "id": "r0sdr420-2736-51ky-2xx3-b9955273g343",
+        "symbol": {
+            "description": "Fdxfqrxa Yreyi Trimtns Mry.",
+            "id": "4n4qi1z9-m379-47ct-cc60-d95va3588140",
+            "symbol": "YGF",
+            "raw_symbol": "WIQ",
+            "currency": {
+                "code": "ZOC",
+                "name": "MF Fsxwnl",
+                "id": "72s41p65-fybr-65e4-l59u-200gxd8gp86r"
+            },
+            "exchange": {
+                "id": "qg4k3vtu-5z8v-5145-2eh8-75v9b02tfevx",
+                "code": "XBIVUT",
+                "mic_code": "TXAT",
+                "name": "TQZXAM",
+                "suffix": null,
+                "timezone": "Nyqjzyc/Voc_Ghrk",
+                "start_time": "38:31:39",
+                "close_time": "57:32:81"
+            },
+            "logo_url": "akzfr://qyr.vwplaomqwm.kgt/scnx/wfu.ven",
+            "type": {
+                "id": "569t19w4-4331-7eld-t197-en17744m36n3",
+                "code": "iu",
+                "description": "Fkcfzi Jxkeb",
+                "is_supported": true
+            },
+            "figi_code": "FTW361UZGWX7",
+            "figi_instrument": {
+                "figi_code": "FUK627GXCQK0",
+                "figi_share_class": "VZZ887Q7IZ04"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "JTN",
+            "name": "VN Zviehy",
+            "id": "63i44x82-jjrb-52f9-y18i-286vji6oe45m"
+        },
+        "type": "IXZ",
+        "description": "Ovxpro 1.1694 fk UNE eg $25.95",
+        "amount": -442.98,
+        "price": 20.99,
+        "units": 8.6,
+        "fee": 6.5,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "7599-53-50V47:69:18.999874A",
+        "trade_date": "9320-82-07D24:34:33.754367K",
+        "institution": "Pmelpvlkyqmp Tapeb",
+        "option_type": ""
+    },
+    {
+        "id": "eb2hz635-jhw3-2u02-t435-8p8l591h2864",
+        "symbol": {
+            "description": "Vqoantrrjk Eyztmwkva Stti.",
+            "id": "p0005777-a81y-4o72-np81-x4027599v746",
+            "symbol": "OYK",
+            "raw_symbol": "FKV",
+            "currency": {
+                "code": "HXU",
+                "name": "DI Vkqews",
+                "id": "67f67l72-jvnr-94s8-z17q-348kgc6kk80y"
+            },
+            "exchange": {
+                "id": "rmo34075-506o-3ibd-pd2p-t3132s542w04",
+                "code": "FCGY",
+                "mic_code": "SNMJ",
+                "name": "Xhn Ayfr Sgnfz Cdclygnu",
+                "suffix": null,
+                "timezone": "Kvxgxtj/Pmb_Fbum",
+                "start_time": "75:95:89",
+                "close_time": "09:74:82"
+            },
+            "logo_url": "tayax://jpf.eyhfqktvtq.qtq/uhkx/cnz.kbq",
+            "type": {
+                "id": "638w18w9-4916-2izg-k265-ay96729y69l7",
+                "code": "ky",
+                "description": "Lknmfe Cmeiw",
+                "is_supported": false
+            },
+            "figi_code": "NVP088LAK5N1",
+            "figi_instrument": {
+                "figi_code": "ZBS302AUQ3B5",
+                "figi_share_class": "JCZ762T7GTC8"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "MFW",
+            "name": "WN Xbkjfn",
+            "id": "55r64b10-rooa-70z3-n19w-191fhm6ep36i"
+        },
+        "type": "VWE",
+        "description": "Motqbt 7.56800 wk ITP wv $95.94",
+        "amount": -5.35,
+        "price": 38.9495,
+        "units": 9.2866,
+        "fee": 3.7,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "3038-99-54C54:94:76.075052B",
+        "trade_date": "9695-18-51B06:05:57.845704Q",
+        "institution": "Bdauggatloqs Tcbdu",
+        "option_type": ""
+    },
+    {
+        "id": "5a2bnk5u-3038-68l9-k406-28149go698jj",
+        "symbol": {
+            "description": "Hkgjdwllmm Mapeziqvf Cclg.",
+            "id": "i3643750-e46e-9n86-xn64-q7348620s782",
+            "symbol": "CDN",
+            "raw_symbol": "FMR",
+            "currency": {
+                "code": "XLQ",
+                "name": "FP Xdoldg",
+                "id": "41e38r12-wwyt-12r3-i05v-978sql9eb67l"
+            },
+            "exchange": {
+                "id": "nnk48030-959u-9lbx-dr5o-n2726b397z60",
+                "code": "AERJ",
+                "mic_code": "ANNL",
+                "name": "Ocf Tcep Arpgh Bglsozhb",
+                "suffix": null,
+                "timezone": "Pwkjkzb/Csj_Eitm",
+                "start_time": "73:98:40",
+                "close_time": "49:55:01"
+            },
+            "logo_url": "tsazk://rzt.mpdoxsbkhn.tnn/qitp/vgn.nlv",
+            "type": {
+                "id": "645l12g5-0742-2dzl-f323-vs69706j94k2",
+                "code": "kc",
+                "description": "Kqtpow Jewrv",
+                "is_supported": true
+            },
+            "figi_code": "RZQ267HTL5S9",
+            "figi_instrument": {
+                "figi_code": "SRZ852UDH7T6",
+                "figi_share_class": "LDF993T4IHA2"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "XQB",
+            "name": "HW Aiazvf",
+            "id": "33i41y00-afrb-85t1-l94h-977bkw9mf69u"
+        },
+        "type": "EYT",
+        "description": "Fkokyf 9.81216 bb DTJ pm $79.76",
+        "amount": -5.76,
+        "price": 40.0485,
+        "units": 6.4646,
+        "fee": 0.2,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "7857-03-30G09:58:56.832082O",
+        "trade_date": "2580-44-81K79:40:50.490162V",
+        "institution": "Txvnrjvnfbfl Mlomi",
+        "option_type": ""
+    },
+    {
+        "id": "f9v08322-k38m-5g63-1d03-52302wpj7y8x",
+        "symbol": {
+            "description": "Gwhyrc Qyvurk Wkqp.",
+            "id": "664600x4-g4rs-0713-025s-c1117d9yb22n",
+            "symbol": "V",
+            "raw_symbol": "B",
+            "currency": {
+                "code": "AVI",
+                "name": "RB Lnufhf",
+                "id": "61k19e51-upef-42g3-u95e-910ixc5lx12m"
+            },
+            "exchange": {
+                "id": "ohr18985-962u-6hxz-jo5r-r7951c604x93",
+                "code": "NBMV",
+                "mic_code": "WIVT",
+                "name": "Yxh Ilvb Vnrzl Igkvezqx",
+                "suffix": null,
+                "timezone": "Gzfbedy/Rcf_Frir",
+                "start_time": "26:09:61",
+                "close_time": "49:57:43"
+            },
+            "logo_url": "qkhty://cgy.piukdmyxdc.hay/jrsc/ogtdsuqewrxs.jfu",
+            "type": {
+                "id": "363q56l6-4510-4wfd-o638-mi42750y24t5",
+                "code": "qp",
+                "description": "Qgdlps Aznok",
+                "is_supported": false
+            },
+            "figi_code": "ZFC721RUIAN6",
+            "figi_instrument": {
+                "figi_code": "MSZ876TKMVZ9",
+                "figi_share_class": "DEQ952I661D9"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "FAX",
+            "name": "KA Osivif",
+            "id": "76z51b74-bejl-43g3-o89o-376foc4ra78c"
+        },
+        "type": "USB",
+        "description": "Vrawfp 2.18387 db D js $09.50",
+        "amount": -4.2,
+        "price": 81.6725,
+        "units": 5.7187,
+        "fee": 3.7,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "4853-10-57Q69:61:01.773362H",
+        "trade_date": "3111-44-28E35:78:63.023702I",
+        "institution": "Gtucxipwrdnk Gnacz",
+        "option_type": ""
+    },
+    {
+        "id": "647ar2n4-jyv0-39z5-6aly-39j42471788p",
+        "symbol": {
+            "description": "CmxPyp OOZ Cxkyd - FbuFoj Mgcbfpmjnivjn HUN",
+            "id": "9pg8r281-2ssz-563a-ck3w-6gw02p6803s0",
+            "symbol": "ANU",
+            "raw_symbol": "WYY",
+            "currency": {
+                "code": "FKX",
+                "name": "ZT Rqjzkm",
+                "id": "93u52h89-qszt-74m1-u46q-179rnr9vy98s"
+            },
+            "exchange": {
+                "id": "wm5b0qxk-7u7c-8081-4om1-62r9j86tbfee",
+                "code": "OEPCDY",
+                "mic_code": "GMQB",
+                "name": "ROUCSV",
+                "suffix": null,
+                "timezone": "Sjgmher/Kfk_Oghv",
+                "start_time": "45:96:97",
+                "close_time": "36:97:93"
+            },
+            "logo_url": "mkgkp://urx.svbknhufnq.qdj/astm/rymkyj.pii",
+            "type": {
+                "id": "0767upo3-x186-7r74-6286-a8e1zw4915yv",
+                "code": "ll",
+                "description": "KQB",
+                "is_supported": true
+            },
+            "figi_code": "AZP399HZ29F6",
+            "figi_instrument": {
+                "figi_code": "OJG585YJ89T7",
+                "figi_share_class": "PWP836H55TT5"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "YNG",
+            "name": "NB Qufwpa",
+            "id": "78q67n76-whyq-76u2-b79i-103kmv4dh79b"
+        },
+        "type": "AKC",
+        "description": "Otiovf 8.2836 zx VPW ac $451.41",
+        "amount": -615.51,
+        "price": 522.9257,
+        "units": 1.0,
+        "fee": 7.7,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "1984-11-06V20:84:01.557119J",
+        "trade_date": "8192-73-95P26:99:36.819870Z",
+        "institution": "Cwekattdqwpo Rtzwx",
+        "option_type": ""
+    },
+    {
+        "id": "68b9t5u2-245d-52z9-7bn5-5372791g9uu0",
+        "symbol": {
+            "description": "Yiqokd Sucjultoo Nhmtr - Vybqzy OX Euvfgdev Sdlzwu ZRF",
+            "id": "3uo00m33-9353-04r7-6j11-16143766l2g8",
+            "symbol": "GXOQ",
+            "raw_symbol": "FVAE",
+            "currency": {
+                "code": "TEM",
+                "name": "AF Qzgsai",
+                "id": "93h56v95-vumy-60j0-t05g-051jdi7zv51p"
+            },
+            "exchange": {
+                "id": "7l3sx324-88x8-0956-9187-nt6376fp588h",
+                "code": "IDAO",
+                "mic_code": "DXDL",
+                "name": "UJSX Naci",
+                "suffix": null,
+                "timezone": "Iwfysyr/Jbs_Exxx",
+                "start_time": "55:50:60",
+                "close_time": "07:10:31"
+            },
+            "logo_url": "",
+            "type": {
+                "id": "9220zxg3-v780-4c60-3450-p7o5xn1471vc",
+                "code": "nl",
+                "description": "MOL",
+                "is_supported": true
+            },
+            "figi_code": "JTN4201JNZ60",
+            "figi_instrument": {
+                "figi_code": "WBT8397BJB02",
+                "figi_share_class": "LDI0824FKIE0"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "LZG",
+            "name": "YT Iqezfl",
+            "id": "74q23z02-jmjw-89p5-e14b-915zym3ex34e"
+        },
+        "type": "BPF",
+        "description": "Xhwspy 07.0571 bo ICHL wa $21.45",
+        "amount": -144.8,
+        "price": 48.45,
+        "units": 16.3,
+        "fee": 2.3,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "5767-09-73W29:30:28.104120R",
+        "trade_date": "8756-74-15Q16:87:15.840910G",
+        "institution": "Vhwmamerflnd Evtuz",
+        "option_type": ""
+    },
+    {
+        "id": "8nap371l-2k56-656y-b8h9-03vviy38i161",
+        "symbol": {
+            "description": "Jzoxars Dtcdsq Gxz",
+            "id": "907h6a8x-s58s-0sje-a97x-m4z34v710367",
+            "symbol": "JTXJ",
+            "raw_symbol": "DLUH",
+            "currency": {
+                "code": "ZCL",
+                "name": "PI Nxvomz",
+                "id": "21y72u85-stka-73b7-x72h-881oey4nk85j"
+            },
+            "exchange": {
+                "id": "jcz06120-358k-7dpw-xw2p-h7202u543g75",
+                "code": "JPOA",
+                "mic_code": "NTVP",
+                "name": "Umo Snjl Bgglx Exjstdgx",
+                "suffix": null,
+                "timezone": "Wbyvzgs/Eab_Rqaj",
+                "start_time": "39:66:43",
+                "close_time": "26:42:97"
+            },
+            "logo_url": "hkrky://cdz.yqnmejfmju.xje/kaae/qqitgaivnhekj.jlg",
+            "type": {
+                "id": "520h87c8-9082-7quj-b999-ap43457q89g4",
+                "code": "ci",
+                "description": "Osmfry Snwta",
+                "is_supported": false
+            },
+            "figi_code": "USG525VDCMQ2",
+            "figi_instrument": {
+                "figi_code": "AUY170TGDNC1",
+                "figi_share_class": "VKI180QT5LW9"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "QZP",
+            "name": "UJ Hetngf",
+            "id": "87h76b08-puil-64u9-n28e-447ycs9jv52h"
+        },
+        "type": "FZS",
+        "description": "Oireov 87.6787 zs QUYS pd $47.87",
+        "amount": -421.5,
+        "price": 75.16,
+        "units": 30.1,
+        "fee": 8.3,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "8195-68-02J96:52:33.882335Q",
+        "trade_date": "1269-21-67Q01:31:30.623496L",
+        "institution": "Zcpgvmvdbifp Wtslo",
+        "option_type": ""
+    },
+    {
+        "id": "72h219q2-dx0j-2218-eo27-8x6353413fll",
+        "symbol": {
+            "description": "Ugsrurk Bslbec Xaz",
+            "id": "954o7r8r-v51h-0hvp-e95b-d5f02x999689",
+            "symbol": "KDBP",
+            "raw_symbol": "NWHN",
+            "currency": {
+                "code": "TGI",
+                "name": "WV Hktgnx",
+                "id": "10r42q48-yvhi-95f1-q13w-874uhb9wm44s"
+            },
+            "exchange": {
+                "id": "rzc99610-829d-9gyp-hm1n-u4134k979u34",
+                "code": "HXND",
+                "mic_code": "EBUF",
+                "name": "Rff Ahrj Jgeio Cnglwsxy",
+                "suffix": null,
+                "timezone": "Aysjyjh/Bwo_Aque",
+                "start_time": "34:62:05",
+                "close_time": "04:26:90"
+            },
+            "logo_url": "weitx://zdj.vqcznjqpjo.ecu/amcx/kgpwbzqgpxmac.lww",
+            "type": {
+                "id": "029d24h6-6331-1khw-k394-pk55493k32j1",
+                "code": "na",
+                "description": "Uaqfyt Oghhr",
+                "is_supported": false
+            },
+            "figi_code": "OHJ936PNNIK2",
+            "figi_instrument": {
+                "figi_code": "WZT797FVJYJ2",
+                "figi_share_class": "IWO831AN1XD2"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "XOH",
+            "name": "PX Sgivpz",
+            "id": "36n34f02-rbdu-69r6-v44h-201jbp9dt74k"
+        },
+        "type": "EEC",
+        "description": "Asvisr 3.8468 bq IGXQ ps $74.51",
+        "amount": -17.87,
+        "price": 80.85,
+        "units": 6.5,
+        "fee": 3.7,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "1913-97-65O68:66:26.246034Q",
+        "trade_date": "1977-80-23W28:93:62.021852L",
+        "institution": "Iqapbdoarquz Ojhco",
+        "option_type": ""
+    },
+    {
+        "id": "k8458mgw-o025-9320-f547-9y6am03l09eg",
+        "symbol": {
+            "description": "Ayqsat Ziqmkmsdp Qtcwp - Hqvdit QR Gdvbuzva Fpevyd KVI",
+            "id": "2jz96b02-1381-33f6-2b32-30022381l2i6",
+            "symbol": "DXVX",
+            "raw_symbol": "KZEQ",
+            "currency": {
+                "code": "NDQ",
+                "name": "FP Tccfan",
+                "id": "12h88z92-xthd-85u9-e00w-698ncg8jx43f"
+            },
+            "exchange": {
+                "id": "7a2hw017-97k0-9753-3591-bg1532ys997f",
+                "code": "GJBP",
+                "mic_code": "PFMX",
+                "name": "UQGO Ccqd",
+                "suffix": null,
+                "timezone": "Vmvdnvr/Xla_Kaxr",
+                "start_time": "09:55:10",
+                "close_time": "48:60:99"
+            },
+            "logo_url": "",
+            "type": {
+                "id": "9430gjq6-e139-6s43-2434-v7e0da3938wm",
+                "code": "sb",
+                "description": "LJX",
+                "is_supported": true
+            },
+            "figi_code": "UAM7908HLJ08",
+            "figi_instrument": {
+                "figi_code": "CJV5562TFF86",
+                "figi_share_class": "PNU1752HUDT6"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "XFN",
+            "name": "PY Ymhdyz",
+            "id": "32l87z06-qozn-55w2-y20f-262vha6ja37l"
+        },
+        "type": "QEM",
+        "description": "Bgtyfl 86.2459 cs WCKR qy $11.44",
+        "amount": -376.4,
+        "price": 12.09,
+        "units": 11.6,
+        "fee": 8.7,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "9189-59-83K04:39:66.558416Z",
+        "trade_date": "7112-88-05J04:49:36.365867I",
+        "institution": "Hjwfapmpahxu Olhjp",
+        "option_type": ""
+    },
+    {
+        "id": "5b114yo5-5cn3-1703-nl4b-8045of45940t",
+        "symbol": {
+            "description": "Fvoanh Piecswloo Heceh - Vqtunz ZC Wbissvix Ocbkwh CEJ",
+            "id": "0uv81d20-0575-80p9-6x26-43447659s9p3",
+            "symbol": "ZLSM",
+            "raw_symbol": "WMUZ",
+            "currency": {
+                "code": "IZF",
+                "name": "AP Eyangb",
+                "id": "89x15t11-sdzd-63e6-q10q-706wtm3ik58r"
+            },
+            "exchange": {
+                "id": "3h8ti974-73h5-8949-1170-wu7712dl862w",
+                "code": "PZRE",
+                "mic_code": "JDCN",
+                "name": "VYVY Qahg",
+                "suffix": null,
+                "timezone": "Ctuehqw/Ejh_Ycdp",
+                "start_time": "88:69:18",
+                "close_time": "89:67:07"
+            },
+            "logo_url": "",
+            "type": {
+                "id": "3813ksb1-l183-0n45-5643-u8y4kv6708nc",
+                "code": "xv",
+                "description": "XNA",
+                "is_supported": false
+            },
+            "figi_code": "XZY3383ZKH86",
+            "figi_instrument": {
+                "figi_code": "FHD7900JNR92",
+                "figi_share_class": "FNV6064NCES0"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "JBS",
+            "name": "AC Ookwzw",
+            "id": "19v25u29-qgro-65f6-w66z-022hdq3lk69r"
+        },
+        "type": "AQL",
+        "description": "Dwreki 56.2536 wb GJEV vk $37.70",
+        "amount": -906.0,
+        "price": 57.98,
+        "units": 93.2,
+        "fee": 7.1,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "4232-98-36D50:22:82.166662K",
+        "trade_date": "0184-36-80P00:77:97.458656V",
+        "institution": "Nwjrawrsoqbz Xbkwq",
+        "option_type": ""
+    },
+    {
+        "id": "l5m11n1u-2285-0u83-t883-87l6x0z7r3h8",
+        "symbol": {
+            "description": "Tmugrd Rmptye Ferf.",
+            "id": "482820r5-g4vd-2022-873q-y6146f0eo69x",
+            "symbol": "O",
+            "raw_symbol": "Z",
+            "currency": {
+                "code": "NHU",
+                "name": "US Avyevi",
+                "id": "15x67p72-wilh-51s4-t69x-383mgt9er90m"
+            },
+            "exchange": {
+                "id": "trc28391-516u-0dev-ji9t-t0434l357q54",
+                "code": "ACSO",
+                "mic_code": "WDLA",
+                "name": "Srv Mfdn Cvdsm Incwmpst",
+                "suffix": null,
+                "timezone": "Cuiynpp/Ocg_Rjaa",
+                "start_time": "95:09:38",
+                "close_time": "32:05:27"
+            },
+            "logo_url": "bzbvy://nxe.epcyeutbum.gfz/xgue/wezvhtghrssq.cyp",
+            "type": {
+                "id": "592x74r5-3607-5jzw-y879-no92053z02o9",
+                "code": "ad",
+                "description": "Jopoye Emmbk",
+                "is_supported": true
+            },
+            "figi_code": "SBL315OIZQM8",
+            "figi_instrument": {
+                "figi_code": "GSV032TZWXG9",
+                "figi_share_class": "DTP050B614T8"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "HPW",
+            "name": "MK Cohrcl",
+            "id": "27j71m90-ytcd-86j5-n05f-650eaz0wm47u"
+        },
+        "type": "ZAF",
+        "description": "Ufssvn 2.5400 bu A es $33.44",
+        "amount": -180.55,
+        "price": 28.637,
+        "units": 5.7,
+        "fee": 2.9,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "7562-12-03O77:72:83.678609L",
+        "trade_date": "3024-49-82I01:22:40.986089W",
+        "institution": "Zfdqcdqbtcew Fzelv",
+        "option_type": ""
+    },
+    {
+        "id": "v8kah2fm-4k87-4xn1-8344-1e3v0a5yzbn6",
+        "symbol": {
+            "description": "Lzmtvp Jsxldl Kjmp.",
+            "id": "630776m4-b6xq-9173-691k-s2141a4dh44g",
+            "symbol": "B",
+            "raw_symbol": "B",
+            "currency": {
+                "code": "EET",
+                "name": "LC Ienijt",
+                "id": "68z63m77-pkfs-46q6-p25n-375gvk8rf48m"
+            },
+            "exchange": {
+                "id": "fkt21968-069z-5bag-mz7b-c4815k360w13",
+                "code": "ADAG",
+                "mic_code": "YVDT",
+                "name": "Mmz Xsyh Miwvq Iltrizxs",
+                "suffix": null,
+                "timezone": "Jbrryzi/Ulu_Vjkx",
+                "start_time": "00:71:47",
+                "close_time": "49:36:54"
+            },
+            "logo_url": "zhmzr://yfr.ncmgyzibwi.fkw/tdoi/ktpkdsdculxq.keu",
+            "type": {
+                "id": "361q67j9-3369-6cnm-k793-lb57030f90p9",
+                "code": "aj",
+                "description": "Gppgyx Ulnet",
+                "is_supported": false
+            },
+            "figi_code": "EHL716QHSAY0",
+            "figi_instrument": {
+                "figi_code": "GJG896QYYGO1",
+                "figi_share_class": "JZG570O729N0"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "FKU",
+            "name": "AV Qyyibn",
+            "id": "31g16b06-vlik-11x2-n52y-584rwr2kd49g"
+        },
+        "type": "NFH",
+        "description": "Zmnrhl 79.9042 ek J oj $52.35",
+        "amount": -848.9,
+        "price": 41.001,
+        "units": 82.5,
+        "fee": 0.7,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "2575-83-95N09:69:06.838856Q",
+        "trade_date": "3883-46-85Z29:52:98.136077I",
+        "institution": "Jsafnunzukfn Xzspp",
+        "option_type": ""
+    },
+    {
+        "id": "u1mm5d1f-f6o2-2804-2766-19k78e68362u",
+        "symbol": {
+            "description": "Xnzsmo Ydlfal Kgnm.",
+            "id": "177777z1-t2qs-4408-956m-u8074r9wb35w",
+            "symbol": "F",
+            "raw_symbol": "G",
+            "currency": {
+                "code": "QSC",
+                "name": "QN Rnzhwf",
+                "id": "31p52j91-xakv-79b5-a51m-023yir2ok01n"
+            },
+            "exchange": {
+                "id": "toa99366-566r-1txo-eb1x-s3449f757n24",
+                "code": "OCCL",
+                "mic_code": "ACZA",
+                "name": "Tjp Pavm Kfyhj Flbokhvk",
+                "suffix": null,
+                "timezone": "Fimirij/Xhi_Hywb",
+                "start_time": "75:07:70",
+                "close_time": "08:63:49"
+            },
+            "logo_url": "eauev://nlf.rkykntainr.jxc/nffj/iqvlfohzctvt.ioq",
+            "type": {
+                "id": "035x53l3-9534-4ogh-y056-cy49705x93a4",
+                "code": "ig",
+                "description": "Fcftfa Tjpcr",
+                "is_supported": true
+            },
+            "figi_code": "FLZ085NCOSY6",
+            "figi_instrument": {
+                "figi_code": "UGZ721BVPOR5",
+                "figi_share_class": "IFG923Y898H8"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "FBD",
+            "name": "GZ Fyavuw",
+            "id": "30z99x54-isgy-10u9-o81v-536kpn8ij96n"
+        },
+        "type": "BUI",
+        "description": "Hkskic 50.4500 ds W hw $63.01",
+        "amount": -304.8,
+        "price": 82.01,
+        "units": 49.2,
+        "fee": 7.1,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "2083-78-25Y27:63:06.775872A",
+        "trade_date": "2025-44-01S21:39:87.952565S",
+        "institution": "Fkhhwoalmozx Rgxao",
+        "option_type": ""
+    },
+    {
+        "id": "m52uc60f-47fo-03w3-22i3-vn33270di0wt",
+        "symbol": {
+            "description": "Gfynxndd Ncfyl, Yrh. - Iskgnspt Yrluvwztme XMW",
+            "id": "u3424w27-6739-7229-3x70-d442ennuyd9c",
+            "symbol": "VMT",
+            "raw_symbol": "BTZ",
+            "currency": {
+                "code": "HJG",
+                "name": "KJ Rbcwfy",
+                "id": "09l91p77-mykv-82t1-s10b-537tqj7av41a"
+            },
+            "exchange": {
+                "id": "1q1lz518-88z7-5993-9650-ff0580jz487e",
+                "code": "QJSG",
+                "mic_code": "ULEI",
+                "name": "EILX Jfyk",
+                "suffix": null,
+                "timezone": "Jzuyxwk/Esl_Yrho",
+                "start_time": "26:13:74",
+                "close_time": "27:56:50"
+            },
+            "logo_url": "",
+            "type": {
+                "id": "9255xrf4-i474-0a47-4779-h2k5lm8853fo",
+                "code": "vy",
+                "description": "SXA",
+                "is_supported": true
+            },
+            "figi_code": "LJH339VQT786",
+            "figi_instrument": {
+                "figi_code": "MPM804KZW958",
+                "figi_share_class": "ZCT092ZMNAM5"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "HIB",
+            "name": "BX Okggfz",
+            "id": "97q88t33-eafa-33w6-l82d-208gyt7ig09c"
+        },
+        "type": "NRH",
+        "description": "Zctogj 4.7828 zz KZF ok $002.07",
+        "amount": -7539.35,
+        "price": 989.31,
+        "units": 1.2,
+        "fee": 5.5,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "7894-69-06L38:75:96.905504C",
+        "trade_date": "1213-29-19E54:12:99.533133P",
+        "institution": "Ucnyjnwhjlop Wgaba",
+        "option_type": ""
+    },
+    {
+        "id": "35k8y605-a7v4-3w75-505n-5hjaz209561j",
+        "symbol": {
+            "description": "Jpfaxpokif Vpxeqwygd Ddkd.",
+            "id": "j0337306-y86l-6w04-st24-r6246277n302",
+            "symbol": "VPE",
+            "raw_symbol": "HOY",
+            "currency": {
+                "code": "DIM",
+                "name": "KQ Dfikee",
+                "id": "87p58h72-zvtr-05c8-t63v-756rzb4kn19u"
+            },
+            "exchange": {
+                "id": "any31765-811f-7hvd-nl1x-b7224d189y76",
+                "code": "NFPF",
+                "mic_code": "BZTM",
+                "name": "Usq Kbbv Yiryg Afeskxaw",
+                "suffix": null,
+                "timezone": "Jwizmez/Dhv_Kkly",
+                "start_time": "82:62:81",
+                "close_time": "76:80:66"
+            },
+            "logo_url": "xkmap://dwu.feafuacsou.jru/ptke/rxz.alj",
+            "type": {
+                "id": "917m55o4-2292-9kmq-u093-ei22912j35x7",
+                "code": "ab",
+                "description": "Bxvlik Ljsrh",
+                "is_supported": true
+            },
+            "figi_code": "PLO794XRH1J9",
+            "figi_instrument": {
+                "figi_code": "JEW233WAE0X6",
+                "figi_share_class": "KID222B5SRW7"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "LRV",
+            "name": "XA Ianebv",
+            "id": "41e55h32-xlmi-45c7-h27o-482bbs4ah36z"
+        },
+        "type": "JAU",
+        "description": "Dpqacb 9.79261 ak IAZ pi $54.78",
+        "amount": -8.5,
+        "price": 21.5182,
+        "units": 3.9495,
+        "fee": 7.4,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "2677-44-76R43:34:97.035630S",
+        "trade_date": "6562-10-23K98:90:15.301491I",
+        "institution": "Xmuovqrrjcss Ofbmu",
+        "option_type": ""
+    },
+    {
+        "id": "2d276938-4616-373z-238x-g3356d45979t",
+        "symbol": {
+            "description": "kSzsuui 5-4 Lzroh Bktrlezd Xckr DKM",
+            "id": "t2927051-w0mp-6796-wp49-29433i64zzv0",
+            "symbol": "SUBS",
+            "raw_symbol": "TGOH",
+            "currency": {
+                "code": "UIP",
+                "name": "OP Jhanln",
+                "id": "09z92r11-nghc-87g9-i63l-176tps7sg82k"
+            },
+            "exchange": {
+                "id": "9o2xc263-22f3-2829-2195-ns8281bp860t",
+                "code": "ZWJU",
+                "mic_code": "IZSC",
+                "name": "WRMN Hmtf",
+                "suffix": null,
+                "timezone": "Fsqwsck/Fnv_Paou",
+                "start_time": "22:40:79",
+                "close_time": "38:68:12"
+            },
+            "logo_url": "",
+            "type": {
+                "id": "7501kvy9-h909-3h91-9248-a7v1jy7828ty",
+                "code": "pn",
+                "description": "TSV",
+                "is_supported": true
+            },
+            "figi_code": "QBS64JRE9FM1",
+            "figi_instrument": {
+                "figi_code": "HEV22AEH4SV6",
+                "figi_share_class": "NUL25APX8GH8"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "OJD",
+            "name": "IQ Urcgvp",
+            "id": "34c41w52-fizj-04o9-p42m-567nmg0xb76g"
+        },
+        "type": "WIH",
+        "description": "Owxzqj 7.72015 qx AFFH ys $924.94",
+        "amount": -3.57,
+        "price": 397.7136,
+        "units": 3.8543,
+        "fee": 9.5,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "1496-40-01Q34:14:86.183402X",
+        "trade_date": "4130-88-69M53:24:33.235389C",
+        "institution": "Uiopreabxjsx Dkhul",
+        "option_type": ""
+    },
+    {
+        "id": "49689yle-278c-6829-5u16-295155r937p8",
+        "symbol": {
+            "description": "Euthyefx, Tnp.",
+            "id": "7qf50d8r-k4da-8665-u1ob-v3pw77l84u1p",
+            "symbol": "HIEW",
+            "raw_symbol": "EXUO",
+            "currency": {
+                "code": "PTO",
+                "name": "RI Jfxshk",
+                "id": "19o52t80-qqzs-65i4-y16q-701yyn7og47y"
+            },
+            "exchange": {
+                "id": "vv4m5cgk-5d7v-1415-3oo5-01n6p85qxkjd",
+                "code": "LNAKIH",
+                "mic_code": "XLYS",
+                "name": "YRWESY",
+                "suffix": null,
+                "timezone": "Vnmnmkb/Xga_Jmao",
+                "start_time": "61:94:00",
+                "close_time": "60:80:33"
+            },
+            "logo_url": "apjtw://fqi.fvstsxmzfz.ohn/qjxk/fecgrypx.eyc",
+            "type": {
+                "id": "953e05j1-4652-2jns-j503-ho66247o91e0",
+                "code": "sn",
+                "description": "Oopiug Mfqcv",
+                "is_supported": false
+            },
+            "figi_code": "RCR929IVXPK4",
+            "figi_instrument": {
+                "figi_code": "PEF097TFTRA2",
+                "figi_share_class": "DMT209G4DY25"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "ZEL",
+            "name": "GI Cagflc",
+            "id": "95m87u73-auif-52j9-s13z-323ycp0th61h"
+        },
+        "type": "THX",
+        "description": "Mbtodo 0.19063 qg KPZT om $482.26",
+        "amount": -9.3,
+        "price": 190.0052,
+        "units": 2.0108,
+        "fee": 3.3,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "1331-84-27P54:45:27.225290A",
+        "trade_date": "0735-31-02H54:03:51.561130R",
+        "institution": "Xpselbvjuffm Oaiha",
+        "option_type": ""
+    },
+    {
+        "id": "85i6k19b-c425-80ga-1wm9-f7g98fy0e4zh",
+        "symbol": {
+            "description": "Gamm Hppzqnkjg Hcn - Orjcthzj Rizuwr - Bwnjo U",
+            "id": "1727te24-rg29-891s-61f3-04h4399w4lj9",
+            "symbol": "ZCNB",
+            "raw_symbol": "BCOE",
+            "currency": {
+                "code": "NQC",
+                "name": "ZF Vmpqkp",
+                "id": "34f34o33-umlk-25b6-v97d-488wag6rn99d"
+            },
+            "exchange": {
+                "id": "li3r7tsf-0y3q-2815-1ud9-04t4p91bfbiz",
+                "code": "UBPPMS",
+                "mic_code": "GGOU",
+                "name": "NVBIOX",
+                "suffix": null,
+                "timezone": "Elzqtfk/Ppl_Fsbv",
+                "start_time": "06:44:50",
+                "close_time": "41:93:86"
+            },
+            "logo_url": "untus://tmxp.zilhnccijp.drt/ztvsyfp/xb-iypu.efm",
+            "type": {
+                "id": "136o74j7-5090-2urd-n243-jq47913v07o7",
+                "code": "ew",
+                "description": "Nyhkcl Pgzqd",
+                "is_supported": false
+            },
+            "figi_code": "TJE660ENHOY2",
+            "figi_instrument": {
+                "figi_code": "XSL159XMUHL7",
+                "figi_share_class": "FEX890WONVM1"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "SND",
+            "name": "FE Rneqsm",
+            "id": "44u79n32-pbym-62b4-b13l-681aqg4zr56v"
+        },
+        "type": "QGR",
+        "description": "Llswlc 6.22303 xw FXCY cc $632.64",
+        "amount": -8.2,
+        "price": 837.761,
+        "units": 5.3786,
+        "fee": 5.7,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "9355-46-58V85:45:50.242479J",
+        "trade_date": "7301-70-36E54:44:30.645493C",
+        "institution": "Drkhwezmhhif Alqup",
+        "option_type": ""
+    },
+    {
+        "id": "457pn685-4t3m-4z45-eknt-5au7812yk1f9",
+        "symbol": {
+            "description": "Trbpbcmf Riv - Caxceyxq Yffywk - Desff U",
+            "id": "0zy04tkt-i386-0ba4-v476-l3cb90s81xj4",
+            "symbol": "NVSLB",
+            "raw_symbol": "PKEMP",
+            "currency": {
+                "code": "FCS",
+                "name": "YS Qllaib",
+                "id": "42o10o64-omet-26k7-z64e-634zgl7tz97n"
+            },
+            "exchange": {
+                "id": "yz4i8jfc-3t4e-3897-8sw6-88e2a89aeqsw",
+                "code": "JDSNGU",
+                "mic_code": "XIUO",
+                "name": "EDUIVD",
+                "suffix": null,
+                "timezone": "Cfoikec/Axw_Gcqs",
+                "start_time": "58:56:70",
+                "close_time": "00:77:01"
+            },
+            "logo_url": "etuiu://uxy.lnfqxadpjr.xug/zcme/jju.nbd",
+            "type": {
+                "id": "618h28x2-7061-9zvk-g552-sd38145j30y3",
+                "code": "yn",
+                "description": "Khnooe Vjmcr",
+                "is_supported": false
+            },
+            "figi_code": "NYK007D9VG98",
+            "figi_instrument": {
+                "figi_code": "CVQ541L5NI85",
+                "figi_share_class": "ZTD101H24KV7"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "ZTJ",
+            "name": "AJ Mzilri",
+            "id": "44w46y31-sguw-85c4-p77u-364svt1ig36e"
+        },
+        "type": "BYK",
+        "description": "Sahagw 3.09701 bw DJMST bt $063.89",
+        "amount": -8.2,
+        "price": 787.9348,
+        "units": 7.2259,
+        "fee": 8.4,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "5827-12-64Q16:34:59.556880P",
+        "trade_date": "1647-47-42D13:06:94.665488P",
+        "institution": "Nieogpbvuypo Jfhcr",
+        "option_type": ""
+    },
+    {
+        "id": "0c9u700u-ex2l-6hq5-29f7-p8w7zk87cn64",
+        "symbol": {
+            "description": "pHlqzvz 4-6 Tbhkl Ewgcnbwu Unvn EAN",
+            "id": "d2438395-r6ll-4658-cz25-43164r51ibk7",
+            "symbol": "DRFA",
+            "raw_symbol": "HJEL",
+            "currency": {
+                "code": "XEA",
+                "name": "JT Izydls",
+                "id": "78s46j38-qict-47f3-c66v-732ody0ct09p"
+            },
+            "exchange": {
+                "id": "9e2xn915-81q0-9190-8517-in1647ql639m",
+                "code": "LTWB",
+                "mic_code": "XFRC",
+                "name": "RXVA Ygfw",
+                "suffix": null,
+                "timezone": "Qsnfplh/Tgx_Kkac",
+                "start_time": "09:54:81",
+                "close_time": "81:71:88"
+            },
+            "logo_url": "",
+            "type": {
+                "id": "6076phu7-s494-7c10-4647-u1f5wm0143zj",
+                "code": "cm",
+                "description": "SDG",
+                "is_supported": true
+            },
+            "figi_code": "GEB83RLG0PT3",
+            "figi_instrument": {
+                "figi_code": "RGA85WAF0YJ5",
+                "figi_share_class": "ORB33HPF3FJ4"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "ECE",
+            "name": "BW Sbftga",
+            "id": "37j31p83-vhkg-00b9-f79c-953pmw5gy76t"
+        },
+        "type": "ETW",
+        "description": "Wdhxiq 1.51112 uh VPWG zh $094.10",
+        "amount": -6.9,
+        "price": 234.6911,
+        "units": 0.9455,
+        "fee": 8.6,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "8448-95-92F25:32:52.191252H",
+        "trade_date": "9716-22-84Q79:19:25.070949A",
+        "institution": "Vgyarleviqzo Rxcku",
+        "option_type": ""
+    },
+    {
+        "id": "333k442y-4115-66lb-gsk4-o7s50cbe4hw8",
+        "symbol": {
+            "description": "Njwnr Lisl.",
+            "id": "5m28o133-33z4-1s3n-w6xm-d82950r481yr",
+            "symbol": "SMKM",
+            "raw_symbol": "AZXK",
+            "currency": {
+                "code": "QRZ",
+                "name": "NR Syhvql",
+                "id": "22s24p48-jswc-03k7-v50f-587frs6lx07l"
+            },
+            "exchange": {
+                "id": "xr0z6tie-5z8o-1924-8uo4-13g3q76gdpkn",
+                "code": "IHFRRF",
+                "mic_code": "EMAX",
+                "name": "PYRPCM",
+                "suffix": null,
+                "timezone": "Ujcieay/Ozx_Akrd",
+                "start_time": "99:41:39",
+                "close_time": "35:67:36"
+            },
+            "logo_url": "zguqz://awx.ridimfwmrr.wot/lcto/pgdnh.ltd",
+            "type": {
+                "id": "254j99e8-1283-2xhc-f152-pf46454s94b1",
+                "code": "mc",
+                "description": "Ijkttn Ikgox",
+                "is_supported": false
+            },
+            "figi_code": "JLV072U4BAD9",
+            "figi_instrument": {
+                "figi_code": "YZT641I6REH7",
+                "figi_share_class": "EPP559Z5XT16"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "MBY",
+            "name": "MP Uwjcxt",
+            "id": "88g85z28-xpme-38y6-n36j-155dgn2ld55v"
+        },
+        "type": "CUA",
+        "description": "Zcpnyn 3.34734 yb LVFJ.WX ck $48.21",
+        "amount": -1.48,
+        "price": 85.785,
+        "units": 2.0577,
+        "fee": 6.4,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "5746-11-70Z59:48:68.699690O",
+        "trade_date": "0242-84-12W69:91:75.844476E",
+        "institution": "Huairwomaspo Lryhe",
+        "option_type": ""
+    },
+    {
+        "id": "6187a4b7-62n1-6c34-9i50-517g2f274l74",
+        "symbol": {
+            "description": "Hnckrmbphg Ydjdexosn Txyd.",
+            "id": "u4208727-q45r-5k21-ss90-x1277124s537",
+            "symbol": "BWQ",
+            "raw_symbol": "SBG",
+            "currency": {
+                "code": "QVP",
+                "name": "XU Dbyhio",
+                "id": "78w90p65-gppe-89n2-u65d-730urw7te55d"
+            },
+            "exchange": {
+                "id": "yho33127-923e-9jsq-fc6i-g0634a516u05",
+                "code": "ERTY",
+                "mic_code": "ZLFF",
+                "name": "Yly Ubxo Ouzqv Uuhhbukf",
+                "suffix": null,
+                "timezone": "Fgtkyrq/Ifm_Rbns",
+                "start_time": "85:05:44",
+                "close_time": "27:23:22"
+            },
+            "logo_url": "ygztu://uvt.wocopqvxkz.jpt/ceku/bpp.vye",
+            "type": {
+                "id": "792r82g1-5920-0guz-x628-bz58328j24p4",
+                "code": "mi",
+                "description": "Ungprc Szwnp",
+                "is_supported": true
+            },
+            "figi_code": "YHG168IOO6M5",
+            "figi_instrument": {
+                "figi_code": "SHJ688WMY6F0",
+                "figi_share_class": "JQS093V6LSY4"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "SKV",
+            "name": "HX Hgrdsa",
+            "id": "99o66h59-rnuo-44v2-x75o-115kyq2id70g"
+        },
+        "type": "XCQ",
+        "description": "Fsnnxs 73.6909 qp JSR sz $53.54",
+        "amount": -681.35,
+        "price": 8.9847,
+        "units": 77.7,
+        "fee": 5.4,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "2799-70-51U56:72:25.552100A",
+        "trade_date": "4206-42-74Y25:85:60.724643I",
+        "institution": "Bwouoqegkzun Uggmn",
+        "option_type": ""
+    },
+    {
+        "id": "277y2861-60k5-937p-h29v-36xbvq806a57",
+        "symbol": {
+            "description": "nDapmua 5-5 Uvdzz Simrhyns Kwue BEE",
+            "id": "t2143279-q9ni-4197-fa62-98570f75rmn3",
+            "symbol": "EVKC",
+            "raw_symbol": "MJRA",
+            "currency": {
+                "code": "QHP",
+                "name": "LI Mplixj",
+                "id": "67y57u35-kmmx-70j9-o47n-604pmb2qr59n"
+            },
+            "exchange": {
+                "id": "9a0gd827-59u1-4079-1360-wf2296zj456r",
+                "code": "LGUQ",
+                "mic_code": "UWKV",
+                "name": "UBAA Khcn",
+                "suffix": null,
+                "timezone": "Hucrwyj/Kns_Jbrm",
+                "start_time": "17:46:64",
+                "close_time": "81:55:42"
+            },
+            "logo_url": "",
+            "type": {
+                "id": "4374hir8-q033-3i51-9116-a7q3qr3563fe",
+                "code": "mx",
+                "description": "XAI",
+                "is_supported": true
+            },
+            "figi_code": "AML89HOX3UY8",
+            "figi_instrument": {
+                "figi_code": "IVY97XRV0VO1",
+                "figi_share_class": "MFZ28PYW1FW9"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "FQR",
+            "name": "DR Pirdnf",
+            "id": "84p84z73-ahrf-41j5-b89i-834wjc3pr08y"
+        },
+        "type": "RQT",
+        "description": "Hieaji 29.7307 ow KFKR mb $005.50",
+        "amount": -5176.6,
+        "price": 380.0,
+        "units": 93.4,
+        "fee": 8.3,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "9148-23-15Z54:96:09.787434E",
+        "trade_date": "9426-12-31O44:44:24.728620Y",
+        "institution": "Sfbewnrujwvp Vhqex",
+        "option_type": ""
+    },
+    {
+        "id": "485x6q40-58j7-6967-y5e4-6nb7q3r0js28",
+        "symbol": {
+            "description": "Bqekgmc Ojogk Ajgiekd Pje - TIR",
+            "id": "1014x53b-c1q6-2504-15i5-05x4l34y778s",
+            "symbol": "TXGN",
+            "raw_symbol": "JWDP",
+            "currency": {
+                "code": "VKD",
+                "name": "DO Wonukz",
+                "id": "81z01k45-xiko-73h0-q09d-129slz1mk18h"
+            },
+            "exchange": {
+                "id": "pky07407-661k-1jew-vc5t-z9164o601q56",
+                "code": "CUMO",
+                "mic_code": "IQWU",
+                "name": "Kml Oavh Ncskw Frvxrkly",
+                "suffix": null,
+                "timezone": "Izaarsg/Tnz_Njrt",
+                "start_time": "70:65:27",
+                "close_time": "94:20:11"
+            },
+            "logo_url": "qsrxm://jra.urfcdqnkey.gcq/laug/rqjlnuayfehq.pfl",
+            "type": {
+                "id": "88417714-5g74-30e7-efeb-9h6k944s8s59",
+                "code": "cg",
+                "description": "Gmlcqixa Ybqkkoxagg Jprdtux",
+                "is_supported": true
+            },
+            "figi_code": "BKV287Y8YNH7",
+            "figi_instrument": {
+                "figi_code": "LXR904Y3ZWA1",
+                "figi_share_class": "YCE016L2VIL6"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "HFV",
+            "name": "RT Bcahjt",
+            "id": "19w89b71-msmu-54z6-q66y-261dfj3ud10v"
+        },
+        "type": "IOQ",
+        "description": "Hgyznh 7.24745 mn LSOP ud $32.88",
+        "amount": -2.8,
+        "price": 51.882,
+        "units": 5.4622,
+        "fee": 4.7,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "6372-41-12Q19:85:35.662799Q",
+        "trade_date": "6185-06-69I53:56:23.910767F",
+        "institution": "Zviybndnvcji Kslqf",
+        "option_type": ""
+    },
+    {
+        "id": "4x7v6354-5kd2-8864-6np5-f50e8ds4645n",
+        "symbol": {
+            "description": "Oiwedjq Ljttx Skuerbo Ayj - SVY",
+            "id": "6203q93p-m6z7-2412-48v0-74z6p66a791o",
+            "symbol": "UMBR",
+            "raw_symbol": "JCCO",
+            "currency": {
+                "code": "XCP",
+                "name": "ST Zetete",
+                "id": "90p90j08-rkvl-86n4-z77o-047hgz8uu14c"
+            },
+            "exchange": {
+                "id": "ygk23031-271r-0kca-sm5j-o6832l350g15",
+                "code": "YWCA",
+                "mic_code": "WDBV",
+                "name": "Nkl Bohe Kpjex Jpbvytep",
+                "suffix": null,
+                "timezone": "Mephgjo/Azm_Zsch",
+                "start_time": "39:59:58",
+                "close_time": "35:72:88"
+            },
+            "logo_url": "mxtwc://qck.hxyhytflyr.xvf/eruf/mqguymjhnydw.xme",
+            "type": {
+                "id": "18961048-5w44-12c9-ymxz-4s3h132y2w25",
+                "code": "xc",
+                "description": "Lmegvfrn Kwlahizelr Xddvyzm",
+                "is_supported": false
+            },
+            "figi_code": "ADE543B4XJB9",
+            "figi_instrument": {
+                "figi_code": "XNG525T8TYN2",
+                "figi_share_class": "BFK026Q5NQT3"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "UQL",
+            "name": "JV Hzytjk",
+            "id": "81n31o61-kedz-89f2-t72y-715lzb7dm26u"
+        },
+        "type": "DES",
+        "description": "Xvdrff 1.49154 ga UGPU ly $99.17",
+        "amount": -4.5,
+        "price": 49.9751,
+        "units": 4.5811,
+        "fee": 3.1,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "2487-62-46E17:76:96.820886B",
+        "trade_date": "8110-26-77O00:71:48.629688G",
+        "institution": "Odztimwnqunr Bdlue",
+        "option_type": ""
+    },
+    {
+        "id": "y46920t9-d301-90gu-792y-2c8s8v341b28",
+        "symbol": {
+            "description": "Czyuotm Azqggt Pjz",
+            "id": "032b2g9y-c73t-5qsq-e55g-n7q19p705547",
+            "symbol": "AJTF",
+            "raw_symbol": "HIWY",
+            "currency": {
+                "code": "NLR",
+                "name": "WF Vqipbx",
+                "id": "81g91x66-nklq-64n5-n06e-217xgj0fg10p"
+            },
+            "exchange": {
+                "id": "dzf85650-988e-8jsr-ya4x-r7164i460d58",
+                "code": "QECQ",
+                "mic_code": "PJQK",
+                "name": "Lbj Xofr Bexoj Uykovywf",
+                "suffix": null,
+                "timezone": "Ynaitbt/Vpw_Jfst",
+                "start_time": "53:90:68",
+                "close_time": "54:48:76"
+            },
+            "logo_url": "aqbdv://bhb.tkiyikfcbb.rjt/seyi/ypsdzpehqhwhi.mbr",
+            "type": {
+                "id": "203v59n7-0583-9akq-a541-vh11179v69f9",
+                "code": "gk",
+                "description": "Ixfzvt Agmnl",
+                "is_supported": false
+            },
+            "figi_code": "AFF037GWEHM3",
+            "figi_instrument": {
+                "figi_code": "PQU804LDBPK1",
+                "figi_share_class": "POB059DZ7NM6"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "FWZ",
+            "name": "IR Cbysrp",
+            "id": "31a60c95-fjjg-76e1-x81m-897raf6eh73w"
+        },
+        "type": "KZL",
+        "description": "Cfmzwe 20.0755 xz WOIR lq $7.93",
+        "amount": -698.3,
+        "price": 1.5366,
+        "units": 43.1,
+        "fee": 5.0,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "0864-09-56K57:47:61.594589N",
+        "trade_date": "1572-28-32H60:61:17.389419W",
+        "institution": "Bgzzljlltach Fzlnt",
+        "option_type": ""
+    },
+    {
+        "id": "155o11x9-f8oe-5z37-410m-l5761y951brp",
+        "symbol": {
+            "description": "Bbpx Bmjbvhqsz Vli - Ziwgiueq Wlcjsm - Blheo E",
+            "id": "1161cp88-us20-157r-22k1-44k3957q4hq7",
+            "symbol": "OTYY",
+            "raw_symbol": "GTMU",
+            "currency": {
+                "code": "AIX",
+                "name": "KJ Dnjoju",
+                "id": "98s21v66-lyxi-76p1-t68p-225cbn2cv09y"
+            },
+            "exchange": {
+                "id": "tg5a6pvj-4t6v-4284-3uh2-14j3a23htptm",
+                "code": "UNRLXE",
+                "mic_code": "BTVG",
+                "name": "CZGZGG",
+                "suffix": null,
+                "timezone": "Efbrozm/Ucd_Zjik",
+                "start_time": "80:38:31",
+                "close_time": "01:01:99"
+            },
+            "logo_url": "ozozb://ttkr.rmpexejsie.ubv/wedjnco/mr-kwaq.nij",
+            "type": {
+                "id": "620g07o0-6984-4qjd-a966-bw46176j25v4",
+                "code": "gp",
+                "description": "Osranl Mspse",
+                "is_supported": true
+            },
+            "figi_code": "GNP835RSNGB8",
+            "figi_instrument": {
+                "figi_code": "IRR525HCWMU8",
+                "figi_share_class": "HSG889IVWAA0"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "COS",
+            "name": "WB Xqtmzd",
+            "id": "90k98m50-zztp-60f0-c80j-187wby3px30r"
+        },
+        "type": "YYY",
+        "description": "Alapmf 0.15302 vs HLTM yn $934.86",
+        "amount": -8.97,
+        "price": 89.6737,
+        "units": 9.4106,
+        "fee": 3.9,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "3515-58-27W36:75:53.293210I",
+        "trade_date": "9505-42-30Q40:64:76.651001D",
+        "institution": "Kkhviwxigcjx Qcjtm",
+        "option_type": ""
+    },
+    {
+        "id": "07534507-3103-5ni7-8125-6y618i157866",
+        "symbol": {
+            "description": "Rlporfln, Lxh.",
+            "id": "5zq19e3z-m8jf-3517-l4nd-v7dz55m39g3y",
+            "symbol": "MENE",
+            "raw_symbol": "KQHC",
+            "currency": {
+                "code": "YQG",
+                "name": "EV Pncmdv",
+                "id": "53w24n35-ltdy-26z3-c97g-143kgi0bc73v"
+            },
+            "exchange": {
+                "id": "ev2a7xfl-8m7p-2087-9wq6-52q0a18btwig",
+                "code": "RBGCGU",
+                "mic_code": "FCER",
+                "name": "OYZHRU",
+                "suffix": null,
+                "timezone": "Cjwmpwi/Uzk_Axfj",
+                "start_time": "08:93:71",
+                "close_time": "89:18:02"
+            },
+            "logo_url": "unqdq://mwp.lefzwqetri.xuo/robl/nnebuxtn.rfm",
+            "type": {
+                "id": "325w80i9-3303-5mat-r004-xb90669v00i3",
+                "code": "ft",
+                "description": "Khchns Ilfwz",
+                "is_supported": false
+            },
+            "figi_code": "DHJ769GYWUO5",
+            "figi_instrument": {
+                "figi_code": "VDT659HBXBE4",
+                "figi_share_class": "EHG476D1XU74"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "KVM",
+            "name": "AH Qfejnx",
+            "id": "18w86o00-nuhw-98j0-l06x-636uem3ow22b"
+        },
+        "type": "PLJ",
+        "description": "Vwpjfb 8.49208 yc LHAL pp $258.45",
+        "amount": -0.72,
+        "price": 307.4798,
+        "units": 1.3769,
+        "fee": 9.1,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "9447-27-37K39:87:30.903382V",
+        "trade_date": "4559-97-73E88:70:02.320991W",
+        "institution": "Kkawalcdyfzn Gjhyz",
+        "option_type": ""
+    },
+    {
+        "id": "91ge63l9-ya15-5u87-rj96-d55b1ap8wz05",
+        "symbol": {
+            "description": "Ueslmfft Nsw - Ihmdxovj Lrndhu - Etqcu I",
+            "id": "3wa62lih-p132-2tt0-k864-x6lk78m25xv0",
+            "symbol": "BMUKU",
+            "raw_symbol": "VZJZL",
+            "currency": {
+                "code": "OVR",
+                "name": "HB Izdkfa",
+                "id": "93x06y38-soyd-28a7-r38f-964pgf3iy99r"
+            },
+            "exchange": {
+                "id": "gb1u8obk-8a4i-1506-3hh8-45p3f37tyryd",
+                "code": "IDXHOV",
+                "mic_code": "IHAY",
+                "name": "MRXIPN",
+                "suffix": null,
+                "timezone": "Pfipdhb/Zil_Ndkt",
+                "start_time": "81:61:60",
+                "close_time": "72:82:51"
+            },
+            "logo_url": "tjrgq://qbx.nzhibihkfj.wqe/fjpv/hdo.gsr",
+            "type": {
+                "id": "150w37f8-9746-5vpf-b990-fi42958u34i4",
+                "code": "zx",
+                "description": "Ctecbs Lxjuf",
+                "is_supported": false
+            },
+            "figi_code": "EJP786D7QH92",
+            "figi_instrument": {
+                "figi_code": "BLC901X6TW07",
+                "figi_share_class": "BII895W92GY4"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "BNN",
+            "name": "XW Gnoung",
+            "id": "40r22f23-hqdt-79s3-t54h-601jwo1ss26g"
+        },
+        "type": "BOA",
+        "description": "Wqwbpq 3.49381 sa JEKML bt $549.03",
+        "amount": -3.07,
+        "price": 44.7702,
+        "units": 3.5393,
+        "fee": 5.1,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "7236-94-24B55:31:72.781069F",
+        "trade_date": "6949-80-33M69:16:43.915005T",
+        "institution": "Buwazzevqyjt Iwtim",
+        "option_type": ""
+    },
+    {
+        "id": "n38837s5-1630-3768-j8ik-1lz89gz19277",
+        "symbol": {
+            "description": "Pidgm Vzuf.",
+            "id": "9q46x885-39p6-5z6m-n7dm-j39221c093al",
+            "symbol": "MTRP",
+            "raw_symbol": "VJSO",
+            "currency": {
+                "code": "FOV",
+                "name": "FH Gwjcli",
+                "id": "67t13o67-nmcl-89s4-z53x-930mee3lv96i"
+            },
+            "exchange": {
+                "id": "uu5w6gdx-2d1i-6020-0lz4-68g4c70zehqg",
+                "code": "JUZPSI",
+                "mic_code": "UOKG",
+                "name": "JPZOWF",
+                "suffix": null,
+                "timezone": "Yhsdiue/Njo_Ltty",
+                "start_time": "16:12:11",
+                "close_time": "13:62:04"
+            },
+            "logo_url": "ryxwp://kdi.rqyfrhabbh.lwl/eulz/bsmlv.acx",
+            "type": {
+                "id": "435r59h5-8634-2yuy-v935-au24160r90u2",
+                "code": "de",
+                "description": "Rohlhe Nfutb",
+                "is_supported": false
+            },
+            "figi_code": "GTS328N0POX5",
+            "figi_instrument": {
+                "figi_code": "LWP847A4NJV7",
+                "figi_share_class": "FSK469C0AB33"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "UCV",
+            "name": "GP Wjnznd",
+            "id": "15h06n84-ompy-63h2-e70r-206hac7mz33i"
+        },
+        "type": "IRT",
+        "description": "Fwriir 0.87304 op HZLY jg $75.34",
+        "amount": -7.3,
+        "price": 76.1982,
+        "units": 6.042,
+        "fee": 5.7,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "1745-95-75J93:83:32.174014U",
+        "trade_date": "7426-95-07V65:86:72.520086T",
+        "institution": "Yithjkgemscv Ofrrf",
+        "option_type": ""
+    },
+    {
+        "id": "74p737p7-la70-6680-jeto-z66j84576hr5",
+        "symbol": {
+            "description": "Evafac Zirry Nkcyo. - Selvlu Gzthfhl Cajkgf LQM",
+            "id": "g04nni57-0j42-804w-y393-6a9wa0t72600",
+            "symbol": "MSZP",
+            "raw_symbol": "HDRL",
+            "currency": {
+                "code": "VZZ",
+                "name": "VN Nlgsjx",
+                "id": "40z11m12-otkr-27m7-m45b-441cug4za53o"
+            },
+            "exchange": {
+                "id": "1m6ed354-82i2-1839-7932-xj5086dl066h",
+                "code": "SRHX",
+                "mic_code": "MRPH",
+                "name": "ZRTU Tntd",
+                "suffix": null,
+                "timezone": "Vfcjfmz/Rch_Uury",
+                "start_time": "78:86:17",
+                "close_time": "44:33:07"
+            },
+            "logo_url": "",
+            "type": {
+                "id": "3260yab0-o554-7g74-2231-q0l2lx6845xv",
+                "code": "uw",
+                "description": "FRQ",
+                "is_supported": false
+            },
+            "figi_code": "XWO264VFBT71",
+            "figi_instrument": {
+                "figi_code": "AXV896YTHW18",
+                "figi_share_class": "TKT494YIFNX4"
+            }
+        },
+        "option_symbol": null,
+        "currency": {
+            "code": "NHH",
+            "name": "CO Libagx",
+            "id": "20f54g18-obvp-11y4-q16m-472bpk6of41a"
+        },
+        "type": "ZLR",
+        "description": "Crrbun 3.3825 vx LRGT iv $53.39",
+        "amount": -191.6,
+        "price": 81.4,
+        "units": 6.7,
+        "fee": 6.8,
+        "fx_rate": null,
+        "external_reference_id": null,
+        "settlement_date": "6082-89-17R18:08:01.039233P",
+        "trade_date": "2846-69-83J25:94:46.123484I",
+        "institution": "Rizcgkoqpqrf Dhxfl",
+        "option_type": ""
+    }
+]

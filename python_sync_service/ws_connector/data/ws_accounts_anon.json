@@ -1,0 +1,1180 @@
+[
+    {
+        "id": "zrjr-thptjjio",
+        "archivedAt": null,
+        "branch": "FS",
+        "closedAt": null,
+        "createdAt": "9316-33-61V62:73:47.398538P",
+        "cacheExpiredAt": "2958-18-31B85:15:68.852265A",
+        "currency": "ZUV",
+        "requiredIdentityVerification": "wlgauvtGpwfxueyahch",
+        "unifiedAccountType": "WSGB_IIEFRYJZ_OMBB",
+        "supportedCurrencies": [
+            "YLO",
+            "KXW"
+        ],
+        "nickname": null,
+        "status": "kusi",
+        "accountOwnerConfiguration": null,
+        "accountFeatures": [
+            {
+                "name": "AHOTPOO_CGEEG_P",
+                "enabled": true,
+                "__typename": "BeixenwVotlxgh"
+            },
+            {
+                "name": "ZDQEBFI_AKHDXQMH",
+                "enabled": true,
+                "__typename": "EaxrxcnUkwjnek"
+            },
+            {
+                "name": "ZKCAF_NOTWWFOB",
+                "enabled": true,
+                "__typename": "HrshlnzJucinyw"
+            },
+            {
+                "name": "VQBBG_CAOA_PCJTJXN",
+                "enabled": true,
+                "__typename": "ZimolugXbqojre"
+            }
+        ],
+        "accountOwners": [
+            {
+                "accountId": "kuxw-exohzkmc",
+                "identityId": "gocoyncp-p3ArUdnMcAqLLTXBB0Xyg26KQSI",
+                "accountNickname": null,
+                "clientCanonicalId": "vfwl-kabdfsijdbi",
+                "accountOpeningAgreementsSigned": true,
+                "name": "Wwsf Qrxo",
+                "email": "bvdoubtv@yygyhme.hvr",
+                "ownershipType": "gegmurp",
+                "activeInvitation": null,
+                "sentInvitations": [],
+                "__typename": "AilfxwyRitnq"
+            }
+        ],
+        "type": "haql",
+        "__typename": "Tsoxnsi",
+        "linkedAccount": {
+            "id": "yrmk-Ggk4MGmIjN",
+            "archivedAt": "3802-39-53L91:53:84.808723L",
+            "branch": "DW",
+            "closedAt": "0887-32-29W43:51:41.774420T",
+            "createdAt": "1256-22-73X44:37:39.799638P",
+            "cacheExpiredAt": "7094-24-81M59:51:44.178150R",
+            "currency": "BXM",
+            "requiredIdentityVerification": "lzqwqytMjvvnpitvpdm",
+            "unifiedAccountType": "KSJS_NKUSFBKB_APKH",
+            "supportedCurrencies": [
+                "SLH"
+            ],
+            "nickname": null,
+            "status": "jgezgj",
+            "accountOwnerConfiguration": null,
+            "accountFeatures": [
+                {
+                    "name": "LDKBTOF_YEYXG_D",
+                    "enabled": true,
+                    "__typename": "KkxpubbPgqdizf"
+                },
+                {
+                    "name": "VWVUBKI_NJRHLLKJ",
+                    "enabled": true,
+                    "__typename": "WgcpldnIgexmjc"
+                },
+                {
+                    "name": "HHBVT_EZCP_FBTFRBY",
+                    "enabled": false,
+                    "__typename": "BlvdxswAxfpqmk"
+                }
+            ],
+            "accountOwners": [
+                {
+                    "accountId": "rptd-Smm5PEpSeS",
+                    "identityId": "yqkuezof-w7GkUqrRaIzJDMYLV3Hnj91UOOE",
+                    "accountNickname": null,
+                    "clientCanonicalId": "ykym-klwzimwxbtg",
+                    "accountOpeningAgreementsSigned": true,
+                    "name": "Cawd Ksfz",
+                    "email": "xswcrwey@zmzfwqr.til",
+                    "ownershipType": "ebmxxer",
+                    "activeInvitation": null,
+                    "sentInvitations": [],
+                    "__typename": "PqfitanKfxii"
+                }
+            ],
+            "type": "sunj",
+            "__typename": "Xfausxt",
+            "custodianAccounts": [
+                {
+                    "id": "ZE9BTI7U8EXR",
+                    "branch": "SQ",
+                    "custodian": "mf",
+                    "status": "nrswan",
+                    "updatedAt": "0486-18-89W66:64:02.140804T",
+                    "__typename": "QxaajkdhxQrguwkf"
+                }
+            ]
+        },
+        "financials": {
+            "currentCombined": {
+                "id": "dxyb-Qdb7QSxRiT-slab-ynksldkv-VBD",
+                "netLiquidationValue": {
+                    "amount": "995872.6611426440",
+                    "cents": 99384828,
+                    "currency": "COD",
+                    "__typename": "Mizdp"
+                },
+                "netDeposits": {
+                    "amount": "90495.75238282",
+                    "cents": 1462917,
+                    "currency": "MYT",
+                    "__typename": "Tdgth"
+                },
+                "simpleReturns": {
+                    "amount": {
+                        "amount": "21966.4242260940",
+                        "cents": 7823779,
+                        "currency": "YQE",
+                        "__typename": "Lsffx"
+                    },
+                    "asOf": null,
+                    "rate": "9.937355",
+                    "referenceDate": "4892-01-15",
+                    "__typename": "ZlvfpsWpdcwjo"
+                },
+                "totalDeposits": {
+                    "amount": "036671.47119316",
+                    "cents": 35879296,
+                    "currency": "XVG",
+                    "__typename": "Xunpc"
+                },
+                "totalWithdrawals": {
+                    "amount": "83433.3434555",
+                    "cents": 2293508,
+                    "currency": "TUO",
+                    "__typename": "Ohtym"
+                },
+                "__typename": "LbgcapzQstxklqQcnppmpouz"
+            },
+            "__typename": "PbggydqZlhnppqfuf"
+        },
+        "custodianAccounts": [
+            {
+                "id": "IC60B52M5DUD",
+                "branch": "VY",
+                "custodian": "rc",
+                "status": "dckp",
+                "updatedAt": "1689-40-10J14:77:92.540079V",
+                "__typename": "HtzasfvxyDuhfaxs",
+                "financials": {
+                    "current": {
+                        "deposits": {
+                            "amount": "89964.35822860",
+                            "cents": 5633021,
+                            "currency": "LUN",
+                            "__typename": "Qhqdh"
+                        },
+                        "earnings": {
+                            "amount": "77166.4961516741",
+                            "cents": 4952484,
+                            "currency": "BSP",
+                            "__typename": "Sjdfd"
+                        },
+                        "netDeposits": {
+                            "amount": "37280.93769832",
+                            "cents": 7096939,
+                            "currency": "ZFH",
+                            "__typename": "Fvrmt"
+                        },
+                        "netLiquidationValue": {
+                            "amount": "314729.1445165212",
+                            "cents": 70065434,
+                            "currency": "YXE",
+                            "__typename": "Ocmrn"
+                        },
+                        "withdrawals": {
+                            "amount": "5957.5",
+                            "cents": 300954,
+                            "currency": "CFH",
+                            "__typename": "Usoig"
+                        },
+                        "__typename": "YmsainjqgIrjuzttVhlgbktBqexpwidqCmigsq"
+                    },
+                    "__typename": "NozksslqcRxuuggmSoulhbhekjHh"
+                }
+            }
+        ],
+        "number": "YO61T06Y1OTA",
+        "description": "ICFG: mwvo-sxlwuhuw"
+    },
+    {
+        "id": "idsw-zandciy",
+        "archivedAt": null,
+        "branch": "WO",
+        "closedAt": null,
+        "createdAt": "8688-98-66S27:85:70.759419Z",
+        "cacheExpiredAt": "9711-79-68S43:79:99.240620D",
+        "currency": "MBX",
+        "requiredIdentityVerification": "zgfcfjtUneefuyjsfif",
+        "unifiedAccountType": "UOAB_ZSMIJFTP_LBRP",
+        "supportedCurrencies": [
+            "TUU",
+            "VHF"
+        ],
+        "nickname": null,
+        "status": "vpmw",
+        "accountOwnerConfiguration": null,
+        "accountFeatures": [
+            {
+                "name": "ZAJYJGX_YJBDB_V",
+                "enabled": true,
+                "__typename": "TqqqhezYwhkwps"
+            },
+            {
+                "name": "WRPEGXJ_UGUDVBOX",
+                "enabled": true,
+                "__typename": "YidsoxeUvjzqdl"
+            },
+            {
+                "name": "LCEBK_OEMMVRBT",
+                "enabled": false,
+                "__typename": "UovfuzbJdqtxcf"
+            },
+            {
+                "name": "HLDWT_OXXE_GZRHTCV",
+                "enabled": true,
+                "__typename": "FuvdoemQlkwshr"
+            }
+        ],
+        "accountOwners": [
+            {
+                "accountId": "zgqd-ygfauvr",
+                "identityId": "upgaoyiw-b7WiKtvVdTzGPGRRP0Czk82ZSSS",
+                "accountNickname": null,
+                "clientCanonicalId": "wwnt-vbdnkjrqfwj",
+                "accountOpeningAgreementsSigned": false,
+                "name": "Sywx Purq",
+                "email": "wzlmzbam@egaajfs.yvm",
+                "ownershipType": "chkgbno",
+                "activeInvitation": null,
+                "sentInvitations": [],
+                "__typename": "AcahiijEezii"
+            }
+        ],
+        "type": "xiwu",
+        "__typename": "Rjdqfce",
+        "linkedAccount": {
+            "id": "dkap-YQeAzyq7gv",
+            "archivedAt": "8537-54-40J96:56:95.067484Y",
+            "branch": "MG",
+            "closedAt": "7123-56-73D70:07:43.938606S",
+            "createdAt": "1262-25-73Q81:27:05.108284N",
+            "cacheExpiredAt": "2981-74-84N36:56:51.371933K",
+            "currency": "AEL",
+            "requiredIdentityVerification": "lpgcpjlCehulzfhdhgz",
+            "unifiedAccountType": "VAPM_RTZBLOTR_FCZX",
+            "supportedCurrencies": [
+                "UAW"
+            ],
+            "nickname": null,
+            "status": "grilka",
+            "accountOwnerConfiguration": null,
+            "accountFeatures": [
+                {
+                    "name": "OMZGETO_PFFNN_Q",
+                    "enabled": false,
+                    "__typename": "QplkgbrGxswbjs"
+                },
+                {
+                    "name": "UGRJIDT_ZTKKIGZZ",
+                    "enabled": true,
+                    "__typename": "VyriivzZgngwuh"
+                },
+                {
+                    "name": "WHRVS_FQTV_WRFJFIE",
+                    "enabled": false,
+                    "__typename": "CttchijIzfupec"
+                }
+            ],
+            "accountOwners": [
+                {
+                    "accountId": "cpnk-QYmQydu8fl",
+                    "identityId": "znykewba-t5YoBjeGrTwTDMGQA4Fhm93YNIE",
+                    "accountNickname": null,
+                    "clientCanonicalId": "kasb-uvzajltxuea",
+                    "accountOpeningAgreementsSigned": true,
+                    "name": "Atsv Ixwb",
+                    "email": "eizqgavy@kfucfjx.odp",
+                    "ownershipType": "ugredet",
+                    "activeInvitation": null,
+                    "sentInvitations": [],
+                    "__typename": "JoksttpGyypy"
+                }
+            ],
+            "type": "gmle",
+            "__typename": "Clbxwqw",
+            "custodianAccounts": [
+                {
+                    "id": "US4KKO213RXM",
+                    "branch": "BU",
+                    "custodian": "kt",
+                    "status": "ryyyhp",
+                    "updatedAt": "8011-62-70L21:25:60.466907E",
+                    "__typename": "GowzjdtacUrsccts"
+                }
+            ]
+        },
+        "financials": {
+            "currentCombined": {
+                "id": "gmdb-BZsTeud3so-uqmp-plxoxnj-QIY",
+                "netLiquidationValue": {
+                    "amount": "95033.3409286024",
+                    "cents": 9488365,
+                    "currency": "ENB",
+                    "__typename": "Twfdm"
+                },
+                "netDeposits": {
+                    "amount": "38966.43529817",
+                    "cents": 4823173,
+                    "currency": "XHQ",
+                    "__typename": "Yqtnu"
+                },
+                "simpleReturns": {
+                    "amount": {
+                        "amount": "50576.9735206051",
+                        "cents": 9161342,
+                        "currency": "KNS",
+                        "__typename": "Utzyt"
+                    },
+                    "asOf": null,
+                    "rate": "7.853200",
+                    "referenceDate": "0062-86-71",
+                    "__typename": "QgtohcHmhdrie"
+                },
+                "totalDeposits": {
+                    "amount": "22004.22650893",
+                    "cents": 2991706,
+                    "currency": "OSE",
+                    "__typename": "Vjeun"
+                },
+                "totalWithdrawals": {
+                    "amount": "3751.5836336",
+                    "cents": 707967,
+                    "currency": "FOS",
+                    "__typename": "Enubq"
+                },
+                "__typename": "MvtayinFcbvmfvBbqazbivqc"
+            },
+            "__typename": "RooqzhbXbyjyqzhja"
+        },
+        "custodianAccounts": [
+            {
+                "id": "MS76Q5E28EQI",
+                "branch": "QF",
+                "custodian": "ue",
+                "status": "zmoj",
+                "updatedAt": "7299-42-21J84:22:96.973745Z",
+                "__typename": "PbmbqpzjvValbbhh",
+                "financials": {
+                    "current": {
+                        "deposits": {
+                            "amount": "21640.68327118",
+                            "cents": 7425694,
+                            "currency": "DGQ",
+                            "__typename": "Nsyqg"
+                        },
+                        "earnings": {
+                            "amount": "1761.8789442497",
+                            "cents": 662565,
+                            "currency": "SSU",
+                            "__typename": "Tyrua"
+                        },
+                        "netDeposits": {
+                            "amount": "43623.37341461",
+                            "cents": 8190676,
+                            "currency": "VMS",
+                            "__typename": "Gviie"
+                        },
+                        "netLiquidationValue": {
+                            "amount": "00461.2068772958",
+                            "cents": 6872524,
+                            "currency": "NOW",
+                            "__typename": "Jmmes"
+                        },
+                        "withdrawals": {
+                            "amount": "6119.56",
+                            "cents": 632131,
+                            "currency": "BRJ",
+                            "__typename": "Hwskc"
+                        },
+                        "__typename": "IbbayxhlzHafvfjoHkndhdiCumagsypoGjdowh"
+                    },
+                    "__typename": "DzrfhrpmhNtkmliyCrzpyyeqslTz"
+                }
+            }
+        ],
+        "number": "VA23M5H71ZXV",
+        "description": "DJPG: ohnq-gstftdbz"
+    },
+    {
+        "id": "ue-vwzo-enw-OOUVsL5kjg",
+        "archivedAt": null,
+        "branch": "SC",
+        "closedAt": null,
+        "createdAt": "5259-86-80C01:57:42.502272Z",
+        "cacheExpiredAt": "0889-06-71K32:18:20.520032U",
+        "currency": "SRN",
+        "requiredIdentityVerification": "aiocwkcCzzhddruwjvg",
+        "unifiedAccountType": "VGPP",
+        "supportedCurrencies": [
+            "XVO"
+        ],
+        "nickname": "Rdrd",
+        "status": "lxhh",
+        "accountOwnerConfiguration": null,
+        "accountFeatures": [
+            {
+                "name": "ZQMKL",
+                "enabled": true,
+                "__typename": "UilhtrvLtoctko"
+            },
+            {
+                "name": "PDWJFK",
+                "enabled": false,
+                "__typename": "LjhyyjsTvdrthv"
+            }
+        ],
+        "accountOwners": [
+            {
+                "accountId": "ev-bmcq-hgf-WWMIhO3guz",
+                "identityId": "rnkvpxmp-p2QvOweBjOfRJTUVT8Eyq48QCWK",
+                "accountNickname": "Sskf",
+                "clientCanonicalId": "exgs-ag65rzhwskg",
+                "accountOpeningAgreementsSigned": true,
+                "name": "Idxn Ogbc",
+                "email": "gvciqydb@rivceyi.mse",
+                "ownershipType": "wxebqsh",
+                "activeInvitation": null,
+                "sentInvitations": [],
+                "__typename": "DsefhepWonaw"
+            }
+        ],
+        "type": "xq_kfei_wxu",
+        "__typename": "Tkibvto",
+        "linkedAccount": null,
+        "financials": {
+            "currentCombined": {
+                "id": "dz-mnai-uzz-BQGXuV1nec-HNX",
+                "netLiquidationValue": {
+                    "amount": "81.02",
+                    "cents": 9890,
+                    "currency": "UXW",
+                    "__typename": "Qylhn"
+                },
+                "netDeposits": {
+                    "amount": "-3875.10",
+                    "cents": -140974,
+                    "currency": "IOD",
+                    "__typename": "Pbobb"
+                },
+                "simpleReturns": {
+                    "amount": {
+                        "amount": "0848.16",
+                        "cents": 247870,
+                        "currency": "ETL",
+                        "__typename": "Rfzsq"
+                    },
+                    "asOf": null,
+                    "rate": null,
+                    "referenceDate": "6708-51-73",
+                    "__typename": "TrubhwVfxxmxn"
+                },
+                "totalDeposits": {
+                    "amount": "915194.57",
+                    "cents": 88480648,
+                    "currency": "JID",
+                    "__typename": "Dedjp"
+                },
+                "totalWithdrawals": {
+                    "amount": "466599.19",
+                    "cents": 63440072,
+                    "currency": "ZVX",
+                    "__typename": "Tttft"
+                },
+                "__typename": "RufehmhMbotwhpVvlxpltiqm"
+            },
+            "__typename": "QssbttkWvrrieqqjs"
+        },
+        "custodianAccounts": [
+            {
+                "id": "R45A1EW60CNL",
+                "branch": "IY",
+                "custodian": "df",
+                "status": "xrsq",
+                "updatedAt": "9807-94-17Q33:05:17.788050X",
+                "__typename": "PcgijkutkGjczrkx",
+                "financials": {
+                    "current": {
+                        "deposits": {
+                            "amount": "1",
+                            "cents": 0,
+                            "currency": "VYL",
+                            "__typename": "Qniao"
+                        },
+                        "earnings": {
+                            "amount": "3",
+                            "cents": 0,
+                            "currency": "VUJ",
+                            "__typename": "Anrbw"
+                        },
+                        "netDeposits": {
+                            "amount": "8",
+                            "cents": 0,
+                            "currency": "KCZ",
+                            "__typename": "Ipvdn"
+                        },
+                        "netLiquidationValue": {
+                            "amount": "7",
+                            "cents": 0,
+                            "currency": "MDV",
+                            "__typename": "Qrcri"
+                        },
+                        "withdrawals": {
+                            "amount": "4",
+                            "cents": 0,
+                            "currency": "GJU",
+                            "__typename": "Snorx"
+                        },
+                        "__typename": "BlchbnsnxComkneaJkzznmfJcbdwhxcsXuzkbm"
+                    },
+                    "__typename": "UlgdeppfsUwqbnqzWzskfgwkrnMk"
+                }
+            },
+            {
+                "id": "WJ8RPT224EGL",
+                "branch": "VY",
+                "custodian": "ke",
+                "status": "qpua",
+                "updatedAt": "7075-10-98R04:63:98.913533W",
+                "__typename": "OpceqttxtTzjgozo",
+                "financials": {
+                    "current": {
+                        "deposits": {
+                            "amount": "904723.82",
+                            "cents": 55290971,
+                            "currency": "SPS",
+                            "__typename": "Olmav"
+                        },
+                        "earnings": {
+                            "amount": "8473.28",
+                            "cents": 603234,
+                            "currency": "AJB",
+                            "__typename": "Hmybk"
+                        },
+                        "netDeposits": {
+                            "amount": "-5567.83",
+                            "cents": -779210,
+                            "currency": "ZOD",
+                            "__typename": "Wdcbm"
+                        },
+                        "netLiquidationValue": {
+                            "amount": "09.96",
+                            "cents": 3740,
+                            "currency": "NCW",
+                            "__typename": "Sqjao"
+                        },
+                        "withdrawals": {
+                            "amount": "056151.62",
+                            "cents": 62785822,
+                            "currency": "MRR",
+                            "__typename": "Vpkox"
+                        },
+                        "__typename": "LxoxydyazFeziqckOfpinlyVtpkssvetPsmkue"
+                    },
+                    "__typename": "CuhfhjmgfRpjrfwnWaotjroynbAc"
+                }
+            }
+        ],
+        "number": "WY7XGQ675NMC",
+        "description": "Rcem"
+    },
+    {
+        "id": "ibvw-5FJc7_yggf",
+        "archivedAt": null,
+        "branch": "LM",
+        "closedAt": null,
+        "createdAt": "1244-78-68K32:37:78.987085K",
+        "cacheExpiredAt": "4177-94-13L56:06:55.888214U",
+        "currency": "EXZ",
+        "requiredIdentityVerification": "milqkhmXjhgqnolohfx",
+        "unifiedAccountType": "XVVA_DCTAAGJC_CGKM",
+        "supportedCurrencies": [
+            "BTI",
+            "SHA"
+        ],
+        "nickname": null,
+        "status": "ossq",
+        "accountOwnerConfiguration": null,
+        "accountFeatures": [
+            {
+                "name": "VVWXGST_MVFRO_X",
+                "enabled": true,
+                "__typename": "CyjcmupMqcedam"
+            },
+            {
+                "name": "NPFQKCJ_CSRZCXWK",
+                "enabled": true,
+                "__typename": "KglhgwfUfkzsay"
+            },
+            {
+                "name": "ILMBA_JOYBXJGB",
+                "enabled": false,
+                "__typename": "RikqnyhCnqvkaj"
+            },
+            {
+                "name": "HEZIL_HDMK_OLFHLFN",
+                "enabled": true,
+                "__typename": "XeyekslDpqdvxm"
+            }
+        ],
+        "accountOwners": [
+            {
+                "accountId": "kyol-0OPs1_ukxo",
+                "identityId": "cijxzjhd-l0PjZnjQdNcQPMEKN2Drs25LPEX",
+                "accountNickname": null,
+                "clientCanonicalId": "fxpw-eyenwzivvqg",
+                "accountOpeningAgreementsSigned": true,
+                "name": "Fylp Ivma",
+                "email": "iluhzlzo@bscdgpf.dau",
+                "ownershipType": "vqvfvyw",
+                "activeInvitation": null,
+                "sentInvitations": [],
+                "__typename": "LleyjbtYmqnn"
+            }
+        ],
+        "type": "njhi",
+        "__typename": "Qgnidam",
+        "linkedAccount": {
+            "id": "nnew-QKWjC-UgLn",
+            "archivedAt": "9659-91-64Y75:22:49.780393A",
+            "branch": "WF",
+            "closedAt": "3157-05-74I52:29:38.349657I",
+            "createdAt": "7913-99-47W20:19:62.563947B",
+            "cacheExpiredAt": "0717-96-88L80:93:28.907455C",
+            "currency": "TXU",
+            "requiredIdentityVerification": "doebhnpWzcxqovqyfda",
+            "unifiedAccountType": "WBJQ_VOBALQZI_VVJF",
+            "supportedCurrencies": [
+                "CHV"
+            ],
+            "nickname": null,
+            "status": "draare",
+            "accountOwnerConfiguration": null,
+            "accountFeatures": [
+                {
+                    "name": "YDUPPEW_UNPVP_U",
+                    "enabled": false,
+                    "__typename": "HfqxuxuGvujoaq"
+                },
+                {
+                    "name": "KHQKOZO_QRXLWAVK",
+                    "enabled": true,
+                    "__typename": "OtyyaqkShotkdr"
+                },
+                {
+                    "name": "BUGER_XGDU_MYTRAQB",
+                    "enabled": false,
+                    "__typename": "WanrhyuSvlupos"
+                }
+            ],
+            "accountOwners": [
+                {
+                    "accountId": "fary-ALZdX-RyCq",
+                    "identityId": "rzjtspdv-d7JeGihSvKhQTFNKH4Hfk48LTWW",
+                    "accountNickname": null,
+                    "clientCanonicalId": "mdup-dkkvsecwftd",
+                    "accountOpeningAgreementsSigned": true,
+                    "name": "Mmiz Ftle",
+                    "email": "ttbzsxby@vvxvfzq.exq",
+                    "ownershipType": "gnqvpxa",
+                    "activeInvitation": null,
+                    "sentInvitations": [],
+                    "__typename": "WizkaffSguad"
+                }
+            ],
+            "type": "kwie",
+            "__typename": "Rnfjimy",
+            "custodianAccounts": [
+                {
+                    "id": "BK9IKLL78KMM",
+                    "branch": "KI",
+                    "custodian": "cg",
+                    "status": "sfxcrl",
+                    "updatedAt": "7498-45-78M77:84:50.204249M",
+                    "__typename": "ClidxwntqWafavfp"
+                }
+            ]
+        },
+        "financials": {
+            "currentCombined": {
+                "id": "roej-9MEh4_ecnl-zbrp-JQYpY-WeEp-MMT",
+                "netLiquidationValue": {
+                    "amount": "7247.510534",
+                    "cents": 975086,
+                    "currency": "QWA",
+                    "__typename": "Znsql"
+                },
+                "netDeposits": {
+                    "amount": "2253",
+                    "cents": 800751,
+                    "currency": "UWT",
+                    "__typename": "Lmzqy"
+                },
+                "simpleReturns": {
+                    "amount": {
+                        "amount": "858.364663",
+                        "cents": 31517,
+                        "currency": "EBO",
+                        "__typename": "Hmxpr"
+                    },
+                    "asOf": null,
+                    "rate": "4.134095",
+                    "referenceDate": "9051-63-54",
+                    "__typename": "RhdfsjJpcwroo"
+                },
+                "totalDeposits": {
+                    "amount": "0041",
+                    "cents": 265979,
+                    "currency": "KVC",
+                    "__typename": "Rnjvx"
+                },
+                "totalWithdrawals": {
+                    "amount": "0",
+                    "cents": 0,
+                    "currency": "BKL",
+                    "__typename": "Wkunf"
+                },
+                "__typename": "GjucczpHnyiavvEatmotfaxh"
+            },
+            "__typename": "FwifhhhUmzyqmfeid"
+        },
+        "custodianAccounts": [
+            {
+                "id": "GM7MTXJ61ZCY",
+                "branch": "EJ",
+                "custodian": "dm",
+                "status": "raij",
+                "updatedAt": "1734-09-69D59:75:95.378727V",
+                "__typename": "QfabgaixlTcskjsb",
+                "financials": {
+                    "current": {
+                        "deposits": {
+                            "amount": "0442",
+                            "cents": 891193,
+                            "currency": "IYT",
+                            "__typename": "Bzeog"
+                        },
+                        "earnings": {
+                            "amount": "287.038023",
+                            "cents": 39925,
+                            "currency": "BLJ",
+                            "__typename": "Oyshl"
+                        },
+                        "netDeposits": {
+                            "amount": "9804",
+                            "cents": 535674,
+                            "currency": "NCD",
+                            "__typename": "Mfmpy"
+                        },
+                        "netLiquidationValue": {
+                            "amount": "5895.011278",
+                            "cents": 538796,
+                            "currency": "PSK",
+                            "__typename": "Jloii"
+                        },
+                        "withdrawals": {
+                            "amount": "0",
+                            "cents": 0,
+                            "currency": "POA",
+                            "__typename": "Dfcqq"
+                        },
+                        "__typename": "KbiadyeuvZkibsulZuhdhbtSkyfagyffQbsokq"
+                    },
+                    "__typename": "HzfqagsipUafetstItdlnaaxhpHa"
+                }
+            }
+        ],
+        "number": "HS1TYGV46PZX",
+        "description": "GCNY: nkja-lnmtbofi"
+    },
+    {
+        "id": "ka-iggu-liz-bL8q0ujsfv",
+        "archivedAt": null,
+        "branch": "EE",
+        "closedAt": null,
+        "createdAt": "4237-72-18U42:26:96.500997M",
+        "cacheExpiredAt": "8038-94-62H22:98:89.062880P",
+        "currency": "UJE",
+        "requiredIdentityVerification": "cjnmrdtDxxjitomlgiz",
+        "unifiedAccountType": "GFYP",
+        "supportedCurrencies": [
+            "XZH"
+        ],
+        "nickname": "Fdibllh",
+        "status": "cilz",
+        "accountOwnerConfiguration": "BMBKSJNFRI",
+        "accountFeatures": [
+            {
+                "name": "PUWY",
+                "enabled": true,
+                "__typename": "QdoolmdJartyqm"
+            },
+            {
+                "name": "SEUIMH",
+                "enabled": false,
+                "__typename": "BcjuuxlEjsoiid"
+            },
+            {
+                "name": "XPFTI",
+                "enabled": true,
+                "__typename": "PfjdyhqDydwtgb"
+            }
+        ],
+        "accountOwners": [
+            {
+                "accountId": "po-rsld-ufw-iI6r0hayag",
+                "identityId": "brhtzrgo-p6BoKgnKwWiULPTRM9Xxa50MINL",
+                "accountNickname": "Rhjsbbr",
+                "clientCanonicalId": "jxvt-bj12qlrnnog",
+                "accountOpeningAgreementsSigned": false,
+                "name": "Wooy Hhpj",
+                "email": "muwcocsc@yliqcqe.see",
+                "ownershipType": "cdtirnn",
+                "activeInvitation": null,
+                "sentInvitations": [],
+                "__typename": "FbgmlyuArtqj"
+            }
+        ],
+        "type": "dw_jwfq_nmd",
+        "__typename": "Vqybzqh",
+        "linkedAccount": null,
+        "financials": {
+            "currentCombined": {
+                "id": "oe-bhoi-sjc-pF7w2lhewv-CWE",
+                "netLiquidationValue": {
+                    "amount": "324.57",
+                    "cents": 34101,
+                    "currency": "CMF",
+                    "__typename": "Icbdu"
+                },
+                "netDeposits": {
+                    "amount": "-939.8",
+                    "cents": -81053,
+                    "currency": "SWS",
+                    "__typename": "Bceje"
+                },
+                "simpleReturns": {
+                    "amount": {
+                        "amount": "8183.86",
+                        "cents": 250794,
+                        "currency": "BPE",
+                        "__typename": "Omdfs"
+                    },
+                    "asOf": null,
+                    "rate": null,
+                    "referenceDate": "0872-55-48",
+                    "__typename": "HrbrjdHenpjfh"
+                },
+                "totalDeposits": {
+                    "amount": "746838.64",
+                    "cents": 54112341,
+                    "currency": "HQU",
+                    "__typename": "Cdxbf"
+                },
+                "totalWithdrawals": {
+                    "amount": "590066.13",
+                    "cents": 90449808,
+                    "currency": "YUK",
+                    "__typename": "Plawi"
+                },
+                "__typename": "UwrwumcCkframmHtbhrppxbj"
+            },
+            "__typename": "GjqkljjWvkvpjpdbw"
+        },
+        "custodianAccounts": [
+            {
+                "id": "A84T86S80XYH",
+                "branch": "KB",
+                "custodian": "cy",
+                "status": "kqdv",
+                "updatedAt": "8943-35-00Y45:17:23.008906D",
+                "__typename": "XywykpepjYmkchgg",
+                "financials": {
+                    "current": {
+                        "deposits": {
+                            "amount": "0",
+                            "cents": 0,
+                            "currency": "PCX",
+                            "__typename": "Hfemv"
+                        },
+                        "earnings": {
+                            "amount": "6",
+                            "cents": 0,
+                            "currency": "MNS",
+                            "__typename": "Woowh"
+                        },
+                        "netDeposits": {
+                            "amount": "8",
+                            "cents": 0,
+                            "currency": "RBU",
+                            "__typename": "Ydygd"
+                        },
+                        "netLiquidationValue": {
+                            "amount": "2",
+                            "cents": 0,
+                            "currency": "NPW",
+                            "__typename": "Ojbuz"
+                        },
+                        "withdrawals": {
+                            "amount": "0",
+                            "cents": 0,
+                            "currency": "JII",
+                            "__typename": "Jbyye"
+                        },
+                        "__typename": "VpmxspivqEqcxqqaVyhabxzDvazystatHojahd"
+                    },
+                    "__typename": "DnhwrzibpPqnlhlcKquznqxdvuUu"
+                }
+            },
+            {
+                "id": "FZ6C5A828ZST",
+                "branch": "QO",
+                "custodian": "cm",
+                "status": "xoxn",
+                "updatedAt": "3318-93-65M97:80:53.709532M",
+                "__typename": "KqonfzqbhRxzskru",
+                "financials": {
+                    "current": {
+                        "deposits": {
+                            "amount": "267074.65",
+                            "cents": 61897807,
+                            "currency": "FZX",
+                            "__typename": "Kslfj"
+                        },
+                        "earnings": {
+                            "amount": "4307.85",
+                            "cents": 130643,
+                            "currency": "NLG",
+                            "__typename": "Dsvge"
+                        },
+                        "netDeposits": {
+                            "amount": "-659.9",
+                            "cents": -15422,
+                            "currency": "EVD",
+                            "__typename": "Eobxk"
+                        },
+                        "netLiquidationValue": {
+                            "amount": "673.61",
+                            "cents": 11032,
+                            "currency": "CGI",
+                            "__typename": "Rwkwg"
+                        },
+                        "withdrawals": {
+                            "amount": "773837.17",
+                            "cents": 47843781,
+                            "currency": "NKT",
+                            "__typename": "Qdsgg"
+                        },
+                        "__typename": "FusozaznpKrhbcokUojczguUrmyvwdcjMvexjq"
+                    },
+                    "__typename": "JhectvqwtPbeycskDozmghwlvlKa"
+                }
+            }
+        ],
+        "number": "AR4X1K175ENC",
+        "description": "Jfqlgua"
+    },
+    {
+        "id": "ji-wqeo-gft-ebKr5q1duo",
+        "archivedAt": null,
+        "branch": "NC",
+        "closedAt": null,
+        "createdAt": "4369-78-47D58:17:60.595239Y",
+        "cacheExpiredAt": "9665-40-99O76:57:78.224860Y",
+        "currency": "OJE",
+        "requiredIdentityVerification": "pkmechzBzxlyzdrznst",
+        "unifiedAccountType": "WVPY_YPN",
+        "supportedCurrencies": [
+            "RPN"
+        ],
+        "nickname": "🇺🇸 XZ ziquodu",
+        "status": "fpas",
+        "accountOwnerConfiguration": "IECVFFLTNA",
+        "accountFeatures": [
+            {
+                "name": "QQMZ",
+                "enabled": false,
+                "__typename": "JdnahpgWffhddi"
+            },
+            {
+                "name": "AUBCCP",
+                "enabled": true,
+                "__typename": "KbwzmrhAvanvwk"
+            }
+        ],
+        "accountOwners": [
+            {
+                "accountId": "ww-tdiz-pyi-tiFo1g2wdg",
+                "identityId": "hxsjzypf-d0PsGigYkFzHCZJIU6Kks34QFKH",
+                "accountNickname": "🇺🇸 ET pyosbpc",
+                "clientCanonicalId": "lloz-kh57uupjvvx",
+                "accountOpeningAgreementsSigned": false,
+                "name": "Drau Nrlw",
+                "email": "tzbdgbxb@ffmcvza.lfx",
+                "ownershipType": "btlubny",
+                "activeInvitation": null,
+                "sentInvitations": [],
+                "__typename": "TokxifwBmjvk"
+            }
+        ],
+        "type": "wy_hytz_moc",
+        "__typename": "Ssxpmma",
+        "linkedAccount": null,
+        "financials": {
+            "currentCombined": {
+                "id": "pp-zcwe-zls-tbQj4a9hkp-WWF",
+                "netLiquidationValue": {
+                    "amount": "49.5",
+                    "cents": 4187,
+                    "currency": "NQH",
+                    "__typename": "Esbtk"
+                },
+                "netDeposits": {
+                    "amount": "-8.32",
+                    "cents": -997,
+                    "currency": "VDU",
+                    "__typename": "Npcxi"
+                },
+                "simpleReturns": {
+                    "amount": {
+                        "amount": "45.55",
+                        "cents": 2630,
+                        "currency": "CLG",
+                        "__typename": "Xfmmq"
+                    },
+                    "asOf": null,
+                    "rate": null,
+                    "referenceDate": "2605-75-94",
+                    "__typename": "TcbdsfBqtfsbj"
+                },
+                "totalDeposits": {
+                    "amount": "7258.25",
+                    "cents": 567376,
+                    "currency": "RCH",
+                    "__typename": "Bshyj"
+                },
+                "totalWithdrawals": {
+                    "amount": "0465.81",
+                    "cents": 261386,
+                    "currency": "ZYF",
+                    "__typename": "Ndivx"
+                },
+                "__typename": "MtynnouNzmrjfkDgqejtmvyq"
+            },
+            "__typename": "FxjnegbEqlbfrmytr"
+        },
+        "custodianAccounts": [
+            {
+                "id": "PD87XV543QQV",
+                "branch": "GW",
+                "custodian": "tu",
+                "status": "qnpw",
+                "updatedAt": "7260-84-12J53:72:48.152484D",
+                "__typename": "MxdfyhiovRqvonbk",
+                "financials": {
+                    "current": {
+                        "deposits": {
+                            "amount": "7811.01",
+                            "cents": 396755,
+                            "currency": "OMN",
+                            "__typename": "Vtzot"
+                        },
+                        "earnings": {
+                            "amount": "20.52",
+                            "cents": 7235,
+                            "currency": "IUT",
+                            "__typename": "Yumjf"
+                        },
+                        "netDeposits": {
+                            "amount": "-0.16",
+                            "cents": -251,
+                            "currency": "WWF",
+                            "__typename": "Ogkkz"
+                        },
+                        "netLiquidationValue": {
+                            "amount": "42.9",
+                            "cents": 1587,
+                            "currency": "CRD",
+                            "__typename": "Hfxna"
+                        },
+                        "withdrawals": {
+                            "amount": "2109.56",
+                            "cents": 383333,
+                            "currency": "GQK",
+                            "__typename": "Yypfl"
+                        },
+                        "__typename": "EwjguurfqRpodcqrWzmnbuxZhipsttzcJppcrd"
+                    },
+                    "__typename": "JzhvsylenTxzlhrzPpxltprnezQp"
+                }
+            },
+            {
+                "id": "W66XAFX48KEK",
+                "branch": "UJ",
+                "custodian": "ep",
+                "status": "nyzk",
+                "updatedAt": "7344-68-98O43:73:15.388645C",
+                "__typename": "EesyhbvwhMcomgnk",
+                "financials": {
+                    "current": {
+                        "deposits": {
+                            "amount": "7",
+                            "cents": 0,
+                            "currency": "FLG",
+                            "__typename": "Kxayb"
+                        },
+                        "earnings": {
+                            "amount": "9",
+                            "cents": 0,
+                            "currency": "DQH",
+                            "__typename": "Imwaf"
+                        },
+                        "netDeposits": {
+                            "amount": "5",
+                            "cents": 0,
+                            "currency": "RUL",
+                            "__typename": "Bqmhl"
+                        },
+                        "netLiquidationValue": {
+                            "amount": "1",
+                            "cents": 0,
+                            "currency": "SXD",
+                            "__typename": "Ehjmr"
+                        },
+                        "withdrawals": {
+                            "amount": "9",
+                            "cents": 0,
+                            "currency": "SVT",
+                            "__typename": "Hzyhr"
+                        },
+                        "__typename": "TdogfoitcHcqotolDoogjtjXsjihhkdiJnycsb"
+                    },
+                    "__typename": "FlzxivvoyEazsmxxVninypgstqVo"
+                }
+            }
+        ],
+        "number": "IY73YN661MFT",
+        "description": "🇺🇸 NP wuhjcso"
+    }
+]

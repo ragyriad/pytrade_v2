@@ -1,0 +1,28 @@
+{
+  "name": "@repo/snaptrade-sync",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.snaptrade_sync.json",
+    "sync": "dotenv -e ../../../.env -- tsx src/scripts/full_sync.ts",
+    "transaction_tofile": "dotenv -e ../../../.env -- tsx src/scripts/save_transactions_tofile.ts",
+    "position_tofile": "dotenv -e ../../../.env -- tsx src/scripts/save_positions_tofile.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "@repo/db": "workspace:*",
+    "snaptrade-typescript-sdk": "^9.0.160"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  }
+}
