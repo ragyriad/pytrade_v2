@@ -1,19 +1,128 @@
-import Fastify from 'fastify'
+import cors from "@fastify/cors";
+import Fastify from "fastify";
+import { z } from "zod";
+import { checkDbConnection } from "@repo/db";
+import { getPortfolioDashboard } from "./portfolio.service.js";
+import {
+  getHistoricSecurities,
+  getSecurityTransactions,
+} from "./securities.service.js";
+
+const port = Number(process.env.API_PORT ?? 3001);
+const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:3000";
 
 const fastify = Fastify({
-  logger: true
-})
+  logger: true,
+});
 
-// Declare a route
-fastify.get('/', function (request, reply) {
-  reply.send({ hello: 'world' })
-})
+await fastify.register(cors, {
+  origin: [webOrigin],
+});
 
-// Run the server!
-fastify.listen({ port: 3000 }, function (err, address) {
-  if (err) {
-    fastify.log.error(err)
-    process.exit(1)
+fastify.get("/", async () => ({
+  name: "pytrade-api",
+  status: "ok",
+}));
+
+fastify.get("/health", async () => {
+  await checkDbConnection();
+  return { status: "ok" };
+});
+
+fastify.get("/api/portfolio/dashboard", async (request, reply) => {
+  const query = z
+    .object({
+      userId: z.string().uuid().optional(),
+    })
+    .safeParse(request.query);
+
+  if (!query.success) {
+    return reply.status(400).send({
+      error: "Invalid query string.",
+      issues: query.error.flatten().fieldErrors,
+    });
   }
-  // Server is now listening on ${address}
-})
+
+  const dashboard = await getPortfolioDashboard(query.data.userId);
+
+  if (!dashboard) {
+    return reply.status(404).send({
+      error: "No user data found. Run the sync or seed a user first.",
+    });
+  }
+
+  return dashboard;
+});
+
+fastify.get("/api/securities/history", async (request, reply) => {
+  const query = z
+    .object({
+      userId: z.string().uuid().optional(),
+    })
+    .safeParse(request.query);
+
+  if (!query.success) {
+    return reply.status(400).send({
+      error: "Invalid query string.",
+      issues: query.error.flatten().fieldErrors,
+    });
+  }
+
+  const history = await getHistoricSecurities(query.data.userId);
+
+  if (!history) {
+    return reply.status(404).send({
+      error: "No user data found. Run the sync or seed a user first.",
+    });
+  }
+
+  return { securities: history };
+});
+
+fastify.get("/api/securities/:securityId/transactions", async (request, reply) => {
+  const params = z
+    .object({
+      securityId: z.string().uuid(),
+    })
+    .safeParse(request.params);
+  const query = z
+    .object({
+      userId: z.string().uuid().optional(),
+    })
+    .safeParse(request.query);
+
+  if (!params.success) {
+    return reply.status(400).send({
+      error: "Invalid security id.",
+      issues: params.error.flatten().fieldErrors,
+    });
+  }
+
+  if (!query.success) {
+    return reply.status(400).send({
+      error: "Invalid query string.",
+      issues: query.error.flatten().fieldErrors,
+    });
+  }
+
+  const transactions = await getSecurityTransactions(
+    params.data.securityId,
+    query.data.userId
+  );
+
+  if (!transactions) {
+    return reply.status(404).send({
+      error: "Security not found for the selected user.",
+    });
+  }
+
+  return transactions;
+});
+
+try {
+  const address = await fastify.listen({ port, host: "0.0.0.0" });
+  fastify.log.info(`Server listening at ${address}`);
+} catch (err) {
+  fastify.log.error(err);
+  process.exit(1);
+}

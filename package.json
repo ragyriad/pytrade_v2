@@ -4,7 +4,13 @@
   "packageManager": "pnpm@10.33.0",
   "scripts": {
     "dev": "turbo run dev",
+    "dev:api": "pnpm --filter @repo/api dev",
+    "dev:web": "pnpm --filter web dev",
     "build": "turbo run build",
+    "build:api": "pnpm --filter @repo/api build",
+    "build:web": "pnpm --filter web build",
+    "clean:web": "powershell -NoProfile -Command \"Remove-Item -Recurse -Force apps/web/.next -ErrorAction SilentlyContinue\"",
+    "typecheck:api": "pnpm --filter @repo/api typecheck",
     "sync": "pnpm --filter @repo/snaptrade-sync sync",
     "transaction_tofile": "pnpm --filter @repo/snaptrade-sync transaction_tofile",
     "position_tofile": "pnpm --filter @repo/snaptrade-sync position_tofile",

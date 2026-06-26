@@ -6,10 +6,12 @@ import {
   numeric,
   timestamp,
   index,
+  uniqueIndex,
   pgEnum
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { accounts } from "./accounts_schema.js";
+import { securities } from "./securities_schema.js";
 
 export const transactionTypeEnum = pgEnum("type", [
   "BUY",
@@ -32,12 +34,19 @@ export const transactions = pgTable(
     snaptradeTransactionId: varchar("snaptrade_transaction_id", {
       length: 36,
     })
-      .notNull()
       .unique(),
+
+    source: varchar("source", { length: 50 }).notNull().default("SNAPTRADE"),
+    externalTransactionId: varchar("external_transaction_id", { length: 255 }),
+    legacyImportKey: varchar("legacy_import_key", { length: 500 }),
 
     accountId: uuid("account_id")
       .notNull()
       .references(() => accounts.id, { onDelete: "cascade" }),
+
+    securityId: uuid("security_id").references(() => securities.id, {
+      onDelete: "set null",
+    }),
 
     type: varchar("type", { length: 200 }).notNull(),
     description: text("description"),
@@ -61,7 +70,14 @@ export const transactions = pgTable(
   },
   (table) => [
     index("transactions_account_idx").on(table.accountId),
+    index("transactions_security_idx").on(table.securityId),
     index("transactions_trade_date_idx").on(table.tradeDate),
+    index("transactions_symbol_idx").on(table.symbol),
+    index("transactions_source_external_idx").on(
+      table.source,
+      table.externalTransactionId
+    ),
+    uniqueIndex("transactions_legacy_import_key_idx").on(table.legacyImportKey),
 ]
 );
 

@@ -6,10 +6,12 @@ type SnaptradeTransaction = SnaptradeTransactionSDK;
 
 export function mapSnaptradeTransaction(
   rawData: SnaptradeTransaction,
-  accountId: string
+  accountId: string,
+  securityId?: string | null
 ): NewTransaction {
   return {
     accountId,
+    securityId: securityId ?? null,
 
     snaptradeTransactionId: rawData.id as string,
 

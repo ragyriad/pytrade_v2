@@ -21,6 +21,10 @@ export async function upsertTransaction(
       set: {
         type: data.type,
         description: data.description,
+        source: data.source,
+        externalTransactionId: data.externalTransactionId,
+        legacyImportKey: data.legacyImportKey,
+        securityId: data.securityId,
         amount: data.amount,
         price: data.price,
         units: data.units,
@@ -77,6 +81,10 @@ export async function upsertTransactions(
       set: {
         type: sql`excluded.type`,
         description: sql`excluded.description`,
+        source: sql`excluded.source`,
+        externalTransactionId: sql`excluded.external_transaction_id`,
+        legacyImportKey: sql`excluded.legacy_import_key`,
+        securityId: sql`excluded.security_id`,
         amount: sql`excluded.amount`,
         price: sql`excluded.price`,
         units: sql`excluded.units`,

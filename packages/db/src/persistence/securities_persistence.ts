@@ -1,0 +1,142 @@
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { DB } from "../db_type.js";
+import { positions } from "../schemas/positions_schema.js";
+import {
+  securities,
+  Security,
+  NewSecurity,
+} from "../schemas/securities_schema.js";
+import {
+  transactions,
+  Transaction,
+} from "../schemas/transactions_schema.js";
+
+export type HistoricSecurityRow = Security & {
+  transactionCount: number;
+  buyCount: number;
+  sellCount: number;
+  dividendCount: number;
+  totalGainLossAmount: number;
+  totalGainLossCurrency: string;
+  firstTradeDate: Date | null;
+  lastTradeDate: Date | null;
+  isCurrentlyHeld: boolean;
+};
+
+export async function upsertSecurities(
+  db: DB,
+  data: NewSecurity[]
+): Promise<Security[]> {
+  if (data.length === 0) return [];
+
+  return db
+    .insert(securities)
+    .values(data)
+    .onConflictDoUpdate({
+      target: [securities.securityKey],
+      set: {
+        snaptradeSymbolId: sql`excluded.snaptrade_symbol_id`,
+        symbol: sql`excluded.symbol`,
+        rawSymbol: sql`excluded.raw_symbol`,
+        description: sql`excluded.description`,
+        currencyCode: sql`excluded.currency_code`,
+        exchangeCode: sql`excluded.exchange_code`,
+        exchangeMicCode: sql`excluded.exchange_mic_code`,
+        exchangeName: sql`excluded.exchange_name`,
+        instrumentTypeCode: sql`excluded.instrument_type_code`,
+        instrumentTypeDescription: sql`excluded.instrument_type_description`,
+        figiCode: sql`excluded.figi_code`,
+        figiInstrumentCode: sql`excluded.figi_instrument_code`,
+        logoUrl: sql`excluded.logo_url`,
+        firstSeenAt: sql`least(${securities.firstSeenAt}, excluded.first_seen_at)`,
+        lastSeenAt: sql`greatest(${securities.lastSeenAt}, excluded.last_seen_at)`,
+        updatedAt: sql`now()`,
+      },
+    })
+    .returning();
+}
+
+export async function getSecurityById(
+  db: DB,
+  id: string
+): Promise<Security | null> {
+  const rows = await db.select().from(securities).where(eq(securities.id, id)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function getSecurityByKey(
+  db: DB,
+  securityKey: string
+): Promise<Security | null> {
+  const rows = await db
+    .select()
+    .from(securities)
+    .where(eq(securities.securityKey, securityKey))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function getTransactionsBySecurity(
+  db: DB,
+  securityId: string,
+  accountIds?: string[]
+): Promise<Transaction[]> {
+  if (accountIds && accountIds.length === 0) return [];
+
+  return db
+    .select()
+    .from(transactions)
+    .where(
+      accountIds
+        ? and(
+            eq(transactions.securityId, securityId),
+            inArray(transactions.accountId, accountIds)
+          )
+        : eq(transactions.securityId, securityId)
+    )
+    .orderBy(desc(transactions.tradeDate));
+}
+
+export async function getHistoricSecuritiesByAccounts(
+  db: DB,
+  accountIds: string[]
+): Promise<HistoricSecurityRow[]> {
+  if (accountIds.length === 0) return [];
+
+  const activePositionRows = await db
+    .select({ symbol: positions.symbol })
+    .from(positions)
+    .where(inArray(positions.accountId, accountIds));
+  const activeSymbols = new Set(activePositionRows.map((position) => position.symbol));
+
+  const rows = await db
+    .select({
+      security: securities,
+      transactionCount: sql<number>`count(${transactions.id})`,
+      buyCount: sql<number>`sum(case when upper(${transactions.type}) like '%BUY%' then 1 else 0 end)`,
+      sellCount: sql<number>`sum(case when upper(${transactions.type}) like '%SELL%' then 1 else 0 end)`,
+      dividendCount: sql<number>`sum(case when upper(${transactions.type}) like '%DIVIDEND%' then 1 else 0 end)`,
+      totalGainLossAmount: sql<number>`coalesce(sum(${transactions.amount}), 0) - coalesce(sum(abs(${transactions.fee})), 0)`,
+      totalGainLossCurrency: sql<string>`coalesce(${securities.currencyCode}, max(${transactions.currencyCode}), 'USD')`,
+      firstTradeDate: sql<Date | null>`min(${transactions.tradeDate})`,
+      lastTradeDate: sql<Date | null>`max(${transactions.tradeDate})`,
+    })
+    .from(securities)
+    .innerJoin(transactions, eq(transactions.securityId, securities.id))
+    .where(inArray(transactions.accountId, accountIds))
+    .groupBy(securities.id)
+    .orderBy(sql`max(${transactions.tradeDate}) desc`);
+
+  return rows.map((row) => ({
+    ...row.security,
+    transactionCount: Number(row.transactionCount),
+    buyCount: Number(row.buyCount),
+    sellCount: Number(row.sellCount),
+    dividendCount: Number(row.dividendCount),
+    totalGainLossAmount: Number(row.totalGainLossAmount),
+    totalGainLossCurrency: row.totalGainLossCurrency,
+    firstTradeDate: row.firstTradeDate,
+    lastTradeDate: row.lastTradeDate,
+    isCurrentlyHeld: activeSymbols.has(row.security.symbol),
+  }));
+}

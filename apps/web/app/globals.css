@@ -24,4 +24,25 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+
+  .scrollbar-thick {
+    scrollbar-width: auto;
+    scrollbar-color: #a1a1aa #f4f4f5;
+  }
+
+  .scrollbar-thick::-webkit-scrollbar {
+    width: 14px;
+    height: 14px;
+  }
+
+  .scrollbar-thick::-webkit-scrollbar-track {
+    background: #f4f4f5;
+    border-radius: 999px;
+  }
+
+  .scrollbar-thick::-webkit-scrollbar-thumb {
+    background: #a1a1aa;
+    border: 3px solid #f4f4f5;
+    border-radius: 999px;
+  }
 }

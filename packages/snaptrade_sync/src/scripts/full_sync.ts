@@ -1,17 +1,12 @@
-import {
-  syncAccounts,
-  syncTransactionsByAccount,
-  syncPositionsByAccount,
-} from "../sync_functions.js";
+import { syncAccounts } from "../sync_functions.js";
+import { processAccountActivities } from "@repo/activity-processor";
 import {
   getAccountBySnaptradeId,
   markAccountSynced,
-  upsertTransactions,
   replaceAccountPositions,
-  mapSnaptradeTransaction,
   mapSnaptradePosition,
 } from "@repo/db";
-import type { NewTransaction, NewPosition } from "@repo/db";
+import type { NewPosition } from "@repo/db";
 import { db, createSeed } from "@repo/db";
 import {
   getSnaptradeTransactionsByAccountId,
@@ -23,7 +18,7 @@ async function main() {
   console.log("***Admin User***");
   console.log(adminUser);
 
-  const startDate = "2020-01-01";
+  const startDate = "2019-01-01";
   const endDate = new Date().toISOString().split("T")[0];
 
   try {
@@ -63,7 +58,11 @@ async function main() {
     // ------------------------------------------------------------------
     // Step 3: Fetch all data from SnapTrade — log per account, no DB writes
     // ------------------------------------------------------------------
-    const allMappedTransactions: NewTransaction[] = [];
+    const allRawTransactionsByAccount: Array<{
+      dbAccountId: string;
+      accountName: string;
+      rawTransactions: Awaited<ReturnType<typeof getSnaptradeTransactionsByAccountId>>;
+    }> = [];
     const allMappedPositions: NewPosition[] = [];
 
     for (const { snaptradeAccountId, dbAccountId, accountName } of resolvedAccounts) {
@@ -78,11 +77,12 @@ async function main() {
       if (!rawTransactions || rawTransactions.length === 0) {
         console.log(`  No transactions found`);
       } else {
-        const mapped = rawTransactions.map((raw) =>
-          mapSnaptradeTransaction(raw, dbAccountId)
-        );
-        allMappedTransactions.push(...mapped);
-        console.log(`  Fetched ${mapped.length} transactions`);
+        allRawTransactionsByAccount.push({
+          dbAccountId,
+          accountName,
+          rawTransactions,
+        });
+        console.log(`  Fetched ${rawTransactions.length} transactions`);
       }
 
       const rawPositions = await getSnaptradePositionsByAccount(snaptradeAccountId);
@@ -103,8 +103,25 @@ async function main() {
     // ------------------------------------------------------------------
     console.log(`\nPersisting...`);
 
-    await upsertTransactions(db, allMappedTransactions);
-    console.log(`  Persisted ${allMappedTransactions.length} transactions`);
+    let persistedTransactionCount = 0;
+    let persistedSecurityCount = 0;
+
+    for (const { dbAccountId, accountName, rawTransactions } of allRawTransactionsByAccount) {
+      const result = await processAccountActivities({
+        db,
+        accountId: dbAccountId,
+        activities: rawTransactions,
+      });
+      persistedTransactionCount += result.transactionsProcessed;
+      persistedSecurityCount += result.securitiesProcessed;
+      console.log(
+        `  Persisted ${result.transactionsProcessed} transactions and ${result.securitiesProcessed} securities for: ${accountName}`
+      );
+    }
+
+    console.log(
+      `  Persisted ${persistedTransactionCount} transactions and ${persistedSecurityCount} securities total`
+    );
 
     // Positions are per-account snapshots so replace is still per-account,
     // but batched in a single transaction rather than scattered in the loop
