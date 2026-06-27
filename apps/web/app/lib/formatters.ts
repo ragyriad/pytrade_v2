@@ -14,9 +14,15 @@ export function formatMoneyBreakdown(
   values: MoneyBreakdownDto[],
   fallback: MoneyDto
 ): string {
-  if (values.length === 0) return formatMoney(fallback);
+  const formatValue = (value: MoneyDto | MoneyBreakdownDto) =>
+    `${new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value.amount)} ${value.currency || "USD"}`;
 
-  return values.map((value) => formatMoney(value)).join(" + ");
+  if (values.length === 0) return formatValue(fallback);
+
+  return values.map(formatValue).join("\n");
 }
 
 export function formatNumber(value: number): string {

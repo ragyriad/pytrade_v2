@@ -17,10 +17,12 @@ import { StatCard } from "../dashboard/stat-card";
 import { DividendGrowthChart } from "./dividend-growth-chart";
 import { filterTransactionsByTimeline } from "../../business/timeline";
 import {
+  getActiveDividendPositionYields,
   getAverageMonthlyDividends,
   getDividendTotals,
   getDividendYieldOnCostPercent,
 } from "../../business/dividends";
+import { DividendPositionYieldChart } from "./dividend-position-yield-chart";
 
 type DividendsDashboardProps = {
   dashboard: PortfolioDashboardDto;
@@ -39,6 +41,13 @@ export function DividendsDashboard({ dashboard }: DividendsDashboardProps) {
       return accountMatchesFilters(account, filters);
     });
   }, [accountsById, dashboard.dividends.transactions, filters]);
+
+  const scopedAllTransactions = useMemo(() => {
+    return dashboard.transactions.filter((transaction) => {
+      const account = accountsById.get(transaction.accountId);
+      return accountMatchesFilters(account, filters);
+    });
+  }, [accountsById, dashboard.transactions, filters]);
 
   const timelineTransactions = useMemo(
     () => filterTransactionsByTimeline(scopedTransactions, filters.timeline),
@@ -68,6 +77,15 @@ export function DividendsDashboard({ dashboard }: DividendsDashboardProps) {
       filters.timeline
     );
   }, [filteredPositions, filters.timeline, timelineTransactions]);
+
+  const positionYields = useMemo(() => {
+    return getActiveDividendPositionYields(
+      timelineTransactions,
+      scopedAllTransactions,
+      filteredPositions,
+      filters.timeline
+    );
+  }, [filteredPositions, filters.timeline, scopedAllTransactions, timelineTransactions]);
 
   const transactionColumns: TableColumn<TransactionDto>[] = [
     {
@@ -146,8 +164,12 @@ export function DividendsDashboard({ dashboard }: DividendsDashboardProps) {
         </section>
 
         <section className="mt-6">
+          <DividendPositionYieldChart rows={positionYields} accounts={dashboard.accounts} />
+        </section>
+
+        <section className="mt-6">
           <DividendGrowthChart
-            transactions={scopedTransactions}
+            transactions={timelineTransactions}
             range={filters.timeline}
             onRangeChange={(timeline) => setFilters({ ...filters, timeline })}
           />

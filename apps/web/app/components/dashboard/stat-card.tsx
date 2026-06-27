@@ -37,7 +37,7 @@ export function StatCard({
         <p className="text-sm text-zinc-500">{label}</p>
         {icon ? <FontAwesomeIcon icon={icon} className="h-4 w-4 text-zinc-400" /> : null}
       </div>
-      <p className={`mt-2 text-xl font-semibold tracking-normal ${toneClass}`}>
+      <p className={`mt-2 whitespace-pre-line text-xl font-semibold tracking-normal ${toneClass}`}>
         {value}
       </p>
     </section>
