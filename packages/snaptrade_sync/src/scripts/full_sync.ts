@@ -13,15 +13,20 @@ import {
   getSnaptradePositionsByAccount,
 } from "../snaptrade.js";
 
+async function closeDatabase() {
+  const client = (db as typeof db & { $client?: { end?: () => Promise<void> } }).$client;
+  await client?.end?.();
+}
+
 async function main() {
-  const adminUser = await createSeed(db);
-  console.log("***Admin User***");
-  console.log(adminUser);
-
-  const startDate = "2019-01-01";
-  const endDate = new Date().toISOString().split("T")[0];
-
   try {
+    const adminUser = await createSeed(db);
+    console.log("***Admin User***");
+    console.log(adminUser);
+
+    const startDate = "2019-01-01";
+    const endDate = new Date().toISOString().split("T")[0];
+
     // ------------------------------------------------------------------
     // Step 1: Sync accounts
     // ------------------------------------------------------------------
@@ -151,6 +156,8 @@ async function main() {
   } catch (err) {
     console.error("Sync failed:", err);
     process.exit(1);
+  } finally {
+    await closeDatabase();
   }
 }
 

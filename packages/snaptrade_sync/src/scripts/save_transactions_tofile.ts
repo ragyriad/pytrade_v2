@@ -11,23 +11,29 @@ function requireEnv(key: string): string {
     return value;
   }
 
-async function main() {
-  
-  
-  const adminUser = await createSeed(db);
-  console.log("***Admin User***")
-  console.log(adminUser)
+async function closeDatabase() {
+  const client = (db as typeof db & { $client?: { end?: () => Promise<void> } }).$client;
+  await client?.end?.();
+}
 
-  const snaptradeAccount = requireEnv("SNAPTRADE_WS_ACCOUNT_ID");
-  const startDate = "2020-01-01";
-  const endDate = new Date().toISOString().split("T")[0];
+async function main() {
   try {
+    const adminUser = await createSeed(db);
+    console.log("***Admin User***")
+    console.log(adminUser)
+
+    const snaptradeAccount = requireEnv("SNAPTRADE_WS_ACCOUNT_ID");
+    const startDate = "2020-01-01";
+    const endDate = new Date().toISOString().split("T")[0];
+
     const rawTransactions = await getSnaptradeTransactionsByAccountId( snaptradeAccount, startDate,endDate,"BUY") ;
     saveListToJson({ data: rawTransactions,filename:"transactions",brokerage:"wealth"});
   } catch (err)
   {
     console.log(err);
     process.exit(1);
+  } finally {
+    await closeDatabase();
   }
   return "File Saved"
 }

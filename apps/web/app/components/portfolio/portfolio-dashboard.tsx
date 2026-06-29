@@ -3,11 +3,11 @@
 import { useMemo, useState } from "react";
 import { AllocationPie } from "../dashboard/allocation-pie";
 import { DataTable, type TableColumn } from "../dashboard/data-table";
-import { PortfolioFilters } from "../dashboard/portfolio-filters";
+import { FilterBar } from "../dashboard/filter-bar";
 import { StatCard } from "../dashboard/stat-card";
 import {
   accountMatchesFilters,
-  defaultPortfolioFilters,
+  defaultFilterBarState,
   isActiveAccount,
 } from "../../lib/account-filters";
 import {
@@ -24,7 +24,7 @@ import {
   getTotalMarketValue,
   getTotalUnrealized,
   getUnrealizedReturnPercent,
-} from "../../business/portfolio";
+} from "../../services/portfolio";
 import type { PortfolioDashboardDto, PositionDto } from "../../lib/portfolio-types";
 
 type PortfolioDashboardProps = {
@@ -32,7 +32,7 @@ type PortfolioDashboardProps = {
 };
 
 export function PortfolioDashboard({ dashboard }: PortfolioDashboardProps) {
-  const [filters, setFilters] = useState(defaultPortfolioFilters);
+  const [filters, setFilters] = useState(defaultFilterBarState);
 
   const accountsById = useMemo(() => {
     return new Map(dashboard.accounts.map((account) => [account.id, account]));
@@ -139,7 +139,7 @@ export function PortfolioDashboard({ dashboard }: PortfolioDashboardProps) {
     <main className="min-h-screen bg-zinc-50 text-zinc-950">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm">
-          <PortfolioFilters accounts={activeAccounts} value={filters} onChange={setFilters} />
+          <FilterBar accounts={activeAccounts} value={filters} onChange={setFilters} />
         </section>
 
         <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">

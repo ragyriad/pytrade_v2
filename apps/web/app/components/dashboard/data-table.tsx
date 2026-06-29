@@ -1,14 +1,19 @@
 "use client";
 
 import { Fragment, type ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   flexRender,
   getCoreRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
   type ColumnDef,
+  type ColumnFiltersState,
+  type FilterFn,
   type PaginationState,
   type SortingState,
 } from "@tanstack/react-table";
@@ -22,6 +27,7 @@ import {
   faSort,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "../ui/button";
+import { DetailsDropdown } from "../ui/details-dropdown";
 
 export type TableColumn<T> = {
   key: string;
@@ -57,7 +63,7 @@ export function DataTable<T>({
     pageSize: 30,
   });
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<Record<string, string[]>>({});
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const getColumnValue = (column: TableColumn<T>, row: T) => {
     const value = column.value?.(row) ?? column.render(row);
@@ -77,28 +83,14 @@ export function DataTable<T>({
     return String(value);
   };
 
-  const filterOptionsByColumn = useMemo(() => {
-    return new Map(
-      columns.map((column) => {
-        const values = Array.from(
-          new Set(rows.map((row) => formatFilterValue(getColumnValue(column, row))))
-        ).sort((a, b) => a.localeCompare(b));
+  const multiValueFilter: FilterFn<T> = (row, columnId, filterValue) => {
+    const selectedValues = Array.isArray(filterValue) ? filterValue : [];
+    if (selectedValues.length === 0) return true;
 
-        return [column.key, values];
-      })
+    return selectedValues.includes(
+      formatFilterValue(row.getValue<string | number | Date | null | undefined>(columnId))
     );
-  }, [columns, rows]);
-
-  const filteredRows = useMemo(() => {
-    return rows.filter((row) => {
-      return columns.every((column) => {
-        const selected = columnFilters[column.key];
-        if (!selected || selected.length === 0) return true;
-
-        return selected.includes(formatFilterValue(getColumnValue(column, row)));
-      });
-    });
-  }, [columnFilters, columns, rows]);
+  };
 
   const columnDefs: ColumnDef<T>[] = columns.map((column) => ({
     id: column.key,
@@ -106,27 +98,36 @@ export function DataTable<T>({
     header: column.header,
     cell: ({ row }) => column.render(row.original),
     enableSorting: column.enableSorting ?? true,
+    enableColumnFilter: column.enableFilter ?? true,
+    filterFn: multiValueFilter,
   }));
   const alignByColumnId = new Map(columns.map((column) => [column.key, column.align]));
 
   const table = useReactTable({
-    data: filteredRows,
+    data: rows,
     columns: columnDefs,
     getCoreRowModel: getCoreRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getRowId: getRowKey,
+    onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     state: {
+      columnFilters,
       pagination,
       sorting,
     },
   });
 
+  const filteredRowCount = table.getFilteredRowModel().rows.length;
+
   useEffect(() => {
     setPagination((current) => ({ ...current, pageIndex: 0 }));
-  }, [filteredRows.length]);
+  }, [filteredRowCount]);
 
   const alignClassName = (align?: "left" | "center" | "right") => {
     if (align === "right") return "text-right";
@@ -135,39 +136,50 @@ export function DataTable<T>({
   };
 
   const toggleFilterValue = (columnKey: string, value: string) => {
-    setColumnFilters((current) => {
-      const selected = current[columnKey] ?? [];
-      const next = selected.includes(value)
-        ? selected.filter((item) => item !== value)
-        : [...selected, value];
+    const column = table.getColumn(columnKey);
+    const selected = (column?.getFilterValue() as string[] | undefined) ?? [];
+    const next = selected.includes(value)
+      ? selected.filter((item) => item !== value)
+      : [...selected, value];
 
-      return {
-        ...current,
-        [columnKey]: next,
-      };
-    });
+    column?.setFilterValue(next.length > 0 ? next : undefined);
   };
 
   const clearColumnFilter = (columnKey: string) => {
-    setColumnFilters((current) => {
-      const next = { ...current };
-      delete next[columnKey];
-      return next;
-    });
+    table.getColumn(columnKey)?.setFilterValue(undefined);
   };
 
-  const hasActiveFilters = Object.values(columnFilters).some((values) => values.length > 0);
+  const getColumnFilterValues = (columnId: string): string[] => {
+    return (table.getColumn(columnId)?.getFilterValue() as string[] | undefined) ?? [];
+  };
+
+  const getColumnFilterOptions = (columnId: string): string[] => {
+    const column = table.getColumn(columnId);
+    if (!column) return [];
+
+    return Array.from(
+      new Set(
+        Array.from(column.getFacetedUniqueValues().keys()).map((value) =>
+          formatFilterValue(value as string | number | Date | null | undefined)
+        )
+      )
+    ).sort((a, b) => a.localeCompare(b));
+  };
+
+  const hasActiveFilters = columnFilters.some((filter) => {
+    return Array.isArray(filter.value) && filter.value.length > 0;
+  });
 
   return (
     <section className="rounded-md border border-zinc-200 bg-white shadow-sm">
       <div className="flex flex-col gap-2 border-b border-zinc-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-base font-semibold text-zinc-950">{title}</h2>
         <div className="flex items-center gap-3 text-sm text-zinc-500">
-          <span>{filteredRows.length} of {rows.length} rows</span>
+          <span>{filteredRowCount} of {rows.length} rows</span>
           {hasActiveFilters ? (
             <button
               type="button"
-              onClick={() => setColumnFilters({})}
+              onClick={() => setColumnFilters([])}
               className="font-medium text-emerald-700 hover:text-emerald-800"
             >
               Clear filters
@@ -216,18 +228,18 @@ export function DataTable<T>({
                             />
                           </button>
                           {(columns.find((column) => column.key === header.column.id)?.enableFilter ?? true) ? (
-                            <details className="group relative">
+                            <DetailsDropdown className="group relative">
                               <summary className="inline-flex h-6 w-6 cursor-pointer list-none items-center justify-center rounded hover:bg-zinc-100">
                                 <FontAwesomeIcon
                                   icon={faFilter}
                                   className={`h-3 w-3 ${
-                                    (columnFilters[header.column.id]?.length ?? 0) > 0
+                                    getColumnFilterValues(header.column.id).length > 0
                                       ? "text-emerald-700"
                                       : "text-zinc-400"
                                   }`}
                                 />
                               </summary>
-                              <div className="absolute right-0 z-30 mt-2 max-h-72 w-56 overflow-auto rounded-md border border-zinc-200 bg-white p-2 text-left normal-case shadow-lg">
+                              <div className="absolute right-0 z-30 mt-2 max-h-72 w-60 overflow-auto rounded-md border border-zinc-200 bg-white p-2 text-left normal-case shadow-xl">
                                 <div className="mb-2 flex items-center justify-between gap-2">
                                   <span className="text-xs font-semibold text-zinc-500">
                                     Filter
@@ -240,14 +252,18 @@ export function DataTable<T>({
                                     Clear
                                   </button>
                                 </div>
-                                {(filterOptionsByColumn.get(header.column.id) ?? []).map((value) => (
+                                {getColumnFilterOptions(header.column.id).map((value) => (
                                   <label
                                     key={value}
-                                    className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
+                                    className={`flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-xs transition ${
+                                      getColumnFilterValues(header.column.id).includes(value)
+                                        ? "bg-emerald-50 text-emerald-950"
+                                        : "text-zinc-700 hover:bg-zinc-50"
+                                    }`}
                                   >
                                     <input
                                       type="checkbox"
-                                      checked={(columnFilters[header.column.id] ?? []).includes(value)}
+                                      checked={getColumnFilterValues(header.column.id).includes(value)}
                                       onChange={() => toggleFilterValue(header.column.id, value)}
                                       className="h-3.5 w-3.5 rounded border-zinc-300 text-emerald-700 focus:ring-emerald-600"
                                     />
@@ -255,7 +271,7 @@ export function DataTable<T>({
                                   </label>
                                 ))}
                               </div>
-                            </details>
+                            </DetailsDropdown>
                           ) : null}
                         </div>
                       )}

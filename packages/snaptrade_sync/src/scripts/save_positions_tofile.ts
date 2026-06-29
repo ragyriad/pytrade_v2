@@ -11,15 +11,18 @@ function requireEnv(key: string): string {
     return value;
   }
 
-async function main() {
-  
-  
-  const adminUser = await createSeed(db);
-  console.log("***Admin User***")
-  console.log(adminUser)
+async function closeDatabase() {
+  const client = (db as typeof db & { $client?: { end?: () => Promise<void> } }).$client;
+  await client?.end?.();
+}
 
-  const accounts = await getAccountsByUserId(db, adminUser.id);
-    try {
+async function main() {
+  try {
+    const adminUser = await createSeed(db);
+    console.log("***Admin User***")
+    console.log(adminUser)
+
+    const accounts = await getAccountsByUserId(db, adminUser.id);
     const allPositions = [];
     for (const account of accounts) {
         const snaptradeAccountId = account.snaptradeAccountId;
@@ -32,6 +35,8 @@ async function main() {
 } catch (err) {
     console.log(err);
     process.exit(1);
+  } finally {
+    await closeDatabase();
   }
   return "File Saved"
 }

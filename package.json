@@ -15,7 +15,9 @@
     "transaction_tofile": "pnpm --filter @repo/snaptrade-sync transaction_tofile",
     "position_tofile": "pnpm --filter @repo/snaptrade-sync position_tofile",
     "db:generate": "turbo run db:generate --filter=@repo/db",
-    "db:migrate": "turbo run db:migrate --filter=@repo/db"
+    "db:migrate": "turbo run db:migrate --filter=@repo/db",
+    "transactions:dedupe:dry-run": "pnpm --filter @repo/db transactions:dedupe:dry-run",
+    "transactions:dedupe:apply": "pnpm --filter @repo/db transactions:dedupe:apply"
   },
   "devDependencies": {
     "dotenv-cli": "7.4.4",

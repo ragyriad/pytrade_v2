@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { buildMonthlyFeeRows } from "../../business/fees";
+import { buildMonthlyFeeRows } from "../../services/fees";
 import { formatMoney } from "../../lib/formatters";
 import type { TransactionDto } from "../../lib/portfolio-types";
 

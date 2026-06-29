@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { fetchSecurityTransactionsFromBackend } from "../../../../lib/api";
+import { fetchSecurityTransactionsFromBackend } from "../../../../api-layer/securities";
 
-type RouteContext = {
+export type SecurityTransactionsRouteContext = {
   params: {
     securityId: string;
   };
 };
 
-export async function GET(request: Request, context: RouteContext) {
+export async function GET(request: Request, context: SecurityTransactionsRouteContext) {
   const url = new URL(request.url);
   const userId = url.searchParams.get("userId") ?? undefined;
 

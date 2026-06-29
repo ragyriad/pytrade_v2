@@ -123,6 +123,7 @@ export type HistoricSecurityDto = {
   sellCount: number;
   dividendCount: number;
   totalGainLoss: MoneyDto;
+  totalGainLossPercent: number | null;
   firstTradeDate: string | null;
   lastTradeDate: string | null;
   status: "active" | "closed";

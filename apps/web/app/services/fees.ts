@@ -1,4 +1,4 @@
-import { absoluteMoney, groupMoney } from "./money";
+import { absoluteMoney, groupMoney } from "./value_helpers";
 import type { MoneyBreakdownDto, TransactionDto } from "../lib/portfolio-types";
 
 export type MonthlyFeeRow = {

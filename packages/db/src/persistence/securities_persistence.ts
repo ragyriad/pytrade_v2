@@ -17,6 +17,7 @@ export type HistoricSecurityRow = Security & {
   sellCount: number;
   dividendCount: number;
   totalGainLossAmount: number;
+  totalBuyCostAmount: number;
   totalGainLossCurrency: string;
   firstTradeDate: Date | null;
   lastTradeDate: Date | null;
@@ -117,6 +118,7 @@ export async function getHistoricSecuritiesByAccounts(
       sellCount: sql<number>`sum(case when upper(${transactions.type}) like '%SELL%' then 1 else 0 end)`,
       dividendCount: sql<number>`sum(case when upper(${transactions.type}) like '%DIVIDEND%' then 1 else 0 end)`,
       totalGainLossAmount: sql<number>`coalesce(sum(${transactions.amount}), 0) - coalesce(sum(abs(${transactions.fee})), 0)`,
+      totalBuyCostAmount: sql<number>`coalesce(sum(case when upper(${transactions.type}) like '%BUY%' then abs(${transactions.amount}) + abs(${transactions.fee}) else 0 end), 0)`,
       totalGainLossCurrency: sql<string>`coalesce(${securities.currencyCode}, max(${transactions.currencyCode}), 'USD')`,
       firstTradeDate: sql<Date | null>`min(${transactions.tradeDate})`,
       lastTradeDate: sql<Date | null>`max(${transactions.tradeDate})`,
@@ -134,6 +136,7 @@ export async function getHistoricSecuritiesByAccounts(
     sellCount: Number(row.sellCount),
     dividendCount: Number(row.dividendCount),
     totalGainLossAmount: Number(row.totalGainLossAmount),
+    totalBuyCostAmount: Number(row.totalBuyCostAmount),
     totalGainLossCurrency: row.totalGainLossCurrency,
     firstTradeDate: row.firstTradeDate,
     lastTradeDate: row.lastTradeDate,

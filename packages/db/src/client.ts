@@ -13,5 +13,10 @@ export async function checkDbConnection() {
   await db.execute("select 1");
 }
 
+export async function closeDbConnection() {
+  const client = (db as typeof db & { $client?: { end?: () => Promise<void> } }).$client;
+  await client?.end?.();
+}
+
 export type DB = PostgresJsDatabase<typeof schema>;
 

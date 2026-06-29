@@ -12,7 +12,7 @@ import {
   type Transaction,
   type Account,
 } from "@repo/db";
-import { buildSecurityGainLoss } from "./business/security-performance.js";
+import { buildSecurityGainLoss } from "./services/security-performance.js";
 
 export type MoneyDto = {
   amount: number;
@@ -38,6 +38,7 @@ export type HistoricSecurityDto = {
   sellCount: number;
   dividendCount: number;
   totalGainLoss: MoneyDto;
+  totalGainLossPercent: number | null;
   firstTradeDate: string | null;
   lastTradeDate: string | null;
   status: "active" | "closed";
@@ -100,6 +101,10 @@ function toHistoricSecurityDto(row: HistoricSecurityRow): HistoricSecurityDto {
       row.totalGainLossAmount,
       row.totalGainLossCurrency
     ),
+    totalGainLossPercent:
+      row.totalBuyCostAmount > 0
+        ? (row.totalGainLossAmount / row.totalBuyCostAmount) * 100
+        : null,
     firstTradeDate: toIso(row.firstTradeDate),
     lastTradeDate: toIso(row.lastTradeDate),
     status: row.isCurrentlyHeld ? "active" : "closed",
@@ -205,6 +210,7 @@ export async function getSecurityTransactions(
           sellCount: 0,
           dividendCount: 0,
           totalGainLossAmount: 0,
+          totalBuyCostAmount: 0,
           totalGainLossCurrency: security.currencyCode ?? "USD",
           firstTradeDate: null,
           lastTradeDate: null,

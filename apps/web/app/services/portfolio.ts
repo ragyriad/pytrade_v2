@@ -1,4 +1,4 @@
-import { groupMoney } from "./money";
+import { groupMoney } from "./value_helpers";
 import type { MoneyBreakdownDto, PositionDto } from "../lib/portfolio-types";
 
 export type PositionAllocationSlice = {

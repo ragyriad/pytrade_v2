@@ -1,17 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowTrendUp,
-  faCircleNotch,
-} from "@fortawesome/free-solid-svg-icons";
+import { useEffect, useMemo, useState } from "react";
 import { DataTable, type TableColumn } from "../dashboard/data-table";
+import { MoneySpinner } from "../loading/page-loading";
 import { Button } from "../ui/button";
 import {
   formatDate,
   formatMoney,
   formatNumber,
+  formatPercent,
   signedValueClassName,
 } from "../../lib/formatters";
 import type {
@@ -48,11 +45,6 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
   const [loadingSecurityId, setLoadingSecurityId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const selectedSecurity = useMemo(
-    () => securities.find((security) => security.id === selectedSecurityId) ?? null,
-    [securities, selectedSecurityId]
-  );
-
   async function selectSecurity(security: HistoricSecurityDto) {
     if (selectedSecurityId === security.id) {
       setSelectedSecurityId(null);
@@ -85,16 +77,24 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
       key: "symbol",
       header: "Symbol",
       align: "left",
-      render: (security) => (
+      render: (security) => {
+        const selected = security.id === selectedSecurityId;
+
+        return (
         <Button
           type="button"
-          variant={security.id === selectedSecurityId ? "solid" : "ghost"}
+          variant={selected ? "outline" : "ghost"}
           onClick={() => selectSecurity(security)}
-          className="justify-start"
+          className={
+            selected
+              ? "justify-start border-emerald-500 bg-emerald-50 text-emerald-800 shadow-sm shadow-emerald-100 hover:bg-emerald-100"
+              : "justify-start"
+          }
         >
           {security.symbol}
         </Button>
-      ),
+        );
+      },
     },
     {
       key: "description",
@@ -131,18 +131,8 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
     },
     {
       key: "transactions",
-      header: "Transactions",
+      header: "Total transactions",
       render: (security) => formatNumber(security.transactionCount),
-    },
-    {
-      key: "buys",
-      header: "Buys",
-      render: (security) => formatNumber(security.buyCount),
-    },
-    {
-      key: "sells",
-      header: "Sells",
-      render: (security) => formatNumber(security.sellCount),
     },
     {
       key: "dividends",
@@ -156,11 +146,24 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
     {
       key: "gainLoss",
       header: "Net Gain/Loss",
-      render: (security) => (
-        <span className={`font-medium ${signedValueClassName(security.totalGainLoss.amount)}`}>
-          {formatMoney(security.totalGainLoss)}
-        </span>
-      ),
+      render: (security) =>
+        security.status === "active" ? (
+          <div className="inline-flex flex-col items-center gap-1">
+            <span className="rounded bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700">
+              Open position
+            </span>
+            <span className="text-xs text-zinc-500">Not realized</span>
+          </div>
+        ) : (
+          <span className={`font-medium ${signedValueClassName(security.totalGainLoss.amount)}`}>
+            {formatMoney(security.totalGainLoss)}
+            {security.totalGainLossPercent == null ? null : (
+              <span className="ml-1 text-xs font-semibold text-zinc-500">
+                ({formatPercent(security.totalGainLossPercent)})
+              </span>
+            )}
+          </span>
+        ),
     },
     {
       key: "lastTrade",
@@ -170,30 +173,8 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
   ];
 
   return (
-    <main className="min-h-screen bg-zinc-50 p-6 text-zinc-950 sm:p-10">
+    <main className="min-h-screen bg-zinc-50 px-4 py-6 text-zinc-950 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <div className="grid gap-4 md:grid-cols-3">
-          <section className="rounded-md border border-zinc-200 bg-white p-5 text-center shadow-sm">
-            <p className="text-sm text-zinc-500">Historic securities</p>
-            <p className="mt-2 text-2xl font-semibold">{formatNumber(securities.length)}</p>
-          </section>
-          <section className="rounded-md border border-zinc-200 bg-white p-5 text-center shadow-sm">
-            <p className="text-sm text-zinc-500">Active securities</p>
-            <p className="mt-2 text-2xl font-semibold text-emerald-700">
-              {formatNumber(
-                securities.filter((security) => security.status === "active").length
-              )}
-            </p>
-          </section>
-          <section className="rounded-md border border-zinc-200 bg-white p-5 text-center shadow-sm">
-            <p className="text-sm text-zinc-500">Selected</p>
-            <p className="mt-2 inline-flex items-center justify-center gap-2 text-2xl font-semibold">
-              <FontAwesomeIcon icon={faArrowTrendUp} className="h-5 w-5 text-emerald-700" />
-              {selectedSecurity?.symbol ?? "None"}
-            </p>
-          </section>
-        </div>
-
         <DataTable
           title="Historic Securities"
           rows={securities}
@@ -223,11 +204,29 @@ function SecurityTransactionsSubTable({
   isLoading: boolean;
   error: string | null;
 }) {
+  const pageSize = 10;
+  const [pageIndex, setPageIndex] = useState(0);
+
+  useEffect(() => {
+    setPageIndex(0);
+  }, [transactions]);
+
+  const pageCount = Math.max(Math.ceil(transactions.length / pageSize), 1);
+  const currentPageIndex = Math.min(pageIndex, pageCount - 1);
+  const pageStart = currentPageIndex * pageSize;
+  const pageEnd = Math.min(pageStart + pageSize, transactions.length);
+  const pageTransactions = useMemo(
+    () => transactions.slice(pageStart, pageEnd),
+    [pageEnd, pageStart, transactions]
+  );
+
   if (isLoading) {
     return (
-      <div className="border-t border-emerald-100 bg-emerald-50/50 p-5 text-center text-sm text-zinc-600">
-        <FontAwesomeIcon icon={faCircleNotch} className="mr-2 h-4 w-4 animate-spin" />
-        Loading transaction history
+      <div className="border-t border-emerald-100 bg-emerald-50/60 p-8 text-center text-sm text-zinc-600">
+        <div className="mx-auto flex max-w-sm items-center justify-center gap-3 rounded-md border border-emerald-200 bg-white px-4 py-3 shadow-sm">
+          <MoneySpinner />
+          <span className="font-medium text-zinc-700">Loading transaction history</span>
+        </div>
       </div>
     );
   }
@@ -265,7 +264,7 @@ function SecurityTransactionsSubTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
-            {transactions.map((transaction, index) => (
+            {pageTransactions.map((transaction, index) => (
               <tr
                 key={transaction.id}
                 className={index % 2 === 0 ? "bg-white" : "bg-zinc-50"}
@@ -307,6 +306,36 @@ function SecurityTransactionsSubTable({
             ))}
           </tbody>
         </table>
+        <div className="flex flex-col gap-3 border-t border-zinc-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm text-zinc-500">
+            Showing {pageStart + 1}-{pageEnd} of {transactions.length} transactions
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setPageIndex((current) => Math.max(current - 1, 0))}
+              disabled={currentPageIndex === 0}
+              className="disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Previous
+            </Button>
+            <span className="min-w-20 text-center text-sm text-zinc-500">
+              Page {currentPageIndex + 1} of {pageCount}
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() =>
+                setPageIndex((current) => Math.min(current + 1, pageCount - 1))
+              }
+              disabled={currentPageIndex >= pageCount - 1}
+              className="disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,13 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { accountMatchesFilters, defaultPortfolioFilters } from "../../lib/account-filters";
+import { accountMatchesFilters, defaultFilterBarState } from "../../lib/account-filters";
 import { formatDate, formatMoney, formatMoneyBreakdown, signedValueClassName } from "../../lib/formatters";
 import type { PortfolioDashboardDto, TransactionDto } from "../../lib/portfolio-types";
-import { filterTransactionsByTimeline } from "../../business/timeline";
-import { getFeeTotals } from "../../business/fees";
+import { filterTransactionsByTimeline } from "../../services/filter_timeline";
+import { getFeeTotals } from "../../services/fees";
 import { DataTable, type TableColumn } from "../dashboard/data-table";
-import { PortfolioFilters } from "../dashboard/portfolio-filters";
+import { FilterBar } from "../dashboard/filter-bar";
 import { StatCard } from "../dashboard/stat-card";
 import { FeesMonthlyChart } from "./fees-monthly-chart";
 
@@ -16,7 +16,7 @@ type FeesDashboardProps = {
 };
 
 export function FeesDashboard({ dashboard }: FeesDashboardProps) {
-  const [filters, setFilters] = useState(defaultPortfolioFilters);
+  const [filters, setFilters] = useState(defaultFilterBarState);
 
   const accountsById = useMemo(() => {
     return new Map(dashboard.accounts.map((account) => [account.id, account]));
@@ -94,7 +94,7 @@ export function FeesDashboard({ dashboard }: FeesDashboardProps) {
     <main className="min-h-screen bg-zinc-50 text-zinc-950">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm">
-          <PortfolioFilters
+          <FilterBar
             accounts={dashboard.accounts}
             value={filters}
             onChange={setFilters}

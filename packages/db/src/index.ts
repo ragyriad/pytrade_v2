@@ -1,4 +1,4 @@
-export { db, checkDbConnection } from "./client.js";
+export { db, checkDbConnection, closeDbConnection } from "./client.js";
 export type { DB } from "./client.js";
 export { desc, eq, inArray } from "drizzle-orm";
 

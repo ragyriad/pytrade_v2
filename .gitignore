@@ -68,6 +68,7 @@ venv/
 *.sqlite3
 *_dump.sql
 *.dump.sql
+scripts/deleted_duplicate_transactions_2026-06-27.sql
 *.backup
 dumps/
 exports/

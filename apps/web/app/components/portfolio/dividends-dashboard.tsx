@@ -3,25 +3,25 @@
 import { useMemo, useState } from "react";
 import {
   accountMatchesFilters,
-  defaultPortfolioFilters,
+  defaultFilterBarState,
   isActiveAccount,
 } from "../../lib/account-filters";
-import { formatDate, formatMoney, formatMoneyBreakdown, formatPercent } from "../../lib/formatters";
+import { formatDate, formatMoneyBreakdown, formatNumber, formatPercent } from "../../lib/formatters";
 import type {
   PortfolioDashboardDto,
   TransactionDto,
 } from "../../lib/portfolio-types";
 import { DataTable, type TableColumn } from "../dashboard/data-table";
-import { PortfolioFilters } from "../dashboard/portfolio-filters";
+import { FilterBar } from "../dashboard/filter-bar";
 import { StatCard } from "../dashboard/stat-card";
 import { DividendGrowthChart } from "./dividend-growth-chart";
-import { filterTransactionsByTimeline } from "../../business/timeline";
+import { filterTransactionsByTimeline } from "../../services/filter_timeline";
 import {
   getActiveDividendPositionYields,
   getAverageMonthlyDividends,
   getDividendTotals,
   getDividendYieldOnCostPercent,
-} from "../../business/dividends";
+} from "../../services/dividends";
 import { DividendPositionYieldChart } from "./dividend-position-yield-chart";
 
 type DividendsDashboardProps = {
@@ -29,7 +29,7 @@ type DividendsDashboardProps = {
 };
 
 export function DividendsDashboard({ dashboard }: DividendsDashboardProps) {
-  const [filters, setFilters] = useState(defaultPortfolioFilters);
+  const [filters, setFilters] = useState(defaultFilterBarState);
 
   const accountsById = useMemo(() => {
     return new Map(dashboard.accounts.map((account) => [account.id, account]));
@@ -114,19 +114,19 @@ export function DividendsDashboard({ dashboard }: DividendsDashboardProps) {
       render: (transaction) => transaction.symbol ?? "-",
     },
     {
-      key: "description",
-      header: "Description",
+      key: "currency",
+      header: "Currency",
       align: "center",
-      render: (transaction) => (
-        <span className="line-clamp-1 text-zinc-600">{transaction.description ?? "-"}</span>
-      ),
+      render: (transaction) => transaction.amount.currency,
     },
     {
       key: "amount",
       header: "Amount",
       align: "center",
       render: (transaction) => (
-        <span className="font-semibold text-emerald-700">{formatMoney(transaction.amount)}</span>
+        <span className="font-semibold text-emerald-700">
+          {formatNumber(transaction.amount.amount)}
+        </span>
       ),
     },
   ];
@@ -135,7 +135,7 @@ export function DividendsDashboard({ dashboard }: DividendsDashboardProps) {
     <main className="min-h-screen bg-zinc-50 text-zinc-950">
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm">
-          <PortfolioFilters
+          <FilterBar
             accounts={dashboard.accounts}
             value={filters}
             onChange={setFilters}

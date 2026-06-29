@@ -1,18 +1,18 @@
 import { normalizeAccountType } from "./formatters";
 import type { AccountDto } from "./portfolio-types";
-import type { TimelineRange } from "../business/timeline";
+import type { TimelineRange } from "../services/filter_timeline";
 
 export type PortfolioFilterState = {
-  brokerage: string;
-  accountId: string;
-  accountType: string;
+  brokerages: string[];
+  accountIds: string[];
+  accountTypes: string[];
   timeline: TimelineRange;
 };
 
-export const defaultPortfolioFilters: PortfolioFilterState = {
-  brokerage: "all",
-  accountId: "all",
-  accountType: "all",
+export const defaultFilterBarState: PortfolioFilterState = {
+  brokerages: [],
+  accountIds: [],
+  accountTypes: [],
   timeline: "ALL",
 };
 
@@ -34,14 +34,16 @@ export function getUniqueAccountTypes(accounts: AccountDto[]): string[] {
 
 export function getSelectableAccounts(
   accounts: AccountDto[],
-  filters: Pick<PortfolioFilterState, "brokerage" | "accountType">
+  filters: Pick<PortfolioFilterState, "brokerages" | "accountTypes">
 ): AccountDto[] {
   return accounts
     .filter((account) => {
       const brokerageMatch =
-        filters.brokerage === "all" || getAccountBrokerage(account) === filters.brokerage;
+        filters.brokerages.length === 0 ||
+        filters.brokerages.includes(getAccountBrokerage(account));
       const typeMatch =
-        filters.accountType === "all" || getAccountType(account) === filters.accountType;
+        filters.accountTypes.length === 0 ||
+        filters.accountTypes.includes(getAccountType(account));
       return brokerageMatch && typeMatch;
     })
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -54,10 +56,13 @@ export function accountMatchesFilters(
   if (!account) return false;
 
   const brokerageMatch =
-    filters.brokerage === "all" || getAccountBrokerage(account) === filters.brokerage;
-  const accountMatch = filters.accountId === "all" || account.id === filters.accountId;
+    filters.brokerages.length === 0 ||
+    filters.brokerages.includes(getAccountBrokerage(account));
+  const accountMatch =
+    filters.accountIds.length === 0 || filters.accountIds.includes(account.id);
   const typeMatch =
-    filters.accountType === "all" || getAccountType(account) === filters.accountType;
+    filters.accountTypes.length === 0 ||
+    filters.accountTypes.includes(getAccountType(account));
 
   return brokerageMatch && accountMatch && typeMatch;
 }

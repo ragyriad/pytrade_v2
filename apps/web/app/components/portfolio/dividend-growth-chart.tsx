@@ -12,7 +12,7 @@ import {
 import { Button } from "../ui/button";
 import { formatDate, formatMoney } from "../../lib/formatters";
 import type { TransactionDto } from "../../lib/portfolio-types";
-import { timelineOptions, type TimelineRange } from "../../business/timeline";
+import { timelineOptions, type TimelineRange } from "../../services/filter_timeline";
 
 const colors = ["#047857", "#2563eb", "#7c3aed", "#ca8a04"];
 

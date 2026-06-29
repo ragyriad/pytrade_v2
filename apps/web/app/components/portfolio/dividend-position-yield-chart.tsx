@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import { formatMoney, formatPercent, normalizeAccountType } from "../../lib/formatters";
 import type { AccountDto } from "../../lib/portfolio-types";
-import type { DividendPositionYield } from "../../business/dividends";
+import type { DividendPositionYield } from "../../services/dividends";
 
 type DividendPositionYieldChartProps = {
   rows: DividendPositionYield[];

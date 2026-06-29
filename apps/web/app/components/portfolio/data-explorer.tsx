@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import {
   accountMatchesFilters,
-  defaultPortfolioFilters,
+  defaultFilterBarState,
   isActiveAccount,
 } from "../../lib/account-filters";
 import {
@@ -14,8 +14,8 @@ import {
   normalizeAccountType,
   signedValueClassName,
 } from "../../lib/formatters";
-import { getUnrealizedReturnPercent } from "../../business/portfolio";
-import { filterTransactionsByTimeline } from "../../business/timeline";
+import { getUnrealizedReturnPercent } from "../../services/portfolio";
+import { filterTransactionsByTimeline } from "../../services/filter_timeline";
 import type {
   AccountDto,
   DashboardTab,
@@ -24,7 +24,7 @@ import type {
   TransactionDto,
 } from "../../lib/portfolio-types";
 import { DataTable, type TableColumn } from "../dashboard/data-table";
-import { PortfolioFilters } from "../dashboard/portfolio-filters";
+import { FilterBar } from "../dashboard/filter-bar";
 import { SegmentedTabs } from "../dashboard/segmented-tabs";
 
 type DataExplorerProps = {
@@ -33,7 +33,7 @@ type DataExplorerProps = {
 
 export function DataExplorer({ dashboard }: DataExplorerProps) {
   const [activeTab, setActiveTab] = useState<DashboardTab>("positions");
-  const [filters, setFilters] = useState(defaultPortfolioFilters);
+  const [filters, setFilters] = useState(defaultFilterBarState);
 
   const accountsById = useMemo(() => {
     return new Map(dashboard.accounts.map((account) => [account.id, account]));
@@ -239,7 +239,7 @@ export function DataExplorer({ dashboard }: DataExplorerProps) {
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm">
           <div className="flex flex-col gap-4">
-            <PortfolioFilters
+            <FilterBar
               accounts={dashboard.accounts}
               value={filters}
               onChange={setFilters}
