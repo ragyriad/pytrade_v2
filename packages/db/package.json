@@ -15,7 +15,11 @@
     "db:studio": "dotenv -e ../../../.env -- drizzle-kit studio",
     "db:pull": "dotenv -e ../../../.env -- drizzle-kit pull",
     "transactions:dedupe:dry-run": "tsx src/scripts/dedupe_transactions.ts",
-    "transactions:dedupe:apply": "tsx src/scripts/dedupe_transactions.ts --apply"
+    "transactions:dedupe:apply": "tsx src/scripts/dedupe_transactions.ts --apply",
+    "securities:fix-options:dry-run": "tsx src/scripts/fix_option_security_symbols.ts",
+    "securities:fix-options:apply": "tsx src/scripts/fix_option_security_symbols.ts --apply",
+    "securities:merge-duplicates:dry-run": "tsx src/scripts/merge_duplicate_securities.ts",
+    "securities:merge-duplicates:apply": "tsx src/scripts/merge_duplicate_securities.ts --apply"
   },
   "dependencies": {
     "dotenv": "^17.4.2",

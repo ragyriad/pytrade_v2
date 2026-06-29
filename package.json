@@ -17,7 +17,11 @@
     "db:generate": "turbo run db:generate --filter=@repo/db",
     "db:migrate": "turbo run db:migrate --filter=@repo/db",
     "transactions:dedupe:dry-run": "pnpm --filter @repo/db transactions:dedupe:dry-run",
-    "transactions:dedupe:apply": "pnpm --filter @repo/db transactions:dedupe:apply"
+    "transactions:dedupe:apply": "pnpm --filter @repo/db transactions:dedupe:apply",
+    "securities:fix-options:dry-run": "pnpm --filter @repo/db securities:fix-options:dry-run",
+    "securities:fix-options:apply": "pnpm --filter @repo/db securities:fix-options:apply",
+    "securities:merge-duplicates:dry-run": "pnpm --filter @repo/db securities:merge-duplicates:dry-run",
+    "securities:merge-duplicates:apply": "pnpm --filter @repo/db securities:merge-duplicates:apply"
   },
   "devDependencies": {
     "dotenv-cli": "7.4.4",
