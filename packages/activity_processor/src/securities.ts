@@ -26,6 +26,9 @@ export type SnapTradeActivitySymbol = {
 
 export type SnapTradeActivityLike = {
   symbol?: SnapTradeActivitySymbol | null;
+  type?: string | null;
+  description?: string | null;
+  units?: string | number | null;
   trade_date?: string | Date | null;
   settlement_date?: string | Date | null;
 };
@@ -57,9 +60,34 @@ export function buildSecurityKey(symbol: SnapTradeActivitySymbol): string | null
   return `symbol:${displaySymbol}|exchange:${exchange}`;
 }
 
+function normalizeText(value: string | null | undefined): string {
+  return value?.trim().toUpperCase().replace(/\s+/g, " ") ?? "";
+}
+
+function toNumber(value: string | number | null | undefined): number | null {
+  if (value == null) return null;
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function isCashFlowActivity(activity: SnapTradeActivityLike): boolean {
+  const type = normalizeText(activity.type);
+  const description = normalizeText(activity.description);
+  const units = toNumber(activity.units);
+
+  if (type === "INTEREST" || description === "INTEREST") return true;
+  if (["DEPOSIT", "WITHDRAWAL", "CONTRIBUTION", "FEE", "P2P_PAYMENT", "REFUND"].includes(type)) {
+    return true;
+  }
+
+  return units === 0 && ["INTEREST", "CASH"].some((value) => description.includes(value));
+}
+
 export function mapSecurityFromActivity(
   activity: SnapTradeActivityLike
 ): NewSecurity | null {
+  if (isCashFlowActivity(activity)) return null;
+
   const symbol = activity.symbol;
   if (!symbol) return null;
 

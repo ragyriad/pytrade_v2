@@ -357,7 +357,6 @@ async function main() {
     }
   });
 
-  console.log("");
   console.log(`Merged or updated ${plans.length} security groups.`);
 }
 

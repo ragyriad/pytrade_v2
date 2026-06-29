@@ -12,3 +12,4 @@ export * from "./seed.js";
 export * from "./mappers/account_mapper.js";
 export * from "./mappers/transaction_mapper.js";
 export * from "./mappers/positions_mapper.js";
+export * from "./transaction_normalization.js";

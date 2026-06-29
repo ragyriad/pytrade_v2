@@ -41,6 +41,8 @@ export type TransactionDto = {
   securityId?: string | null;
   source: string;
   type: string;
+  action: string | null;
+  assetType: string | null;
   description: string | null;
   amount: MoneyDto;
   fee: MoneyDto;

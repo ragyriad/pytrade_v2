@@ -114,6 +114,12 @@ export function DividendsDashboard({ dashboard }: DividendsDashboardProps) {
       render: (transaction) => transaction.symbol ?? "-",
     },
     {
+      key: "type",
+      header: "Type",
+      align: "center",
+      render: (transaction) => transaction.assetType ?? "Dividend",
+    },
+    {
       key: "currency",
       header: "Currency",
       align: "center",

@@ -24,6 +24,8 @@ type Transaction = {
   id: string;
   securityId: string | null;
   type: string;
+  action: string | null;
+  assetType: string | null;
   description: string | null;
   amount: string | number;
   price: string | number | null;
@@ -89,8 +91,9 @@ function getDedupeKey(row: TransactionWithAccount): string {
     normalizeText(row.account.brokerageName),
     normalizeAccountType(row.account.type),
     normalizeDate(transaction.tradeDate),
-    normalizeText(transaction.type),
-    normalizeText(transaction.symbol),
+    normalizeText(transaction.action ?? transaction.type),
+    normalizeText(transaction.assetType),
+    normalizeText(transaction.securityId ?? transaction.symbol),
     normalizeText(transaction.currencyCode),
     normalizeNumber(transaction.amount),
     normalizeNumber(transaction.units),
@@ -178,6 +181,8 @@ async function main() {
         'id', transactions.id,
         'securityId', transactions.security_id,
         'type', transactions.type,
+        'action', transactions.action,
+        'assetType', transactions.asset_type,
         'description', transactions.description,
         'amount', transactions.amount,
         'price', transactions.price,

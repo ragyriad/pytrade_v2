@@ -19,8 +19,6 @@ async function closeDatabase() {
 async function main() {
   try {
     const adminUser = await createSeed(db);
-    console.log("***Admin User***")
-    console.log(adminUser)
 
     const accounts = await getAccountsByUserId(db, adminUser.id);
     const allPositions = [];

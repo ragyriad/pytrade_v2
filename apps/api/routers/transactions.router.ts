@@ -6,6 +6,7 @@ import {
   getTransactionsByAccount,
   createTransaction,
   deleteTransactionsByAccount,
+  normalizeTransaction,
 } from "@repo/db";
 import type { NewTransaction } from "@repo/db";
 
@@ -38,6 +39,8 @@ const createTransactionInput = z.object({
   accountId: z.string().uuid(),
   snaptradeTransactionId: z.string(),
   type: z.string(),
+  action: z.string().optional(),
+  assetType: z.string().optional(),
   description: z.string().optional(),
   amount: z.string(),
   price: z.string().optional(),
@@ -153,9 +156,12 @@ export const transactionsRouter = router({
     .input(createTransactionInput)
     .mutation(async ({ ctx, input }) => {
       await assertAccountOwnership(ctx.db, input.accountId, ctx.userId);
+      const normalized = normalizeTransaction(input);
 
       const data: NewTransaction = {
         ...input,
+        action: input.action ?? normalized.action,
+        assetType: input.assetType ?? normalized.assetType,
         tradeDate: new Date(input.tradeDate),
       };
 

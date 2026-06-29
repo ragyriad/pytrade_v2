@@ -21,8 +21,6 @@ async function closeDatabase() {
 async function main() {
   try {
     const adminUser = await createSeed(db);
-    console.log("***Admin User***");
-    console.log(adminUser);
 
     const startDate = "2019-01-01";
     const endDate = new Date().toISOString().split("T")[0];
@@ -53,7 +51,12 @@ async function main() {
             return null;
           }
 
-          return { snaptradeAccountId, dbAccountId: dbAccount.id, accountName };
+          return {
+            snaptradeAccountId,
+            dbAccountId: dbAccount.id,
+            accountName,
+            accountType: dbAccount.type,
+          };
         })
       )
     ).filter((a): a is NonNullable<typeof a> => a !== null);
@@ -66,11 +69,12 @@ async function main() {
     const allRawTransactionsByAccount: Array<{
       dbAccountId: string;
       accountName: string;
+      accountType: string | null;
       rawTransactions: Awaited<ReturnType<typeof getSnaptradeTransactionsByAccountId>>;
     }> = [];
     const allMappedPositions: NewPosition[] = [];
 
-    for (const { snaptradeAccountId, dbAccountId, accountName } of resolvedAccounts) {
+    for (const { snaptradeAccountId, dbAccountId, accountName, accountType } of resolvedAccounts) {
       console.log(`Fetching data for: ${accountName}`);
 
       const rawTransactions = await getSnaptradeTransactionsByAccountId(
@@ -85,6 +89,7 @@ async function main() {
         allRawTransactionsByAccount.push({
           dbAccountId,
           accountName,
+          accountType,
           rawTransactions,
         });
         console.log(`  Fetched ${rawTransactions.length} transactions`);
@@ -111,10 +116,11 @@ async function main() {
     let persistedTransactionCount = 0;
     let persistedSecurityCount = 0;
 
-    for (const { dbAccountId, accountName, rawTransactions } of allRawTransactionsByAccount) {
+    for (const { dbAccountId, accountName, accountType, rawTransactions } of allRawTransactionsByAccount) {
       const result = await processAccountActivities({
         db,
         accountId: dbAccountId,
+        accountType,
         activities: rawTransactions,
       });
       persistedTransactionCount += result.transactionsProcessed;

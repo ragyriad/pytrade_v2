@@ -53,6 +53,8 @@ export type SecurityTransactionDto = {
   securityId: string | null;
   source: string;
   type: string;
+  action: string | null;
+  assetType: string | null;
   description: string | null;
   amount: MoneyDto;
   fee: MoneyDto;
@@ -127,6 +129,8 @@ function toTransactionDto(
     securityId: transaction.securityId,
     source: transaction.source,
     type: transaction.type,
+    action: transaction.action ?? transaction.type,
+    assetType: transaction.assetType,
     description: transaction.description,
     amount: {
       amount: toNumber(transaction.amount),

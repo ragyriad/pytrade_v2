@@ -185,10 +185,18 @@ export function DataExplorer({ dashboard }: DataExplorerProps) {
       render: (transaction) => formatDate(transaction.tradeDate),
     },
     {
-      key: "type",
+      key: "action",
+      header: "Action",
+      value: (transaction) => transaction.action ?? transaction.type,
+      render: (transaction) => (
+        <span className="font-medium">{transaction.action ?? transaction.type}</span>
+      ),
+    },
+    {
+      key: "assetType",
       header: "Type",
-      value: (transaction) => transaction.type,
-      render: (transaction) => <span className="font-medium">{transaction.type}</span>,
+      value: (transaction) => transaction.assetType ?? "Other",
+      render: (transaction) => transaction.assetType ?? "Other",
     },
     {
       key: "source",
@@ -222,7 +230,7 @@ export function DataExplorer({ dashboard }: DataExplorerProps) {
       align: "right",
       value: (transaction) => transaction.amount.amount,
       render: (transaction) => {
-        const signed = transaction.type.includes("DIVIDEND")
+        const signed = (transaction.action ?? transaction.type).includes("DIVIDEND")
           ? Math.abs(transaction.amount.amount)
           : transaction.amount.amount;
         return (

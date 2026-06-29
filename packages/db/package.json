@@ -19,7 +19,11 @@
     "securities:fix-options:dry-run": "tsx src/scripts/fix_option_security_symbols.ts",
     "securities:fix-options:apply": "tsx src/scripts/fix_option_security_symbols.ts --apply",
     "securities:merge-duplicates:dry-run": "tsx src/scripts/merge_duplicate_securities.ts",
-    "securities:merge-duplicates:apply": "tsx src/scripts/merge_duplicate_securities.ts --apply"
+    "securities:merge-duplicates:apply": "tsx src/scripts/merge_duplicate_securities.ts --apply",
+    "securities:cleanup-cash-interest:dry-run": "tsx src/scripts/cleanup_cash_interest_securities.ts",
+    "securities:cleanup-cash-interest:apply": "tsx src/scripts/cleanup_cash_interest_securities.ts --apply",
+    "transactions:normalize:dry-run": "tsx src/scripts/normalize_transactions.ts",
+    "transactions:normalize:apply": "tsx src/scripts/normalize_transactions.ts --apply"
   },
   "dependencies": {
     "dotenv": "^17.4.2",

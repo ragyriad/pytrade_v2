@@ -11,7 +11,8 @@ export async function syncTransactionsByAccount(
     dbAccountId: string,          // Our internal UUID — used as the FK
     accountName: string,
     startDate: string,
-    endDate: string
+    endDate: string,
+    accountType?: string | null
   ) {
     const rawTransactions = await getSnaptradeTransactionsByAccountId(
       snaptradeAccountId,
@@ -28,6 +29,7 @@ export async function syncTransactionsByAccount(
     const result = await processAccountActivities({
       db,
       accountId: dbAccountId,
+      accountType,
       activities: rawTransactions,
     });
     await markAccountSynced(db, dbAccountId, { transactions: true });

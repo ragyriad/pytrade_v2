@@ -254,6 +254,7 @@ function SecurityTransactionsSubTable({
           <thead className="bg-zinc-100 text-xs uppercase text-zinc-500">
             <tr>
               <th className="px-4 py-3 text-center font-medium">Date</th>
+              <th className="px-4 py-3 text-center font-medium">Action</th>
               <th className="px-4 py-3 text-center font-medium">Type</th>
               <th className="px-4 py-3 text-left font-medium">Account</th>
               <th className="px-4 py-3 text-center font-medium">Units</th>
@@ -270,7 +271,10 @@ function SecurityTransactionsSubTable({
                 className={index % 2 === 0 ? "bg-white" : "bg-zinc-50"}
               >
                 <td className="px-4 py-3 text-center">{formatDate(transaction.tradeDate)}</td>
-                <td className="px-4 py-3 text-center">{transaction.type}</td>
+                <td className="px-4 py-3 text-center">
+                  {transaction.action ?? transaction.type}
+                </td>
+                <td className="px-4 py-3 text-center">{transaction.assetType ?? "Other"}</td>
                 <td className="px-4 py-3 text-left">
                   <p className="font-medium text-zinc-950">
                     {transaction.accountName ?? transaction.accountId}

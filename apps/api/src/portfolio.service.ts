@@ -52,6 +52,8 @@ export type TransactionDto = {
   accountId: string;
   source: string;
   type: string;
+  action: string | null;
+  assetType: string | null;
   description: string | null;
   amount: MoneyDto;
   fee: MoneyDto;
@@ -197,6 +199,8 @@ function toTransactionDto(transaction: Transaction): TransactionDto {
     accountId: transaction.accountId,
     source: transaction.source,
     type: transaction.type,
+    action: transaction.action ?? transaction.type,
+    assetType: transaction.assetType,
     description: transaction.description,
     amount: {
       amount: toNumber(transaction.amount),
@@ -254,7 +258,7 @@ function groupMoney(values: MoneyDto[]): MoneyBreakdownDto[] {
 }
 
 function isDividendTransaction(transaction: TransactionDto): boolean {
-  return transaction.type.toUpperCase().includes("DIVIDEND");
+  return (transaction.action ?? transaction.type).toUpperCase().includes("DIVIDEND");
 }
 
 function buildDividendSummary(

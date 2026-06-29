@@ -54,9 +54,14 @@ export function FeesDashboard({ dashboard }: FeesDashboardProps) {
         accountsById.get(transaction.accountId)?.institutionName ?? "Unknown",
     },
     {
+      key: "action",
+      header: "Action",
+      render: (transaction) => transaction.action ?? transaction.type,
+    },
+    {
       key: "type",
       header: "Type",
-      render: (transaction) => transaction.type,
+      render: (transaction) => transaction.assetType ?? "Other",
     },
     {
       key: "symbol",

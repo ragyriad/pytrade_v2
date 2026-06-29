@@ -27,13 +27,15 @@ export type ActivityProcessorDependencies<TActivity extends SnapTradeActivityLik
   mapTransaction?: (
     activity: TActivity,
     accountId: string,
-    securityId?: string | null
+    securityId?: string | null,
+    options?: { accountType?: string | null }
   ) => NewTransaction;
 };
 
 export type ProcessAccountActivitiesParams<TActivity extends SnapTradeActivityLike> = {
   db: DB;
   accountId: string;
+  accountType?: string | null;
   activities: TActivity[];
   dependencies?: ActivityProcessorDependencies<TActivity>;
 };
@@ -43,6 +45,7 @@ export async function processAccountActivities<
 >({
   db,
   accountId,
+  accountType,
   activities,
   dependencies = {},
 }: ProcessAccountActivitiesParams<TActivity>): Promise<ActivityProcessingResult> {
@@ -51,7 +54,12 @@ export async function processAccountActivities<
   const mapTransaction =
     dependencies.mapTransaction ??
     ((activity, internalAccountId, securityId) =>
-      mapSnaptradeTransaction(activity as Parameters<typeof mapSnaptradeTransaction>[0], internalAccountId, securityId));
+      mapSnaptradeTransaction(
+        activity as Parameters<typeof mapSnaptradeTransaction>[0],
+        internalAccountId,
+        securityId,
+        { accountType }
+      ));
 
   const securityInputs = mergeSecurityInputs(
     activities
@@ -67,7 +75,7 @@ export async function processAccountActivities<
   const transactionInputs = activities.map((activity) => {
     const securityKey = activity.symbol ? buildSecurityKey(activity.symbol) : null;
     const securityId = securityKey ? securitiesByKey.get(securityKey)?.id ?? null : null;
-    return mapTransaction(activity, accountId, securityId);
+    return mapTransaction(activity, accountId, securityId, { accountType });
   });
 
   const persistedTransactions = await upsertTransactionRows(db, transactionInputs);

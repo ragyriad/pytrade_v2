@@ -20,6 +20,8 @@ export async function upsertTransaction(
       target: [transactions.snaptradeTransactionId],
       set: {
         type: data.type,
+        action: data.action,
+        assetType: data.assetType,
         description: data.description,
         source: data.source,
         externalTransactionId: data.externalTransactionId,
@@ -80,6 +82,8 @@ export async function upsertTransactions(
       target: [transactions.snaptradeTransactionId],
       set: {
         type: sql`excluded.type`,
+        action: sql`excluded.action`,
+        assetType: sql`excluded.asset_type`,
         description: sql`excluded.description`,
         source: sql`excluded.source`,
         externalTransactionId: sql`excluded.external_transaction_id`,

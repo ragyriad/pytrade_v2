@@ -21,7 +21,9 @@
     "securities:fix-options:dry-run": "pnpm --filter @repo/db securities:fix-options:dry-run",
     "securities:fix-options:apply": "pnpm --filter @repo/db securities:fix-options:apply",
     "securities:merge-duplicates:dry-run": "pnpm --filter @repo/db securities:merge-duplicates:dry-run",
-    "securities:merge-duplicates:apply": "pnpm --filter @repo/db securities:merge-duplicates:apply"
+    "securities:merge-duplicates:apply": "pnpm --filter @repo/db securities:merge-duplicates:apply",
+    "transactions:normalize:dry-run": "pnpm --filter @repo/db transactions:normalize:dry-run",
+    "transactions:normalize:apply": "pnpm --filter @repo/db transactions:normalize:apply"
   },
   "devDependencies": {
     "dotenv-cli": "7.4.4",

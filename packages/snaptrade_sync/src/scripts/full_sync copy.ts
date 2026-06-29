@@ -4,8 +4,6 @@ import { db, createSeed } from "@repo/db";
 
 async function main() {
   const adminUser = await createSeed(db);
-  console.log("***Admin User***")
-  console.log(adminUser)
   const startDate = "2020-01-01";
   const endDate = new Date().toISOString().split("T")[0];
 

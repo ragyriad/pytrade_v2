@@ -72,9 +72,9 @@ function transactionDividendKey(
 function getSignedUnitChange(transaction: TransactionDto): number {
   if (transaction.units == null) return 0;
 
-  const type = transaction.type.toUpperCase();
-  if (type.includes("BUY")) return Math.abs(transaction.units);
-  if (type.includes("SELL")) return -Math.abs(transaction.units);
+  const action = (transaction.action ?? transaction.type).toUpperCase();
+  if (action.includes("BUY")) return Math.abs(transaction.units);
+  if (action.includes("SELL")) return -Math.abs(transaction.units);
 
   return 0;
 }

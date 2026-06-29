@@ -49,6 +49,8 @@ export const transactions = pgTable(
     }),
 
     type: varchar("type", { length: 200 }).notNull(),
+    action: varchar("action", { length: 50 }),
+    assetType: varchar("asset_type", { length: 50 }),
     description: text("description"),
 
     amount: numeric("amount", { precision: 18, scale: 2 }).notNull(),
@@ -73,6 +75,8 @@ export const transactions = pgTable(
     index("transactions_security_idx").on(table.securityId),
     index("transactions_trade_date_idx").on(table.tradeDate),
     index("transactions_symbol_idx").on(table.symbol),
+    index("transactions_action_idx").on(table.action),
+    index("transactions_asset_type_idx").on(table.assetType),
     index("transactions_source_external_idx").on(
       table.source,
       table.externalTransactionId

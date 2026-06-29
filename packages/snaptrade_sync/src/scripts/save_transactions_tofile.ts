@@ -19,8 +19,6 @@ async function closeDatabase() {
 async function main() {
   try {
     const adminUser = await createSeed(db);
-    console.log("***Admin User***")
-    console.log(adminUser)
 
     const snaptradeAccount = requireEnv("SNAPTRADE_WS_ACCOUNT_ID");
     const startDate = "2020-01-01";
