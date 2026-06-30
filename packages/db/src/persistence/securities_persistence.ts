@@ -91,9 +91,10 @@ export async function getTransactionsBySecurity(
       accountIds
         ? and(
             eq(transactions.securityId, securityId),
-            inArray(transactions.accountId, accountIds)
+            inArray(transactions.accountId, accountIds),
+            eq(transactions.isArchived, false)
           )
-        : eq(transactions.securityId, securityId)
+        : and(eq(transactions.securityId, securityId), eq(transactions.isArchived, false))
     )
     .orderBy(desc(transactions.tradeDate));
 }
@@ -125,7 +126,12 @@ export async function getHistoricSecuritiesByAccounts(
     })
     .from(securities)
     .innerJoin(transactions, eq(transactions.securityId, securities.id))
-    .where(inArray(transactions.accountId, accountIds))
+    .where(
+      and(
+        inArray(transactions.accountId, accountIds),
+        eq(transactions.isArchived, false)
+      )
+    )
     .groupBy(securities.id)
     .orderBy(sql`max(${transactions.tradeDate}) desc`);
 

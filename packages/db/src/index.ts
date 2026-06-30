@@ -1,6 +1,6 @@
 export { db, checkDbConnection, closeDbConnection } from "./client.js";
 export type { DB } from "./client.js";
-export { desc, eq, inArray } from "drizzle-orm";
+export { and, desc, eq, inArray } from "drizzle-orm";
 
 export * from "./schemas/index_schema.js";
 export * from "./persistence/accounts_persistence.js";

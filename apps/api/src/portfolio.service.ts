@@ -61,6 +61,7 @@ export type TransactionDto = {
   units: number | null;
   symbol: string | null;
   tradeDate: string;
+  isArchived: boolean;
 };
 
 export type AllocationDto = {
@@ -220,6 +221,7 @@ function toTransactionDto(transaction: Transaction): TransactionDto {
     units: transaction.units == null ? null : toNumber(transaction.units),
     symbol: transaction.symbol,
     tradeDate: toIso(transaction.tradeDate) ?? new Date(0).toISOString(),
+    isArchived: transaction.isArchived,
   };
 }
 
@@ -366,8 +368,9 @@ export async function getPortfolioDashboard(
   const accountDtos = accountRows.map(toAccountDto);
   const positionDtos = positionRows.map(toPositionDto);
   const transactionDtos = transactionRows.map(toTransactionDto);
-  const recentTransactionDtos = transactionDtos.slice(0, 25);
-  const dividendTransactions = transactionDtos.filter(isDividendTransaction);
+  const enabledTransactionDtos = transactionDtos.filter((transaction) => !transaction.isArchived);
+  const recentTransactionDtos = enabledTransactionDtos.slice(0, 25);
+  const dividendTransactions = enabledTransactionDtos.filter(isDividendTransaction);
   const accountNameById = new Map(accountDtos.map((account) => [account.id, account.name]));
 
   const totalValue = positionDtos.reduce(
@@ -415,7 +418,7 @@ export async function getPortfolioDashboard(
       totalUnrealizedGainLossByCurrency,
       accountCount: accountDtos.length,
       positionCount: positionDtos.length,
-      transactionCount: transactionDtos.length,
+      transactionCount: enabledTransactionDtos.length,
       lastSyncedAt: syncDates.at(-1) ?? null,
     },
     accounts: accountDtos,
@@ -431,6 +434,6 @@ export async function getPortfolioDashboard(
       (position) => accountNameById.get(position.accountId) ?? "Account"
     ),
     dividends: buildDividendSummary(dividendTransactions, accountDtos),
-    fees: buildFeeSummary(transactionDtos),
+    fees: buildFeeSummary(enabledTransactionDtos),
   };
 }

@@ -7,7 +7,8 @@ import {
   timestamp,
   index,
   uniqueIndex,
-  pgEnum
+  pgEnum,
+  boolean
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { accounts } from "./accounts_schema.js";
@@ -39,6 +40,7 @@ export const transactions = pgTable(
     source: varchar("source", { length: 50 }).notNull().default("SNAPTRADE"),
     externalTransactionId: varchar("external_transaction_id", { length: 255 }),
     legacyImportKey: varchar("legacy_import_key", { length: 500 }),
+    isArchived: boolean("is_archived").notNull().default(false),
 
     accountId: uuid("account_id")
       .notNull()
@@ -77,6 +79,7 @@ export const transactions = pgTable(
     index("transactions_symbol_idx").on(table.symbol),
     index("transactions_action_idx").on(table.action),
     index("transactions_asset_type_idx").on(table.assetType),
+    index("transactions_is_archived_idx").on(table.isArchived),
     index("transactions_source_external_idx").on(
       table.source,
       table.externalTransactionId

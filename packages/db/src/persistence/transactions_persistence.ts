@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { DB } from "../db_type.js";
 import { transactions, Transaction, NewTransaction } from "../schemas/transactions_schema.js";
 
@@ -124,12 +124,17 @@ export async function createTransaction(
  */
 export async function getTransactionsByAccount(
   db: DB,
-  accountId: string
+  accountId: string,
+  options: { includeArchived?: boolean } = {}
 ): Promise<Transaction[]> {
   return db
     .select()
     .from(transactions)
-    .where(eq(transactions.accountId, accountId))
+    .where(
+      options.includeArchived
+        ? eq(transactions.accountId, accountId)
+        : and(eq(transactions.accountId, accountId), eq(transactions.isArchived, false))
+    )
     .orderBy(sql`${transactions.tradeDate} desc`);
 }
 

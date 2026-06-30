@@ -53,7 +53,10 @@ export function DataExplorer({ dashboard }: DataExplorerProps) {
   const filteredTransactions = useMemo(() => {
     const accountFiltered = dashboard.transactions.filter((transaction) => {
       const account = accountsById.get(transaction.accountId);
-      return accountMatchesFilters(account, filters);
+      return (
+        accountMatchesFilters(account, filters) &&
+        (filters.showArchived || !transaction.isArchived)
+      );
     });
 
     return filterTransactionsByTimeline(accountFiltered, filters.timeline);
@@ -251,6 +254,7 @@ export function DataExplorer({ dashboard }: DataExplorerProps) {
               accounts={dashboard.accounts}
               value={filters}
               onChange={setFilters}
+              showArchivedToggle
             />
             <SegmentedTabs
               value={activeTab}

@@ -50,6 +50,7 @@ export type TransactionDto = {
   units: number | null;
   symbol: string | null;
   tradeDate: string;
+  isArchived: boolean;
 };
 
 export type AllocationDto = {

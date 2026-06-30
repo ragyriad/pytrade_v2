@@ -24,6 +24,7 @@ type FilterBarProps = {
   accounts: AccountDto[];
   value: PortfolioFilterState;
   onChange: (value: PortfolioFilterState) => void;
+  showArchivedToggle?: boolean;
 };
 
 type FilterBarMultiSelectProps = {
@@ -133,7 +134,12 @@ function FilterBarMultiSelect({
   );
 }
 
-export function FilterBar({ accounts, value, onChange }: FilterBarProps) {
+export function FilterBar({
+  accounts,
+  value,
+  onChange,
+  showArchivedToggle = false,
+}: FilterBarProps) {
   const brokerages = useMemo(() => getUniqueBrokerages(accounts), [accounts]);
   const accountTypes = useMemo(() => getUniqueAccountTypes(accounts), [accounts]);
   const selectableAccounts = useMemo(
@@ -151,7 +157,13 @@ export function FilterBar({ accounts, value, onChange }: FilterBarProps) {
   }, [onChange, selectableAccounts, value]);
 
   return (
-    <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)_11rem]">
+    <div
+      className={
+        showArchivedToggle
+          ? "grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)_11rem_auto]"
+          : "grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)_11rem]"
+      }
+    >
       <FilterBarMultiSelect
         label="Brokerage"
         icon={faBuildingColumns}
@@ -207,6 +219,18 @@ export function FilterBar({ accounts, value, onChange }: FilterBarProps) {
             </option>
           ))}
       </SelectField>
+
+      {showArchivedToggle ? (
+        <label className="flex h-full min-h-10 cursor-pointer items-end gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 shadow-sm transition hover:border-zinc-300">
+          <input
+            type="checkbox"
+            checked={value.showArchived}
+            onChange={(event) => onChange({ ...value, showArchived: event.target.checked })}
+            className="mb-1 h-4 w-4 rounded border-zinc-300 text-emerald-700 focus:ring-emerald-600"
+          />
+          <span className="whitespace-nowrap pb-0.5">Show archived</span>
+        </label>
+      ) : null}
     </div>
   );
 }

@@ -23,7 +23,10 @@
     "securities:cleanup-cash-interest:dry-run": "tsx src/scripts/cleanup_cash_interest_securities.ts",
     "securities:cleanup-cash-interest:apply": "tsx src/scripts/cleanup_cash_interest_securities.ts --apply",
     "transactions:normalize:dry-run": "tsx src/scripts/normalize_transactions.ts",
-    "transactions:normalize:apply": "tsx src/scripts/normalize_transactions.ts --apply"
+    "transactions:normalize:apply": "tsx src/scripts/normalize_transactions.ts --apply",
+    "tfsa-merge:review-report": "tsx src/scripts/generate_tfsa_merge_review_report.ts",
+    "tfsa-merge:legacy-by-date:dry-run": "tsx src/scripts/merge_tfsa_legacy_by_date.ts",
+    "tfsa-merge:legacy-by-date:apply": "tsx src/scripts/merge_tfsa_legacy_by_date.ts --apply"
   },
   "dependencies": {
     "dotenv": "^17.4.2",

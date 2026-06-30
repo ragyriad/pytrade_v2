@@ -7,6 +7,7 @@ export type PortfolioFilterState = {
   accountIds: string[];
   accountTypes: string[];
   timeline: TimelineRange;
+  showArchived: boolean;
 };
 
 export const defaultFilterBarState: PortfolioFilterState = {
@@ -14,6 +15,7 @@ export const defaultFilterBarState: PortfolioFilterState = {
   accountIds: [],
   accountTypes: [],
   timeline: "ALL",
+  showArchived: false,
 };
 
 export function getAccountBrokerage(account: AccountDto | undefined): string {
