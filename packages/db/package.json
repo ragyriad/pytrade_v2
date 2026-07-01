@@ -28,6 +28,8 @@
     "data:normalize:apply": "tsx src/scripts/run_data_normalization.ts --apply",
     "data:repair:dry-run": "tsx src/scripts/run_data_repairs.ts",
     "data:repair:apply": "tsx src/scripts/run_data_repairs.ts --apply",
+    "data:sterilize:dry-run": "tsx src/scripts/run_data_repairs.ts",
+    "data:sterilize:apply": "tsx src/scripts/run_data_repairs.ts --apply",
     "transactions:normalize:dry-run": "tsx src/scripts/normalize_transactions.ts",
     "transactions:normalize:apply": "tsx src/scripts/normalize_transactions.ts --apply",
     "tfsa-merge:review-report": "tsx src/scripts/generate_tfsa_merge_review_report.ts",

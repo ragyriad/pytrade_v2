@@ -135,7 +135,41 @@ const securityFixesBySymbol: Record<string, CanonicalSecurity> = {
   },
 };
 
-const successorSymbols: Record<string, string> = {};
+const successorSymbols: Record<string, string> = {
+  SQ: "XYZ",
+};
+
+function parseOnlySymbols(): Set<string> | null {
+  const values: string[] = [];
+  const args = process.argv.slice(2);
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    const inlineMatch = arg.match(/^--(?:only|symbol)=(.+)$/);
+
+    if (inlineMatch?.[1]) {
+      values.push(inlineMatch[1]);
+      continue;
+    }
+
+    if (arg === "--only" || arg === "--symbol") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) {
+        throw new Error(`${arg} requires a symbol value.`);
+      }
+      values.push(value);
+      index += 1;
+    }
+  }
+
+  const symbols = values
+    .flatMap((value) => value.split(","))
+    .map((value) => value.trim().toUpperCase())
+    .filter(Boolean)
+    .map((symbol) => successorSymbols[symbol] ?? symbol);
+
+  return symbols.length > 0 ? new Set(symbols) : null;
+}
 
 function normalizeInstrumentTypeDescription(value: string | null | undefined): string | null {
   const normalized = value?.trim().toUpperCase();
@@ -329,6 +363,7 @@ function printPlans(plans: MergePlan[]): void {
 
 async function main() {
   const apply = process.argv.includes("--apply");
+  const onlySymbols = parseOnlySymbols();
   const rows = await client<SecurityRow[]>`
     select
       securities.id,
@@ -357,7 +392,9 @@ async function main() {
     group by securities.id
   `;
 
-  const plans = buildMergePlans(rows);
+  const plans = buildMergePlans(rows).filter(
+    (plan) => !onlySymbols || onlySymbols.has(plan.target.symbol)
+  );
   printPlans(plans);
 
   if (!apply) {
@@ -412,6 +449,12 @@ async function main() {
         await tx`
           update transactions
           set underlying_security_id = ${plan.canonical.id}
+          where underlying_security_id in ${tx(duplicateIds)}
+        `;
+
+        await tx`
+          update options
+          set underlying_security_id = ${plan.canonical.id}, updated_at = now()
           where underlying_security_id in ${tx(duplicateIds)}
         `;
       }

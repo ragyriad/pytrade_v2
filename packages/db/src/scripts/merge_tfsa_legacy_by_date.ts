@@ -44,7 +44,7 @@ async function ensureColumns() {
   await client`create index if not exists transactions_is_archived_idx on transactions (is_archived)`;
 }
 
-async function getAccount(brokerageAccountNumber: string): Promise<AccountRow> {
+async function getAccount(brokerageAccountNumber: string): Promise<AccountRow | null> {
   const rows = await client<AccountRow[]>`
     select id, name, brokerage_account_number, brokerage_name, type
     from accounts
@@ -52,7 +52,11 @@ async function getAccount(brokerageAccountNumber: string): Promise<AccountRow> {
     order by created_at asc
   `;
 
-  if (rows.length !== 1) {
+  if (rows.length === 0) {
+    return null;
+  }
+
+  if (rows.length > 1) {
     throw new Error(
       `Expected exactly one account with brokerage_account_number=${brokerageAccountNumber}, found ${rows.length}.`
     );
@@ -110,10 +114,21 @@ async function main() {
 
   const legacyAccount = await getAccount(LEGACY_BROKERAGE_ACCOUNT_NUMBER);
   const canonicalAccount = await getAccount(CANONICAL_BROKERAGE_ACCOUNT_NUMBER);
+
+  if (!legacyAccount || !canonicalAccount) {
+    console.log(
+      `Skipping TFSA legacy merge: required account(s) not found. legacy=${Boolean(
+        legacyAccount
+      )}, canonical=${Boolean(canonicalAccount)}`
+    );
+    return;
+  }
+
   const before = await getSummary(legacyAccount.id, canonicalAccount.id);
 
   if (!before.earliest_canonical_trade_date) {
-    throw new Error("Canonical account has no enabled transactions; refusing to merge by date.");
+    console.log("Skipping TFSA legacy merge: canonical account has no enabled transactions.");
+    return;
   }
 
   const planned = await getPlannedCounts(

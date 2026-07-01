@@ -407,7 +407,7 @@ export function DataTable<T>({
             onChange={(event) => table.setPageSize(Number(event.target.value))}
             className="h-9 rounded-md border border-zinc-200 bg-white px-2 text-sm text-zinc-950 outline-none focus:border-emerald-600"
           >
-            {[30, 50, 100].map((pageSize) => (
+            {[10, 20, 30, 50].map((pageSize) => (
               <option key={pageSize} value={pageSize}>
                 {pageSize} rows
               </option>
