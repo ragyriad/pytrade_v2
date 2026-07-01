@@ -33,7 +33,6 @@ const transactionListInput = z.object({
   to: z.string().datetime({ offset: true }).optional(),
   /** Max rows to return after filtering (default 200) */
   limit: z.number().int().min(1).max(1000).default(200),
-  showArchived: z.boolean().default(false),
 });
 
 const createTransactionInput = z.object({
@@ -94,9 +93,7 @@ export const transactionsRouter = router({
     .query(async ({ ctx, input }) => {
       await assertAccountOwnership(ctx.db, input.accountId, ctx.userId);
 
-      let rows = await getTransactionsByAccount(ctx.db, input.accountId, {
-        includeArchived: input.showArchived,
-      });
+      let rows = await getTransactionsByAccount(ctx.db, input.accountId);
 
       // --- client-side filters (cheap on typical ledger sizes) ---
       if (input.type) {

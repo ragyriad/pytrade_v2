@@ -11,6 +11,7 @@ export type MapSnaptradeTransactionOptions = {
   optionId?: string | null;
   optionAction?: string | null;
   symbolOverride?: string | null;
+  descriptionOverride?: string | null;
   assetTypeOverride?: string | null;
 };
 
@@ -93,7 +94,7 @@ export function mapSnaptradeTransaction(
       options.optionAction ??
       ((rawData as { option_type?: string | null }).option_type ?? null),
     assetType: options.assetTypeOverride ?? normalized.assetType,
-    description: rawData.description ?? null,
+    description: options.descriptionOverride ?? rawData.description ?? null,
 
     amount,
     price: safeNumeric(rawData.price),

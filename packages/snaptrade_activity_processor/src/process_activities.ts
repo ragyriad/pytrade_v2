@@ -40,6 +40,7 @@ export type ActivityProcessorDependencies<TActivity extends SnapTradeActivityLik
       optionId?: string | null;
       optionAction?: string | null;
       symbolOverride?: string | null;
+      descriptionOverride?: string | null;
       assetTypeOverride?: string | null;
     }
   ) => NewTransaction;
@@ -124,12 +125,13 @@ export async function processAccountActivities<
       const underlyingSecurity = securitiesByKey.get(optionMapping.underlyingSecurity.securityKey);
       const option = optionsByTicker.get(optionMapping.ticker);
 
-      return mapTransaction(activity, accountId, contractSecurity?.id ?? null, {
+      return mapTransaction(activity, accountId, underlyingSecurity?.id ?? contractSecurity?.id ?? null, {
         accountType,
         underlyingSecurityId: underlyingSecurity?.id ?? null,
         optionId: option?.id ?? null,
         optionAction: optionMapping.optionAction,
         symbolOverride: underlyingSecurity?.symbol ?? optionMapping.underlyingSecurity.symbol,
+        descriptionOverride: optionMapping.description,
         assetTypeOverride: "OPTION",
       });
     }

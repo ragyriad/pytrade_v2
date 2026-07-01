@@ -11,12 +11,43 @@ type ParsedOccTicker = {
 
 export type MappedOption = {
   ticker: string;
+  description: string;
   optionAction: string | null;
   status: "open" | "closed";
   contractSecurity: NewSecurity;
   underlyingSecurity: NewSecurity;
   option: Omit<NewOption, "securityId" | "underlyingSecurityId">;
 };
+
+const months: Record<string, string> = {
+  JAN: "01",
+  FEB: "02",
+  MAR: "03",
+  APR: "04",
+  MAY: "05",
+  JUN: "06",
+  JUL: "07",
+  AUG: "08",
+  SEP: "09",
+  OCT: "10",
+  NOV: "11",
+  DEC: "12",
+};
+
+const knownEtfSymbols = new Set([
+  "ARKF",
+  "DLR.TO",
+  "DLR.U.TO",
+  "FHLC",
+  "HDV",
+  "ICLN",
+  "IYT",
+  "KBWD",
+  "SGOV",
+  "URNM",
+  "XLP",
+  "XLU",
+]);
 
 function clean(value: string | null | undefined): string | null {
   const trimmed = value?.trim();
@@ -96,6 +127,99 @@ function parseOccTicker(value: string | null | undefined): ParsedOccTicker | nul
   };
 }
 
+function parseOptionDate(value: string | null | undefined): string | null {
+  const normalized = normalizeText(value);
+  if (!normalized) return null;
+
+  const iso = normalized.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+
+  const slash = normalized.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
+  if (slash) {
+    const year = slash[3].length === 2 ? `20${slash[3]}` : slash[3];
+    return `${year}-${slash[1].padStart(2, "0")}-${slash[2].padStart(2, "0")}`;
+  }
+
+  const named = normalized.match(/^(\d{1,2})([A-Z]{3})(\d{2})$/);
+  if (named) {
+    const month = months[named[2]];
+    if (!month) return null;
+    return `20${named[3]}-${month}-${named[1].padStart(2, "0")}`;
+  }
+
+  return null;
+}
+
+function parseOptionSide(value: string | null | undefined): "CALL" | "PUT" | null {
+  const normalized = normalizeText(value);
+  if (normalized.startsWith("C") || normalized.includes("CALL")) return "CALL";
+  if (normalized.startsWith("P") || normalized.includes("PUT")) return "PUT";
+  return null;
+}
+
+function parsedFromParts(input: {
+  underlyingSymbol: string;
+  expirationDate: string;
+  contractType: "CALL" | "PUT";
+  strikePrice: string;
+}): ParsedOccTicker {
+  const strikePrice = Number(input.strikePrice).toFixed(6);
+  return {
+    underlyingSymbol: input.underlyingSymbol.toUpperCase(),
+    expirationDate: input.expirationDate,
+    contractType: input.contractType,
+    strikePrice,
+    ticker: formatOccTicker({
+      underlyingSymbol: input.underlyingSymbol.toUpperCase(),
+      expirationDate: input.expirationDate,
+      contractType: input.contractType,
+      strikePrice,
+    }),
+  };
+}
+
+function parseOptionFromText(...values: Array<string | null | undefined>): ParsedOccTicker | null {
+  for (const value of values) {
+    const normalized = normalizeText(value);
+    if (!normalized) continue;
+
+    const occ = parseOccTicker(normalized);
+    if (occ) return occ;
+
+    const spaced = normalized.match(
+      /\b([A-Z]{1,6})\s+(\d{1,2}[A-Z]{3}\d{2}|\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{2,4})\s+(PUTS?|CALLS?)\s+(\d+(?:\.\d+)?)\b/
+    );
+    if (spaced) {
+      const expirationDate = parseOptionDate(spaced[2]);
+      const contractType = parseOptionSide(spaced[3]);
+      if (!expirationDate || !contractType) continue;
+      return parsedFromParts({
+        underlyingSymbol: spaced[1],
+        expirationDate,
+        contractType,
+        strikePrice: spaced[4],
+      });
+    }
+
+    const sideFirst = normalized.match(
+      /\b(PUTS?|CALLS?)\s+([A-Z]{1,6})\s+(\d{1,2}[A-Z]{3}\d{2}|\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{2,4})\s+(\d+(?:\.\d+)?)\b/
+    );
+    if (sideFirst) {
+      const expirationDate = parseOptionDate(sideFirst[3]);
+      const contractType = parseOptionSide(sideFirst[1]);
+      if (!expirationDate || !contractType) continue;
+      return parsedFromParts({
+        underlyingSymbol: sideFirst[2],
+        expirationDate,
+        contractType,
+        strikePrice: sideFirst[4],
+      });
+    }
+  }
+
+  return null;
+}
+
 function formatOccTicker(input: {
   underlyingSymbol: string;
   expirationDate: string;
@@ -121,6 +245,16 @@ function optionStatus(optionAction: string | null): "open" | "closed" {
   return "open";
 }
 
+function inferOptionAction(activity: SnapTradeActivityLike): string | null {
+  const action = normalizeText(activity.option_type);
+  if (action) return clean(activity.option_type);
+
+  const type = normalizeText(activity.type);
+  if (type.includes("BUY")) return "BUY_TO_OPEN";
+  if (type.includes("SELL")) return "SELL_TO_CLOSE";
+  return null;
+}
+
 function optionType(value: string | null | undefined): "CALL" | "PUT" | null {
   const normalized = normalizeText(value);
   if (normalized === "C" || normalized.includes("CALL")) return "CALL";
@@ -135,6 +269,7 @@ function securityFromSymbol(
   timestamp: Date
 ): NewSecurity {
   const displaySymbol = clean(symbol?.symbol) ?? fallbackSymbol;
+  const fallbackType = knownEtfSymbols.has(fallbackSymbol) ? "ETF" : "STOCK";
   const securityKey =
     symbol && sameUnderlying(symbol.symbol, fallbackSymbol)
       ? buildSecurityKey(symbol) ?? `symbol:${displaySymbol}|exchange:unknown`
@@ -150,8 +285,8 @@ function securityFromSymbol(
     exchangeCode: clean(symbol?.exchange?.code),
     exchangeMicCode: clean(symbol?.exchange?.mic_code),
     exchangeName: clean(symbol?.exchange?.name),
-    instrumentTypeCode: "STOCK",
-    instrumentTypeDescription: "STOCK",
+    instrumentTypeCode: fallbackType,
+    instrumentTypeDescription: fallbackType,
     figiCode: clean(symbol?.figi_code),
     figiInstrumentCode: clean(symbol?.figi_instrument?.figi_code),
     logoUrl: clean(symbol?.logo_url),
@@ -162,9 +297,23 @@ function securityFromSymbol(
 
 export function isSnapTradeOptionActivity(activity: SnapTradeActivityLike): boolean {
   const option = activity.option_symbol;
-  if (!option) return false;
+  const parsedFromText = parseOptionFromText(
+    option?.ticker,
+    activity.description,
+    activity.symbol?.symbol,
+    activity.symbol?.raw_symbol,
+    activity.symbol?.description
+  );
 
-  const parsed = parseOccTicker(option.ticker);
+  if (!option) {
+    return (
+      parsedFromText != null &&
+      (["BUY", "SELL"].includes(normalizeText(activity.type)) ||
+        /\b(OPTIONS?|PUTS?|CALLS?)\b/.test(normalizeText(activity.description)))
+    );
+  }
+
+  const parsed = parseOccTicker(option.ticker) ?? parsedFromText;
   const action = normalizeText(activity.option_type);
   const description = normalizeText(activity.description);
   const hasContractFacts =
@@ -189,32 +338,38 @@ export function mapOptionFromActivity(
   if (!isSnapTradeOptionActivity(activity)) return null;
 
   const option = activity.option_symbol;
-  if (!option) return null;
-
-  const parsed = parseOccTicker(option.ticker);
-  const contractType = optionType(option.option_type) ?? parsed?.contractType ?? null;
-  const strikePrice = toNumber(option.strike_price)?.toFixed(6) ?? parsed?.strikePrice ?? null;
-  const expirationDate = dateString(option.expiration_date) ?? parsed?.expirationDate ?? null;
-  const underlyingSymbol = parsed?.underlyingSymbol ?? normalizeSymbol(option.underlying_symbol?.symbol);
+  const parsed = parseOccTicker(option?.ticker) ??
+    parseOptionFromText(
+      activity.description,
+      activity.symbol?.symbol,
+      activity.symbol?.raw_symbol,
+      activity.symbol?.description
+    );
+  const contractType = optionType(option?.option_type) ?? parsed?.contractType ?? null;
+  const strikePrice = toNumber(option?.strike_price)?.toFixed(6) ?? parsed?.strikePrice ?? null;
+  const expirationDate = dateString(option?.expiration_date) ?? parsed?.expirationDate ?? null;
+  const underlyingSymbol = parsed?.underlyingSymbol ?? normalizeSymbol(option?.underlying_symbol?.symbol);
 
   if (!contractType || !strikePrice || !expirationDate || !underlyingSymbol) return null;
 
-  const optionAction = clean(activity.option_type);
+  const optionAction = inferOptionAction(activity);
   const timestamp = seenAt(activity);
   const matchingUnderlying =
     sameUnderlying(activity.symbol?.symbol, underlyingSymbol)
       ? activity.symbol
-      : sameUnderlying(option.underlying_symbol?.symbol, underlyingSymbol)
-        ? option.underlying_symbol
+      : sameUnderlying(option?.underlying_symbol?.symbol, underlyingSymbol)
+        ? option?.underlying_symbol
         : null;
   const currency = clean(activity.currency?.code ?? activity.symbol?.currency?.code);
   const ticker =
     parsed?.ticker ??
-    normalizeSymbol(option.ticker) ??
+    normalizeSymbol(option?.ticker) ??
     formatOccTicker({ underlyingSymbol, expirationDate, contractType, strikePrice });
+  const description = `${underlyingSymbol} ${expirationDate} ${contractType} ${Number(strikePrice)}`;
 
   return {
     ticker,
+    description,
     optionAction,
     status: optionStatus(optionAction),
     underlyingSecurity: securityFromSymbol(
@@ -225,10 +380,10 @@ export function mapOptionFromActivity(
     ),
     contractSecurity: {
       securityKey: `option:${ticker}`,
-      snaptradeSymbolId: clean(option.id),
+      snaptradeSymbolId: clean(option?.id),
       symbol: ticker,
-      rawSymbol: clean(option.ticker) ?? ticker,
-      description: `${underlyingSymbol} ${expirationDate} ${contractType} ${Number(strikePrice)}`,
+      rawSymbol: clean(option?.ticker) ?? ticker,
+      description,
       currencyCode: currency,
       exchangeCode: clean(activity.symbol?.exchange?.code),
       exchangeMicCode: clean(activity.symbol?.exchange?.mic_code),
@@ -248,8 +403,11 @@ export function mapOptionFromActivity(
       expirationDate,
       multiplier: "100",
       status: optionStatus(optionAction),
-      isMiniOption: option.is_mini_option ?? false,
-      rawData: option as Record<string, unknown>,
+      isMiniOption: option?.is_mini_option ?? false,
+      rawData: (option ?? {
+        source: "description",
+        description: activity.description,
+      }) as Record<string, unknown>,
       firstSeenAt: timestamp,
       lastSeenAt: timestamp,
     },

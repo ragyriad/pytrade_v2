@@ -108,7 +108,7 @@ export type PortfolioDashboardDto = {
   fees: FeeSummaryDto;
 };
 
-export type DashboardTab = "accounts" | "positions" | "transactions";
+export type DashboardTab = "accounts" | "securities" | "transactions";
 
 export type HistoricSecurityDto = {
   id: string;

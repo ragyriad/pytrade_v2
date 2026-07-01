@@ -24,7 +24,9 @@ import {
   faChevronLeft,
   faChevronRight,
   faFilter,
+  faMagnifyingGlass,
   faSort,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "../ui/button";
 import { DetailsDropdown } from "../ui/details-dropdown";
@@ -50,6 +52,40 @@ type DataTableProps<T> = {
   renderExpandedRow?: (row: T) => ReactNode;
 };
 
+type TableSearchProps = {
+  value: string;
+  onChange: (value: string) => void;
+};
+
+function TableSearch({ value, onChange }: TableSearchProps) {
+  return (
+    <label className="relative block w-full min-w-0 sm:w-72">
+      <span className="sr-only">Search rows</span>
+      <FontAwesomeIcon
+        icon={faMagnifyingGlass}
+        className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400"
+      />
+      <input
+        type="search"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder="Search rows"
+        className="h-9 w-full rounded-md border border-zinc-200 bg-white pl-9 pr-9 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
+      />
+      {value ? (
+        <button
+          type="button"
+          onClick={() => onChange("")}
+          className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+        >
+          <span className="sr-only">Clear search</span>
+          <FontAwesomeIcon icon={faXmark} className="h-3 w-3" />
+        </button>
+      ) : null}
+    </label>
+  );
+}
+
 export function DataTable<T>({
   title,
   titleAccessory,
@@ -66,6 +102,7 @@ export function DataTable<T>({
   });
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [globalFilter, setGlobalFilter] = useState("");
 
   const getColumnValue = (column: TableColumn<T>, row: T) => {
     const value = column.value?.(row) ?? column.render(row);
@@ -116,10 +153,12 @@ export function DataTable<T>({
     getSortedRowModel: getSortedRowModel(),
     getRowId: getRowKey,
     onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     state: {
       columnFilters,
+      globalFilter,
       pagination,
       sorting,
     },
@@ -168,23 +207,33 @@ export function DataTable<T>({
     ).sort((a, b) => a.localeCompare(b));
   };
 
-  const hasActiveFilters = columnFilters.some((filter) => {
-    return Array.isArray(filter.value) && filter.value.length > 0;
-  });
+  const hasActiveFilters =
+    globalFilter.trim().length > 0 ||
+    columnFilters.some((filter) => {
+      return Array.isArray(filter.value) && filter.value.length > 0;
+    });
+
+  const clearFilters = () => {
+    setColumnFilters([]);
+    setGlobalFilter("");
+  };
 
   return (
     <section className="rounded-md border border-zinc-200 bg-white shadow-sm">
-      <div className="flex flex-col gap-2 border-b border-zinc-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="text-base font-semibold text-zinc-950">{title}</h2>
-          {titleAccessory}
+      <div className="flex flex-col gap-3 border-b border-zinc-200 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="text-base font-semibold text-zinc-950">{title}</h2>
+            {titleAccessory}
+          </div>
+          <TableSearch value={globalFilter} onChange={setGlobalFilter} />
         </div>
         <div className="flex items-center gap-3 text-sm text-zinc-500">
           <span>{filteredRowCount} of {rows.length} rows</span>
           {hasActiveFilters ? (
             <button
               type="button"
-              onClick={() => setColumnFilters([])}
+              onClick={clearFilters}
               className="font-medium text-emerald-700 hover:text-emerald-800"
             >
               Clear filters

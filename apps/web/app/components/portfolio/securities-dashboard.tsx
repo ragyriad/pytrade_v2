@@ -88,7 +88,7 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
           className={
             selected
               ? "justify-start border-emerald-500 bg-emerald-50 text-emerald-800 shadow-sm shadow-emerald-100 hover:bg-emerald-100"
-              : "justify-start"
+              : "justify-start bg-blue-50 text-blue-800 hover:bg-blue-100"
           }
         >
           {security.symbol}

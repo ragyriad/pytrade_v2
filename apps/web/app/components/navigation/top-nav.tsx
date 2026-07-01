@@ -17,6 +17,7 @@ const links = [
   { href: "/", label: "Portfolio", icon: faChartPie },
   { href: "/data", label: "Data Tables", icon: faTable },
   { href: "/securities", label: "Securities", icon: faChartLine },
+  { href: "/options", label: "Options", icon: faChartLine },
   { href: "/dividends", label: "Dividends", icon: faWallet },
   { href: "/fees", label: "Fees", icon: faReceipt },
 ];

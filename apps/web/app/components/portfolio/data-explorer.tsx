@@ -4,24 +4,19 @@ import { useMemo, useState } from "react";
 import {
   accountMatchesFilters,
   defaultFilterBarState,
-  isActiveAccount,
   type PortfolioFilterState,
 } from "../../lib/account-filters";
 import {
   formatDate,
   formatMoney,
-  formatNumber,
-  formatPercent,
   normalizeAccountType,
   signedValueClassName,
 } from "../../lib/formatters";
-import { getUnrealizedReturnPercent } from "../../services/portfolio";
 import { filterTransactionsByTimeline } from "../../services/filter_timeline";
 import type {
   AccountDto,
   DashboardTab,
   PortfolioDashboardDto,
-  PositionDto,
   TransactionDto,
 } from "../../lib/portfolio-types";
 import { DataTable, type TableColumn } from "../dashboard/data-table";
@@ -81,7 +76,7 @@ function filterTransactionsByDateRange(
 }
 
 export function DataExplorer({ dashboard }: DataExplorerProps) {
-  const [activeTab, setActiveTab] = useState<DashboardTab>("positions");
+  const [activeTab, setActiveTab] = useState<DashboardTab>("transactions");
   const [filters, setFilters] = useState(defaultFilterBarState);
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
 
@@ -93,20 +88,10 @@ export function DataExplorer({ dashboard }: DataExplorerProps) {
     return dashboard.accounts.filter((account) => accountMatchesFilters(account, filters));
   }, [dashboard.accounts, filters]);
 
-  const filteredPositions = useMemo(() => {
-    return dashboard.positions.filter((position) => {
-      const account = accountsById.get(position.accountId);
-      return isActiveAccount(account) && accountMatchesFilters(account, filters);
-    });
-  }, [accountsById, dashboard.positions, filters]);
-
   const scopedTransactions = useMemo(() => {
     return dashboard.transactions.filter((transaction) => {
       const account = accountsById.get(transaction.accountId);
-      return (
-        accountMatchesFilters(account, filters) &&
-        (filters.showArchived || !transaction.isArchived)
-      );
+      return accountMatchesFilters(account, filters) && !transaction.isArchived;
     });
   }, [accountsById, dashboard.transactions, filters]);
 
@@ -172,80 +157,6 @@ export function DataExplorer({ dashboard }: DataExplorerProps) {
       header: "Last sync",
       value: (account) => account.lastSyncedAt ?? "",
       render: (account) => formatDate(account.lastSyncedAt),
-    },
-  ];
-
-  const positionColumns: TableColumn<PositionDto>[] = [
-    {
-      key: "symbol",
-      header: "Symbol",
-      value: (position) => position.symbol,
-      render: (position) => <span className="font-semibold text-zinc-950">{position.symbol}</span>,
-    },
-    {
-      key: "account",
-      header: "Account",
-      value: (position) => accountsById.get(position.accountId)?.name ?? "Unknown",
-      render: (position) => accountsById.get(position.accountId)?.name ?? "Unknown",
-    },
-    {
-      key: "brokerage",
-      header: "Brokerage",
-      value: (position) => accountsById.get(position.accountId)?.institutionName ?? "Unknown",
-      render: (position) => accountsById.get(position.accountId)?.institutionName ?? "Unknown",
-    },
-    {
-      key: "units",
-      header: "Units",
-      align: "right",
-      value: (position) => position.units,
-      render: (position) => formatNumber(position.units),
-    },
-    {
-      key: "price",
-      header: "Price",
-      align: "right",
-      value: (position) => position.price?.amount ?? null,
-      render: (position) => (position.price ? formatMoney(position.price) : "-"),
-    },
-    {
-      key: "value",
-      header: "Value",
-      align: "right",
-      value: (position) => position.marketValue.amount,
-      render: (position) => (
-        <span className={`font-medium ${signedValueClassName(position.marketValue.amount)}`}>
-          {formatMoney(position.marketValue)}
-        </span>
-      ),
-    },
-    {
-      key: "pnl",
-      header: "Unrealized",
-      align: "right",
-      value: (position) => position.unrealizedGainLoss?.amount ?? null,
-      render: (position) =>
-        position.unrealizedGainLoss ? (
-          <span className={signedValueClassName(position.unrealizedGainLoss.amount)}>
-            {formatMoney(position.unrealizedGainLoss)}
-          </span>
-        ) : (
-          "-"
-        ),
-    },
-    {
-      key: "pnlPercent",
-      header: "Unrealized %",
-      align: "right",
-      value: (position) => getUnrealizedReturnPercent(position),
-      render: (position) => {
-        const percent = getUnrealizedReturnPercent(position);
-        return percent == null ? (
-          "-"
-        ) : (
-          <span className={signedValueClassName(percent)}>{formatPercent(percent)}</span>
-        );
-      },
     },
   ];
 
@@ -350,7 +261,6 @@ export function DataExplorer({ dashboard }: DataExplorerProps) {
               value={activeTab}
               onChange={setActiveTab}
               options={[
-                { id: "positions", label: "Positions", count: filteredPositions.length },
                 { id: "transactions", label: "Transactions", count: filteredTransactions.length },
                 { id: "accounts", label: "Accounts", count: filteredAccounts.length },
               ]}
@@ -368,31 +278,9 @@ export function DataExplorer({ dashboard }: DataExplorerProps) {
               emptyMessage="No accounts match the selected filters."
             />
           )}
-          {activeTab === "positions" && (
-            <DataTable
-              title="Positions"
-              rows={filteredPositions}
-              columns={positionColumns}
-              getRowKey={(position) => position.id}
-              emptyMessage="No positions match the selected filters."
-            />
-          )}
           {activeTab === "transactions" && (
             <DataTable
               title="Transactions"
-              titleAccessory={
-                <label className="inline-flex h-8 cursor-pointer items-center gap-2 text-sm font-medium text-zinc-700">
-                  <input
-                    type="checkbox"
-                    checked={filters.showArchived}
-                    onChange={(event) =>
-                      setFilters({ ...filters, showArchived: event.target.checked })
-                    }
-                    className="h-4 w-4 rounded border-zinc-300 text-emerald-700 focus:ring-emerald-600"
-                  />
-                  <span className="whitespace-nowrap">Show archived</span>
-                </label>
-              }
               rows={filteredTransactions}
               columns={transactionColumns}
               getRowKey={(transaction) => transaction.id}

@@ -687,14 +687,16 @@ function dateKey(date: Date): string {
 function duplicateKey(input: {
   accountId: string;
   symbol: string | null;
+  description?: string | null;
   tradeDate: Date;
   amount: string | number | null;
   units: string | number | null;
   currency: string | null;
 }): string {
+  const parsedOption = parseLegacyOption(input.symbol, input.description);
   return [
     input.accountId,
-    normalizeSymbol(input.symbol),
+    normalizeSymbol(parsedOption?.underlyingSymbol ?? input.symbol),
     dateKey(input.tradeDate),
     money(input.amount == null ? null : String(input.amount)),
     numeric(input.units == null ? null : String(input.units), 6) ?? "0.000000",
@@ -1127,6 +1129,7 @@ async function normalizeTransactionsInPlace(): Promise<number> {
 }
 
 function duplicateTransactionKey(transaction: Transaction): string {
+  const parsedOption = parseLegacyOption(transaction.symbol, transaction.description);
   return [
     transaction.accountId,
     dateKey(transaction.tradeDate),
@@ -1138,7 +1141,7 @@ function duplicateTransactionKey(transaction: Transaction): string {
     numeric(transaction.units, 6) ?? "",
     numeric(transaction.fee, 6) ?? "",
     normalizeText(transaction.currencyCode),
-    normalizeText(transaction.symbol),
+    normalizeText(parsedOption?.underlyingSymbol ?? transaction.symbol),
   ].join("|");
 }
 
@@ -1516,6 +1519,7 @@ async function main() {
       duplicateKey({
         accountId: transaction.accountId,
         symbol: transaction.symbol,
+        description: transaction.description,
         tradeDate: transaction.tradeDate,
         amount: transaction.amount,
         units: transaction.units,
@@ -1686,28 +1690,6 @@ async function main() {
     }
 
     const tradeDate = activity.filledAt ?? activity.submittedAt ?? activity.lastUpdated ?? activity.createdAt;
-    const symbol = transactionSymbol(activity, legacySecurity, security);
-    const key = legacyImportKey(activity, account.id, currency, symbol);
-    if (existingDuplicateKeys.has(key)) {
-      exactDuplicates += 1;
-      continue;
-    }
-
-    const candidateType = transactionType(activity);
-    const candidateAmount = candidateType === "TRANSFER" ? "0" : activity.amount;
-    const valueKey = duplicateKey({
-      accountId: account.id,
-      symbol,
-      tradeDate,
-      amount: candidateAmount,
-      units: activity.quantity,
-      currency,
-    });
-    if (existingDuplicateKeys.has(valueKey)) {
-      probableDuplicates += 1;
-      continue;
-    }
-
     const isOptionActivity = isLegacyOptionActivity(activity, legacySecurity);
     const baseDescription = legacyTransactionDescription(activity, legacySecurity);
     const parsedOption = isOptionActivity
@@ -1722,6 +1704,29 @@ async function main() {
         )
       : null;
     const description = parsedOption ? legacyOptionDescription(parsedOption) : baseDescription;
+    const symbol = parsedOption?.underlyingSymbol ?? transactionSymbol(activity, legacySecurity, security);
+    const key = legacyImportKey(activity, account.id, currency, symbol);
+    if (existingDuplicateKeys.has(key)) {
+      exactDuplicates += 1;
+      continue;
+    }
+
+    const candidateType = transactionType(activity);
+    const candidateAmount = candidateType === "TRANSFER" ? "0" : activity.amount;
+    const valueKey = duplicateKey({
+      accountId: account.id,
+      symbol,
+      description,
+      tradeDate,
+      amount: candidateAmount,
+      units: activity.quantity,
+      currency,
+    });
+    if (existingDuplicateKeys.has(valueKey)) {
+      probableDuplicates += 1;
+      continue;
+    }
+
     const optionRefs = parsedOption
       ? await ensureLegacyOption({
           parsed: parsedOption,
@@ -1729,9 +1734,9 @@ async function main() {
           security,
           currency,
           tradeDate,
-        })
+      })
       : null;
-    const transactionSecurity = optionRefs?.contractSecurity ?? security;
+    const transactionSecurity = optionRefs?.underlyingSecurity ?? security;
     const underlyingSecurity = optionRefs?.underlyingSecurity ?? (security ?? null);
     const finalSymbol = optionRefs?.underlyingSecurity.symbol ?? symbol;
     const type = candidateType;
