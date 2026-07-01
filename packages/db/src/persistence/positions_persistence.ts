@@ -54,6 +54,7 @@ export async function upsertPositions(
       target: [positions.accountId, positions.symbol],
       set: {
         units: sql`excluded.units`,
+        securityId: sql`excluded.security_id`,
         fractionalUnits: sql`excluded.fractional_units`,
         price: sql`excluded.price`,
         averagePurchasePrice: sql`excluded.average_purchase_price`,

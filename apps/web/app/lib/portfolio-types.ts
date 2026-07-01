@@ -21,6 +21,7 @@ export type AccountDto = {
 export type PositionDto = {
   id: string;
   accountId: string;
+  securityId: string | null;
   symbol: string;
   description: string | null;
   units: number;

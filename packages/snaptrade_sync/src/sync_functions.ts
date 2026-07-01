@@ -1,9 +1,10 @@
 import { getSnaptradeTransactionsByAccountId, getSnaptradeUserAccounts } from "./snaptrade.js"; 
 import { processAccountActivities } from "@repo/snaptrade-activity-processor";
-import { markAccountSynced, upsertAccount, replaceAccountPositions , mapSnaptradePosition,
+import { markAccountSynced, upsertAccount, replaceAccountPositions,
    mapSnaptradeAccount } from "@repo/db"; 
 import type { DB } from "@repo/db";
 import {getSnaptradePositionsByAccount} from "./snaptrade.js"
+import { mapSnaptradePositionsWithSecurities } from "./position_securities.js";
 
 export async function syncTransactionsByAccount(
     db: DB,
@@ -72,8 +73,10 @@ export async function syncPositionsByAccount(
     return;
   }
  
-  const mappedPositions = rawPositions.map((raw) =>
-    mapSnaptradePosition(raw, dbAccountId)
+  const mappedPositions = await mapSnaptradePositionsWithSecurities(
+    db,
+    rawPositions,
+    dbAccountId
   );
  
   await replaceAccountPositions(db, dbAccountId, mappedPositions);

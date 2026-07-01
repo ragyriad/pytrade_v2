@@ -1,6 +1,8 @@
 import { defineRelations } from "drizzle-orm";
 import { accounts } from "./accounts_schema.js";
+import { dividendEvents } from "./dividend_events_schema.js";
 import { options } from "./options_schema.js";
+import { positions } from "./positions_schema.js";
 import { securityAliases } from "./security_aliases_schema.js";
 import { securities } from "./securities_schema.js";
 import { transactions } from "./transactions_schema.js";
@@ -19,12 +21,16 @@ export const usersRelations = defineRelations(
 );
 
 export const accountsRelations = defineRelations(
-  { accounts, transactions, users },
+  { accounts, transactions, users, positions },
   (r) => ({
     accounts: {
       transactions: r.many.transactions({
         from: r.accounts.id,
         to: r.transactions.accountId,
+      }),
+      positions: r.many.positions({
+        from: r.accounts.id,
+        to: r.positions.accountId,
       }),
       user: r.one.users({
         from: r.accounts.userId,
@@ -67,7 +73,7 @@ export const transactionsRelations = defineRelations(
 );
 
 export const securitiesRelations = defineRelations(
-  { securities, transactions, securityAliases, options },
+  { securities, transactions, securityAliases, options, dividendEvents, positions },
   (r) => ({
     securities: {
       transactions: r.many.transactions({
@@ -90,6 +96,44 @@ export const securitiesRelations = defineRelations(
       aliases: r.many.securityAliases({
         from: r.securities.id,
         to: r.securityAliases.securityId,
+      }),
+      positions: r.many.positions({
+        from: r.securities.id,
+        to: r.positions.securityId,
+      }),
+      dividendEvents: r.many.dividendEvents({
+        from: r.securities.id,
+        to: r.dividendEvents.securityId,
+      }),
+    },
+  })
+);
+
+export const positionsRelations = defineRelations(
+  { positions, accounts, securities },
+  (r) => ({
+    positions: {
+      account: r.one.accounts({
+        from: r.positions.accountId,
+        to: r.accounts.id,
+      }),
+      security: r.one.securities({
+        from: r.positions.securityId,
+        to: r.securities.id,
+        optional: true,
+      }),
+    },
+  })
+);
+
+export const dividendEventsRelations = defineRelations(
+  { dividendEvents, securities },
+  (r) => ({
+    dividendEvents: {
+      security: r.one.securities({
+        from: r.dividendEvents.securityId,
+        to: r.securities.id,
+        optional: true,
       }),
     },
   })

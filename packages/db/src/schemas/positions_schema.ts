@@ -11,6 +11,7 @@ import {
 import { defineRelations } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { accounts } from "./accounts_schema.js";
+import { securities } from "./securities_schema.js";
 
 // ---------------------------------------------------------------------------
 // positions
@@ -28,6 +29,9 @@ export const positions = pgTable(
     accountId: uuid("account_id")
       .notNull()
       .references(() => accounts.id, { onDelete: "cascade" }),
+    securityId: uuid("security_id").references(() => securities.id, {
+      onDelete: "set null",
+    }),
 
     snaptradeSymbolId: varchar("snaptrade_symbol_id", { length: 255 }),
     snaptradeInstrumentId: varchar("snaptrade_instrument_id", { length: 255 }),
@@ -98,6 +102,7 @@ export const positions = pgTable(
     index("holdings_account_symbol_idx").on(table.accountId, table.symbol),
     // Cross-account queries by instrument (e.g. "how much AAPL do I hold total")
     index("holdings_symbol_idx").on(table.symbol),
+    index("holdings_security_idx").on(table.securityId),
     // FIGI-based joins against market data providers
     index("holdings_figi_idx").on(table.figiCode),
   ]
@@ -106,12 +111,17 @@ export const positions = pgTable(
 
 
 export const positionsRelations = defineRelations(
-  { positions, accounts },
+  { positions, accounts, securities },
   (r) => ({
     positions: {
       account: r.one.accounts({
         from: r.positions.accountId,
         to: r.accounts.id,
+      }),
+      security: r.one.securities({
+        from: r.positions.securityId,
+        to: r.securities.id,
+        optional: true,
       }),
     },
   })

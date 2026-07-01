@@ -24,7 +24,8 @@ function safeString(value: string | null | undefined): string | null {
  
 export function mapSnaptradePosition(
   raw: RawPosition,
-  accountId: string
+  accountId: string,
+  securityId?: string | null
 ): NewPosition {
   // Position.symbol       → PositionSymbol  (position-scoped wrapper)
   // Position.symbol.symbol → UniversalSymbol (the actual instrument)
@@ -33,6 +34,7 @@ export function mapSnaptradePosition(
  
   return {
     accountId,
+    securityId: securityId ?? null,
  
     // ------------------------------------------------------------------
     // Identity

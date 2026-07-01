@@ -4,7 +4,6 @@ import {
   getAccountBySnaptradeId,
   markAccountSynced,
   replaceAccountPositions,
-  mapSnaptradePosition,
 } from "@repo/db";
 import type { NewPosition } from "@repo/db";
 import { db, createSeed } from "@repo/db";
@@ -12,6 +11,7 @@ import {
   getSnaptradeTransactionsByAccountId,
   getSnaptradePositionsByAccount,
 } from "../snaptrade.js";
+import { mapSnaptradePositionsWithSecurities } from "../position_securities.js";
 
 async function closeDatabase() {
   const client = (db as typeof db & { $client?: { end?: () => Promise<void> } }).$client;
@@ -72,7 +72,11 @@ async function main() {
       accountType: string | null;
       rawTransactions: Awaited<ReturnType<typeof getSnaptradeTransactionsByAccountId>>;
     }> = [];
-    const allMappedPositions: NewPosition[] = [];
+    const allRawPositionsByAccount: Array<{
+      dbAccountId: string;
+      accountName: string;
+      rawPositions: Awaited<ReturnType<typeof getSnaptradePositionsByAccount>>;
+    }> = [];
 
     for (const { snaptradeAccountId, dbAccountId, accountName, accountType } of resolvedAccounts) {
       console.log(`Fetching data for: ${accountName}`);
@@ -100,11 +104,12 @@ async function main() {
       if (!rawPositions || rawPositions.length === 0) {
         console.log(`  No positions found`);
       } else {
-        const mapped = rawPositions.map((raw) =>
-          mapSnaptradePosition(raw, dbAccountId)
-        );
-        allMappedPositions.push(...mapped);
-        console.log(`  Fetched ${mapped.length} positions`);
+        allRawPositionsByAccount.push({
+          dbAccountId,
+          accountName,
+          rawPositions,
+        });
+        console.log(`  Fetched ${rawPositions.length} positions`);
       }
     }
 
@@ -133,6 +138,17 @@ async function main() {
     console.log(
       `  Persisted ${persistedTransactionCount} transactions and ${persistedSecurityCount} securities total`
     );
+
+    const allMappedPositions: NewPosition[] = [];
+    for (const { dbAccountId, accountName, rawPositions } of allRawPositionsByAccount) {
+      const mappedPositions = await mapSnaptradePositionsWithSecurities(
+        db,
+        rawPositions,
+        dbAccountId
+      );
+      allMappedPositions.push(...mappedPositions);
+      console.log(`  Mapped ${mappedPositions.length} positions with securities for: ${accountName}`);
+    }
 
     // Positions are per-account snapshots so replace is still per-account,
     // but batched in a single transaction rather than scattered in the loop

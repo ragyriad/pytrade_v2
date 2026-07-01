@@ -35,6 +35,7 @@ export type AccountDto = {
 export type PositionDto = {
   id: string;
   accountId: string;
+  securityId: string | null;
   symbol: string;
   description: string | null;
   units: number;
@@ -162,6 +163,7 @@ function toPositionDto(position: Position): PositionDto {
   return {
     id: position.id,
     accountId: position.accountId,
+    securityId: position.securityId,
     symbol: position.symbol,
     description: position.description,
     units: toNumber(position.units),
