@@ -1,5 +1,5 @@
 import { getSnaptradeTransactionsByAccountId, getSnaptradeUserAccounts } from "./snaptrade.js"; 
-import { processAccountActivities } from "@repo/activity-processor";
+import { processAccountActivities } from "@repo/snaptrade-activity-processor";
 import { markAccountSynced, upsertAccount, replaceAccountPositions , mapSnaptradePosition,
    mapSnaptradeAccount } from "@repo/db"; 
 import type { DB } from "@repo/db";

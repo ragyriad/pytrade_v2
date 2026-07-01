@@ -50,9 +50,13 @@ export type PositionDto = {
 export type TransactionDto = {
   id: string;
   accountId: string;
+  securityId: string | null;
+  underlyingSecurityId: string | null;
+  optionId: string | null;
   source: string;
   type: string;
   action: string | null;
+  optionAction: string | null;
   assetType: string | null;
   description: string | null;
   amount: MoneyDto;
@@ -198,9 +202,13 @@ function toTransactionDto(transaction: Transaction): TransactionDto {
   return {
     id: transaction.id,
     accountId: transaction.accountId,
+    securityId: transaction.securityId,
+    underlyingSecurityId: transaction.underlyingSecurityId,
+    optionId: transaction.optionId,
     source: transaction.source,
     type: transaction.type,
     action: transaction.action ?? transaction.type,
+    optionAction: transaction.optionAction,
     assetType: transaction.assetType,
     description: transaction.description,
     amount: {

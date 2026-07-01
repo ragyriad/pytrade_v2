@@ -1,5 +1,5 @@
 {
-  "name": "@repo/activity-processor",
+  "name": "@repo/snaptrade-activity-processor",
   "version": "0.0.1",
   "private": true,
   "type": "module",

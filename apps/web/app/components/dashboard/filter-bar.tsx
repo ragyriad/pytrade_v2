@@ -24,7 +24,6 @@ type FilterBarProps = {
   accounts: AccountDto[];
   value: PortfolioFilterState;
   onChange: (value: PortfolioFilterState) => void;
-  showArchivedToggle?: boolean;
 };
 
 type FilterBarMultiSelectProps = {
@@ -34,6 +33,7 @@ type FilterBarMultiSelectProps = {
   options: Array<{ value: string; label: string }>;
   value: string[];
   onChange: (value: string[]) => void;
+  className?: string;
 };
 
 function FilterBarMultiSelect({
@@ -43,6 +43,7 @@ function FilterBarMultiSelect({
   options,
   value,
   onChange,
+  className,
 }: FilterBarMultiSelectProps) {
   const selected = new Set(value);
   const buttonLabel =
@@ -61,7 +62,7 @@ function FilterBarMultiSelect({
   };
 
   return (
-    <div className="relative min-w-0">
+    <div className={`relative max-w-full flex-none ${className ?? ""}`}>
       <div className="mb-1 inline-flex items-center gap-2 text-xs font-medium uppercase text-zinc-500">
         <FontAwesomeIcon icon={icon} className="h-3 w-3" />
         {label}
@@ -138,7 +139,6 @@ export function FilterBar({
   accounts,
   value,
   onChange,
-  showArchivedToggle = false,
 }: FilterBarProps) {
   const brokerages = useMemo(() => getUniqueBrokerages(accounts), [accounts]);
   const accountTypes = useMemo(() => getUniqueAccountTypes(accounts), [accounts]);
@@ -157,13 +157,7 @@ export function FilterBar({
   }, [onChange, selectableAccounts, value]);
 
   return (
-    <div
-      className={
-        showArchivedToggle
-          ? "grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)_11rem_auto]"
-          : "grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)_11rem]"
-      }
-    >
+    <div className="flex flex-wrap items-end gap-3">
       <FilterBarMultiSelect
         label="Brokerage"
         icon={faBuildingColumns}
@@ -174,6 +168,7 @@ export function FilterBar({
         }))}
         value={value.brokerages}
         onChange={(brokerages) => onChange({ ...value, brokerages })}
+        className="w-fit min-w-48"
       />
 
       <FilterBarMultiSelect
@@ -186,6 +181,7 @@ export function FilterBar({
         }))}
         value={value.accountIds}
         onChange={(accountIds) => onChange({ ...value, accountIds })}
+        className="w-fit min-w-64"
       />
 
       <FilterBarMultiSelect
@@ -198,6 +194,7 @@ export function FilterBar({
         }))}
         value={value.accountTypes}
         onChange={(accountTypes) => onChange({ ...value, accountTypes })}
+        className="w-fit min-w-40"
       />
 
       <SelectField
@@ -211,7 +208,7 @@ export function FilterBar({
           onChange={(event) =>
             onChange({ ...value, timeline: event.target.value as typeof value.timeline })
           }
-          className="w-full min-w-0 sm:w-40"
+          className="w-auto min-w-36"
         >
           {timelineOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -219,18 +216,6 @@ export function FilterBar({
             </option>
           ))}
       </SelectField>
-
-      {showArchivedToggle ? (
-        <label className="flex h-full min-h-10 cursor-pointer items-end gap-2 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 shadow-sm transition hover:border-zinc-300">
-          <input
-            type="checkbox"
-            checked={value.showArchived}
-            onChange={(event) => onChange({ ...value, showArchived: event.target.checked })}
-            className="mb-1 h-4 w-4 rounded border-zinc-300 text-emerald-700 focus:ring-emerald-600"
-          />
-          <span className="whitespace-nowrap pb-0.5">Show archived</span>
-        </label>
-      ) : null}
     </div>
   );
 }

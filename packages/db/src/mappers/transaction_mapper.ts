@@ -7,6 +7,11 @@ type SnaptradeTransaction = SnaptradeTransactionSDK;
 
 export type MapSnaptradeTransactionOptions = {
   accountType?: string | null;
+  underlyingSecurityId?: string | null;
+  optionId?: string | null;
+  optionAction?: string | null;
+  symbolOverride?: string | null;
+  assetTypeOverride?: string | null;
 };
 
 function isCashPlaceholderSymbol(
@@ -58,22 +63,32 @@ export function mapSnaptradeTransaction(
     normalized.action
   )
     ? null
-    : rawData.symbol?.symbol ?? null;
+    : options.symbolOverride ?? rawData.symbol?.symbol ?? null;
   const normalizedAccountType = options.accountType?.trim().toUpperCase();
   const isCashAccount =
     normalizedAccountType === "CASH" ||
     normalizedAccountType === "CASH_USD" ||
     normalizedAccountType === "CASH_CAD";
+  const externalReferenceId =
+    typeof (rawData as { external_reference_id?: unknown }).external_reference_id === "string"
+      ? ((rawData as { external_reference_id?: string }).external_reference_id ?? null)
+      : null;
 
   return {
     accountId,
     securityId: symbol ? securityId ?? null : null,
+    underlyingSecurityId: symbol ? options.underlyingSecurityId ?? securityId ?? null : null,
+    optionId: options.optionId ?? null,
 
     snaptradeTransactionId: rawData.id as string,
+    externalTransactionId: externalReferenceId,
 
     type: (isCashAccount ? "CASH" : rawData.type) as NewTransaction["type"],
     action: normalized.action,
-    assetType: normalized.assetType,
+    optionAction:
+      options.optionAction ??
+      ((rawData as { option_type?: string | null }).option_type ?? null),
+    assetType: options.assetTypeOverride ?? normalized.assetType,
     description: rawData.description ?? null,
 
     amount: rawData.amount?.toString() ?? "0",
@@ -85,5 +100,6 @@ export function mapSnaptradeTransaction(
     symbol,
 
     tradeDate: safeDate(rawData.trade_date) ?? new Date(),
+    rawData: rawData as Record<string, unknown>,
   };
 }

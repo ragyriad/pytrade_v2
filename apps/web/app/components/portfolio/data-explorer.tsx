@@ -5,6 +5,7 @@ import {
   accountMatchesFilters,
   defaultFilterBarState,
   isActiveAccount,
+  type PortfolioFilterState,
 } from "../../lib/account-filters";
 import {
   formatDate,
@@ -31,9 +32,58 @@ type DataExplorerProps = {
   dashboard: PortfolioDashboardDto;
 };
 
+function toDateInputValue(value: string | Date): string {
+  return new Date(value).toISOString().slice(0, 10);
+}
+
+function getDateRangeForTimeline(
+  transactions: TransactionDto[],
+  timeline: PortfolioFilterState["timeline"]
+): { from: string; to: string } {
+  if (transactions.length === 0 || timeline === "NONE") {
+    return { from: "", to: "" };
+  }
+
+  const dates = transactions.map((transaction) => new Date(transaction.tradeDate).getTime());
+  const latest = new Date(Math.max(...dates));
+  const earliest = new Date(Math.min(...dates));
+  const start = new Date(latest);
+
+  if (timeline === "ALL") {
+    return { from: toDateInputValue(earliest), to: toDateInputValue(latest) };
+  }
+
+  if (timeline === "1M") start.setMonth(start.getMonth() - 1);
+  if (timeline === "3M") start.setMonth(start.getMonth() - 3);
+  if (timeline === "6M") start.setMonth(start.getMonth() - 6);
+  if (timeline === "1Y") start.setFullYear(start.getFullYear() - 1);
+  if (timeline === "2Y") start.setFullYear(start.getFullYear() - 2);
+  if (timeline === "5Y") start.setFullYear(start.getFullYear() - 5);
+
+  return { from: toDateInputValue(start), to: toDateInputValue(latest) };
+}
+
+function filterTransactionsByDateRange(
+  transactions: TransactionDto[],
+  dateRange: { from: string; to: string }
+): TransactionDto[] {
+  if (!dateRange.from && !dateRange.to) return transactions;
+
+  const from = dateRange.from ? new Date(`${dateRange.from}T00:00:00`) : null;
+  const to = dateRange.to ? new Date(`${dateRange.to}T23:59:59.999`) : null;
+
+  return transactions.filter((transaction) => {
+    const tradeDate = new Date(transaction.tradeDate);
+    if (from && tradeDate < from) return false;
+    if (to && tradeDate > to) return false;
+    return true;
+  });
+}
+
 export function DataExplorer({ dashboard }: DataExplorerProps) {
   const [activeTab, setActiveTab] = useState<DashboardTab>("positions");
   const [filters, setFilters] = useState(defaultFilterBarState);
+  const [dateRange, setDateRange] = useState({ from: "", to: "" });
 
   const accountsById = useMemo(() => {
     return new Map(dashboard.accounts.map((account) => [account.id, account]));
@@ -50,17 +100,36 @@ export function DataExplorer({ dashboard }: DataExplorerProps) {
     });
   }, [accountsById, dashboard.positions, filters]);
 
-  const filteredTransactions = useMemo(() => {
-    const accountFiltered = dashboard.transactions.filter((transaction) => {
+  const scopedTransactions = useMemo(() => {
+    return dashboard.transactions.filter((transaction) => {
       const account = accountsById.get(transaction.accountId);
       return (
         accountMatchesFilters(account, filters) &&
         (filters.showArchived || !transaction.isArchived)
       );
     });
-
-    return filterTransactionsByTimeline(accountFiltered, filters.timeline);
   }, [accountsById, dashboard.transactions, filters]);
+
+  const filteredTransactions = useMemo(() => {
+    if (dateRange.from || dateRange.to) {
+      return filterTransactionsByDateRange(scopedTransactions, dateRange);
+    }
+
+    return filterTransactionsByTimeline(scopedTransactions, filters.timeline);
+  }, [dateRange, filters.timeline, scopedTransactions]);
+
+  const handleFiltersChange = (nextFilters: PortfolioFilterState) => {
+    if (nextFilters.timeline !== filters.timeline) {
+      setDateRange(getDateRangeForTimeline(scopedTransactions, nextFilters.timeline));
+    }
+
+    setFilters(nextFilters);
+  };
+
+  const handleDateRangeChange = (field: "from" | "to", value: string) => {
+    setDateRange((current) => ({ ...current, [field]: value }));
+    setFilters((current) => ({ ...current, timeline: "NONE" }));
+  };
 
   const accountColumns: TableColumn<AccountDto>[] = [
     {
@@ -253,9 +322,30 @@ export function DataExplorer({ dashboard }: DataExplorerProps) {
             <FilterBar
               accounts={dashboard.accounts}
               value={filters}
-              onChange={setFilters}
-              showArchivedToggle
+              onChange={handleFiltersChange}
             />
+            {activeTab === "transactions" ? (
+              <div className="flex flex-wrap items-end gap-3">
+                <label className="flex w-fit flex-col gap-1 text-xs font-medium uppercase text-zinc-500">
+                  <span>From</span>
+                  <input
+                    type="date"
+                    value={dateRange.from}
+                    onChange={(event) => handleDateRangeChange("from", event.target.value)}
+                    className="h-10 min-w-40 rounded-md border border-zinc-200 bg-white px-3 text-sm normal-case text-zinc-950 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
+                  />
+                </label>
+                <label className="flex w-fit flex-col gap-1 text-xs font-medium uppercase text-zinc-500">
+                  <span>To</span>
+                  <input
+                    type="date"
+                    value={dateRange.to}
+                    onChange={(event) => handleDateRangeChange("to", event.target.value)}
+                    className="h-10 min-w-40 rounded-md border border-zinc-200 bg-white px-3 text-sm normal-case text-zinc-950 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
+                  />
+                </label>
+              </div>
+            ) : null}
             <SegmentedTabs
               value={activeTab}
               onChange={setActiveTab}
@@ -290,6 +380,19 @@ export function DataExplorer({ dashboard }: DataExplorerProps) {
           {activeTab === "transactions" && (
             <DataTable
               title="Transactions"
+              titleAccessory={
+                <label className="inline-flex h-8 cursor-pointer items-center gap-2 text-sm font-medium text-zinc-700">
+                  <input
+                    type="checkbox"
+                    checked={filters.showArchived}
+                    onChange={(event) =>
+                      setFilters({ ...filters, showArchived: event.target.checked })
+                    }
+                    className="h-4 w-4 rounded border-zinc-300 text-emerald-700 focus:ring-emerald-600"
+                  />
+                  <span className="whitespace-nowrap">Show archived</span>
+                </label>
+              }
               rows={filteredTransactions}
               columns={transactionColumns}
               getRowKey={(transaction) => transaction.id}

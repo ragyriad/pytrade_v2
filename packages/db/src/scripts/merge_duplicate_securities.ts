@@ -49,94 +49,126 @@ type MergePlan = {
   aliasCount: number;
 };
 
-const optionSymbolPattern = /^([A-Z]+)\d{2}[A-Z]{3}\d{2}[CP]\d+(?:\.\d+)?$/i;
+const optionSymbolPattern = /^([A-Z]+)\d{1,2}[A-Z]{3}\d{2}[CP]\d+(?:\.\d+)?$/i;
+const occOptionSymbolPattern = /^([A-Z]{1,6})\d{6}[CP]\d{8}$/i;
 
 const securityFixesBySymbol: Record<string, CanonicalSecurity> = {
   AMC: {
     symbol: "AMC",
     description: "AMC Entertainment Holdings, Inc.",
-    instrumentTypeDescription: "Class A Common Stock",
+    instrumentTypeDescription: "STOCK",
   },
   AMD: {
     symbol: "AMD",
     description: "Advanced Micro Devices, Inc.",
-    instrumentTypeDescription: "Common Stock",
+    instrumentTypeDescription: "STOCK",
   },
   ARKF: {
     symbol: "ARKF",
     description: "ARK Blockchain & Fintech Innovation ETF",
-    instrumentTypeDescription: "Exchange Traded Fund",
+    instrumentTypeDescription: "ETF",
   },
   BB: {
     symbol: "BB",
     description: "BlackBerry Limited",
-    instrumentTypeDescription: "Common Stock",
+    instrumentTypeDescription: "STOCK",
   },
   BIDU: {
     symbol: "BIDU",
     description: "Baidu, Inc.",
-    instrumentTypeDescription: "American Depositary Shares",
+    instrumentTypeDescription: "STOCK",
   },
   CNQ: {
     symbol: "CNQ",
     description: "Canadian Natural Resources Limited",
-    instrumentTypeDescription: "Common Stock",
+    instrumentTypeDescription: "STOCK",
   },
   DIS: {
     symbol: "DIS",
     description: "Walt Disney Company (The)",
-    instrumentTypeDescription: "Common Stock",
+    instrumentTypeDescription: "STOCK",
   },
   ENPH: {
     symbol: "ENPH",
     description: "Enphase Energy, Inc.",
-    instrumentTypeDescription: "Common Stock",
+    instrumentTypeDescription: "STOCK",
   },
   ETSY: {
     symbol: "ETSY",
     description: "Etsy, Inc.",
-    instrumentTypeDescription: "Common Stock",
+    instrumentTypeDescription: "STOCK",
   },
   F: {
     symbol: "F",
     description: "Ford Motor Company",
-    instrumentTypeDescription: "Common Stock",
+    instrumentTypeDescription: "STOCK",
   },
   INTC: {
     symbol: "INTC",
     description: "Intel Corporation",
-    instrumentTypeDescription: "Common Stock",
+    instrumentTypeDescription: "STOCK",
   },
   MRNA: {
     symbol: "MRNA",
     description: "Moderna, Inc.",
-    instrumentTypeDescription: "Common Stock",
+    instrumentTypeDescription: "STOCK",
   },
   NVDA: {
     symbol: "NVDA",
     description: "NVIDIA Corporation",
-    instrumentTypeDescription: "Common Stock",
+    instrumentTypeDescription: "STOCK",
   },
   SHOP: {
     symbol: "SHOP",
     description: "Shopify Inc.",
-    instrumentTypeDescription: "Class A Subordinate Voting Shares",
+    instrumentTypeDescription: "STOCK",
   },
   URNM: {
     symbol: "URNM",
     description: "Sprott Uranium Miners ETF",
-    instrumentTypeDescription: "Exchange Traded Fund",
+    instrumentTypeDescription: "ETF",
   },
   XYZ: {
     symbol: "XYZ",
     description: "Block, Inc.",
-    instrumentTypeDescription: "Class A Common Stock",
+    instrumentTypeDescription: "STOCK",
   },
 };
 
-const successorSymbols: Record<string, string> = {
-  SQ: "XYZ",
-};
+const successorSymbols: Record<string, string> = {};
+
+function normalizeInstrumentTypeDescription(value: string | null | undefined): string | null {
+  const normalized = value?.trim().toUpperCase();
+  if (!normalized) return null;
+  if (normalized.includes("OPTION")) return "OPTION";
+  if (normalized.includes("ETF") || normalized.includes("EXCHANGE TRADED FUND")) return "ETF";
+  if (
+    normalized === "STOCK" ||
+    normalized.includes("COMMON STOCK") ||
+    normalized.includes("EQUITY") ||
+    normalized.includes("DEPOSITARY") ||
+    normalized.includes("SHARES")
+  ) {
+    return "STOCK";
+  }
+  return value?.trim() ?? null;
+}
+
+function isOptionSecurity(row: SecurityRow): boolean {
+  return (
+    normalizeInstrumentTypeDescription(row.instrument_type_code) === "OPTION" ||
+    normalizeInstrumentTypeDescription(row.instrument_type_description) === "OPTION" ||
+    optionSymbolPattern.test(row.symbol) ||
+    occOptionSymbolPattern.test(row.symbol) ||
+    Boolean(row.raw_symbol && (optionSymbolPattern.test(row.raw_symbol) || occOptionSymbolPattern.test(row.raw_symbol)))
+  );
+}
+
+function isStockLikeSymbol(value: string | null | undefined): boolean {
+  const symbol = value?.trim().toUpperCase();
+  if (!symbol || ["CAD", "USD"].includes(symbol)) return false;
+  return /^[A-Z]{1,5}(?:[.-][A-Z]{1,4})?(?:\.TO)?$/.test(symbol);
+}
 
 function normalizeSymbol(value: string | null | undefined): string | null {
   const symbol = value?.trim().toUpperCase();
@@ -149,6 +181,15 @@ function normalizeSymbol(value: string | null | undefined): string | null {
 }
 
 function getCanonicalTarget(row: SecurityRow): CanonicalSecurity {
+  if (isOptionSecurity(row)) {
+    const symbol = row.symbol.toUpperCase();
+    return {
+      symbol,
+      description: row.description?.trim() || symbol,
+      instrumentTypeDescription: "OPTION",
+    };
+  }
+
   const symbol =
     normalizeSymbol(row.symbol) ??
     normalizeSymbol(row.raw_symbol) ??
@@ -160,7 +201,8 @@ function getCanonicalTarget(row: SecurityRow): CanonicalSecurity {
       symbol,
       description: row.description?.trim() || symbol,
       instrumentTypeDescription:
-        row.instrument_type_description?.trim() || "Security",
+        normalizeInstrumentTypeDescription(row.instrument_type_description) ||
+        (isStockLikeSymbol(symbol) ? "STOCK" : "Security"),
     }
   );
 }
@@ -170,13 +212,27 @@ function isLegacySecurity(row: SecurityRow): boolean {
 }
 
 function hasOptionDisplay(row: SecurityRow): boolean {
+  if (isOptionSecurity(row)) return false;
   return Boolean(
-    row.symbol.match(optionSymbolPattern) || row.description?.match(optionSymbolPattern)
+    row.symbol.match(optionSymbolPattern) ||
+      row.symbol.match(occOptionSymbolPattern) ||
+      row.description?.match(optionSymbolPattern) ||
+      row.description?.match(occOptionSymbolPattern)
   );
 }
 
 function needsRequestedSingleRowUpdate(row: SecurityRow, target: CanonicalSecurity): boolean {
-  return hasOptionDisplay(row) || row.symbol.toUpperCase() !== target.symbol;
+  const targetHasCanonicalType = ["ETF", "STOCK", "OPTION"].includes(
+    target.instrumentTypeDescription
+  );
+  return (
+    hasOptionDisplay(row) ||
+    row.symbol.toUpperCase() !== target.symbol ||
+    (targetHasCanonicalType &&
+      (normalizeInstrumentTypeDescription(row.instrument_type_description) !==
+        target.instrumentTypeDescription ||
+        normalizeInstrumentTypeDescription(row.instrument_type_code) !== target.instrumentTypeDescription))
+  );
 }
 
 function scoreCanonical(row: SecurityRow, target: CanonicalSecurity): number {
@@ -230,7 +286,8 @@ function buildMergePlans(rows: SecurityRow[]): MergePlan[] {
           symbol,
           description: canonical.description?.trim() || symbol,
           instrumentTypeDescription:
-            canonical.instrument_type_description?.trim() || "Security",
+            normalizeInstrumentTypeDescription(canonical.instrument_type_description) ||
+            (isStockLikeSymbol(symbol) ? "STOCK" : "Security"),
         } satisfies CanonicalSecurity);
       const remove = group.filter((row) => row.id !== canonical.id);
 
@@ -316,6 +373,7 @@ async function main() {
         set
           symbol = ${plan.target.symbol},
           description = ${plan.target.description},
+          instrument_type_code = ${plan.target.instrumentTypeDescription},
           instrument_type_description = ${plan.target.instrumentTypeDescription},
           first_seen_at = least(first_seen_at, ${plan.rows.reduce(
             (earliest, row) =>
@@ -338,11 +396,25 @@ async function main() {
       const duplicateIds = plan.remove.map((row) => row.id);
       if (duplicateIds.length === 0) continue;
 
-      await tx`
-        update transactions
-        set security_id = ${plan.canonical.id}
-        where security_id in ${tx(duplicateIds)}
-      `;
+      if (plan.target.instrumentTypeDescription === "OPTION") {
+        await tx`
+          update transactions
+          set security_id = ${plan.canonical.id}
+          where security_id in ${tx(duplicateIds)}
+        `;
+      } else {
+        await tx`
+          update transactions
+          set security_id = ${plan.canonical.id}, underlying_security_id = ${plan.canonical.id}
+          where security_id in ${tx(duplicateIds)}
+        `;
+
+        await tx`
+          update transactions
+          set underlying_security_id = ${plan.canonical.id}
+          where underlying_security_id in ${tx(duplicateIds)}
+        `;
+      }
 
       await tx`
         update security_aliases

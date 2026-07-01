@@ -5,6 +5,7 @@ import {
   numeric,
   timestamp,
   boolean,
+  jsonb,
   index,
   uniqueIndex,
   pgEnum
@@ -34,12 +35,26 @@ export const accounts = pgTable(
     accountCurrency: varchar("account_currency", { length: 10 }),
     status: statusEnum().default("active"),
     type: varchar("type", { length: 100 }),
+    rawType: varchar("raw_type", { length: 100 }),
+    snaptradeMetaType: varchar("snaptrade_meta_type", { length: 100 }),
+    snaptradeUnifiedAccountType: varchar("snaptrade_unified_account_type", {
+      length: 100,
+    }),
     name: varchar("name", { length: 255 }),
     isPaper: boolean("is_paper").default(false),
     linkedAccountId: varchar("linked_account_id", { length: 255 }),
     balanceAmount: numeric("balance_amount", { precision: 18, scale: 2 }),
     balanceCurrency: varchar("balance_currency", { length: 10 }),
+    rawData: jsonb("raw_data").$type<Record<string, unknown> | null>(),
     //sync fields
+    openingDate: timestamp("opening_date", {
+      withTimezone: true,
+      mode: "date",
+    }),
+    fundingDate: timestamp("funding_date", {
+      withTimezone: true,
+      mode: "date",
+    }),
     firstTransactionDate: timestamp("first_transaction_date", {
       withTimezone: true,
       mode: "date",

@@ -3,7 +3,16 @@ import type { Account as SnaptradeAccountSDK } from "snaptrade-typescript-sdk";
 import {safeDate} from "../helpers_mapper.js";
 type SnaptradeAccount = SnaptradeAccountSDK;
 type SnaptradeAccountMeta = NonNullable<SnaptradeAccount["meta"]> & {
+  type?: string | null;
+  status?: string | null;
+  currency?: string | null;
+  linked_account_id?: string | null;
   unifiedAccountType?: string | null;
+};
+type SnaptradeAccountWithRawFields = SnaptradeAccount & {
+  raw_type?: string | null;
+  opening_date?: string | Date | null;
+  funding_date?: string | Date | null;
 };
 
 function normalizeAccountType(type: string | null | undefined): string | null {
@@ -38,6 +47,7 @@ export function mapSnaptradeAccount(
   userId: string
 ): NewAccount {
   const meta = rawData.meta as SnaptradeAccountMeta | undefined;
+  const rawAccount = rawData as SnaptradeAccountWithRawFields;
 
   return {
     userId: userId,
@@ -49,13 +59,19 @@ export function mapSnaptradeAccount(
     name: rawData.name,
     linkedAccountId: meta?.linked_account_id ?? null,
     type: normalizeAccountType(meta?.unifiedAccountType ?? meta?.type),
+    rawType: rawAccount.raw_type ?? null,
+    snaptradeMetaType: meta?.type ?? null,
+    snaptradeUnifiedAccountType: meta?.unifiedAccountType ?? null,
     status: normalizeAccountStatus(meta?.status),
     isPaper: rawData.is_paper ?? false,
     balanceCurrency: rawData.balance?.total?.currency ?? null,
     balanceAmount: rawData.balance?.total?.amount != null? 
       rawData.balance.total.amount.toString() : null,
     accountCurrency: meta?.currency?? null,
+    rawData: rawData as unknown as Record<string, unknown>,
     // sync fields
+    openingDate: safeDate(rawAccount.opening_date),
+    fundingDate: safeDate(rawAccount.funding_date),
     lastTransactionsSyncAt:
       safeDate(rawData.sync_status?.transactions?.last_successful_sync),
     firstTransactionDate: 

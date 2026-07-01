@@ -1,8 +1,9 @@
 import type { TransactionDto } from "../lib/portfolio-types";
 
-export type TimelineRange = "1M" | "3M" | "6M" | "1Y" | "2Y" | "5Y" | "ALL";
+export type TimelineRange = "NONE" | "1M" | "3M" | "6M" | "1Y" | "2Y" | "5Y" | "ALL";
 
 export const timelineOptions: Array<{ value: TimelineRange; label: string }> = [
+  { value: "NONE", label: "None" },
   { value: "1M", label: "1 month" },
   { value: "3M", label: "3 months" },
   { value: "6M", label: "6 months" },
@@ -17,6 +18,7 @@ export function getTimelineStart(
   range: TimelineRange
 ): Date | null {
   if (transactions.length === 0) return null;
+  if (range === "NONE") return null;
 
   const latest = new Date(
     Math.max(...transactions.map((transaction) => new Date(transaction.tradeDate).getTime()))
@@ -44,12 +46,14 @@ export function filterTransactionsByTimeline(
   transactions: TransactionDto[],
   range: TimelineRange
 ): TransactionDto[] {
+  if (range === "NONE") return transactions;
   const start = getTimelineStart(transactions, range);
   if (!start) return [];
   return transactions.filter((transaction) => new Date(transaction.tradeDate) >= start);
 }
 
 export function getMonthDivisor(transactions: TransactionDto[], range: TimelineRange): number {
+  if (range === "NONE") return getMonthDivisor(transactions, "ALL");
   if (range === "1M") return 1;
   if (range === "3M") return 3;
   if (range === "6M") return 6;

@@ -1,5 +1,6 @@
 import { defineRelations } from "drizzle-orm";
 import { accounts } from "./accounts_schema.js";
+import { options } from "./options_schema.js";
 import { securityAliases } from "./security_aliases_schema.js";
 import { securities } from "./securities_schema.js";
 import { transactions } from "./transactions_schema.js";
@@ -39,7 +40,7 @@ export const accountsRelations = defineRelations(
 );
 
 export const transactionsRelations = defineRelations(
-  { transactions, accounts, securities },
+  { transactions, accounts, securities, options },
   (r) => ({
     transactions: {
       account: r.one.accounts({
@@ -51,21 +52,64 @@ export const transactionsRelations = defineRelations(
         to: r.securities.id,
         optional: true,
       }),
+      underlyingSecurity: r.one.securities({
+        from: r.transactions.underlyingSecurityId,
+        to: r.securities.id,
+        optional: true,
+      }),
+      option: r.one.options({
+        from: r.transactions.optionId,
+        to: r.options.id,
+        optional: true,
+      }),
     },
   })
 );
 
 export const securitiesRelations = defineRelations(
-  { securities, transactions, securityAliases },
+  { securities, transactions, securityAliases, options },
   (r) => ({
     securities: {
       transactions: r.many.transactions({
         from: r.securities.id,
         to: r.transactions.securityId,
       }),
+      underlyingTransactions: r.many.transactions({
+        from: r.securities.id,
+        to: r.transactions.underlyingSecurityId,
+      }),
+      options: r.many.options({
+        from: r.securities.id,
+        to: r.options.underlyingSecurityId,
+      }),
+      option: r.one.options({
+        from: r.securities.id,
+        to: r.options.securityId,
+        optional: true,
+      }),
       aliases: r.many.securityAliases({
         from: r.securities.id,
         to: r.securityAliases.securityId,
+      }),
+    },
+  })
+);
+
+export const optionsRelations = defineRelations(
+  { options, securities, transactions },
+  (r) => ({
+    options: {
+      security: r.one.securities({
+        from: r.options.securityId,
+        to: r.securities.id,
+      }),
+      underlyingSecurity: r.one.securities({
+        from: r.options.underlyingSecurityId,
+        to: r.securities.id,
+      }),
+      transactions: r.many.transactions({
+        from: r.options.id,
+        to: r.transactions.optionId,
       }),
     },
   })

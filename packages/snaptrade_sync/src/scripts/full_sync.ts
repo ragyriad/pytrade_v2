@@ -1,5 +1,5 @@
 import { syncAccounts } from "../sync_functions.js";
-import { processAccountActivities } from "@repo/activity-processor";
+import { processAccountActivities } from "@repo/snaptrade-activity-processor";
 import {
   getAccountBySnaptradeId,
   markAccountSynced,

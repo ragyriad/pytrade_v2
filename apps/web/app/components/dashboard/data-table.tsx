@@ -41,6 +41,7 @@ export type TableColumn<T> = {
 
 type DataTableProps<T> = {
   title: string;
+  titleAccessory?: ReactNode;
   rows: T[];
   columns: TableColumn<T>[];
   getRowKey: (row: T) => string;
@@ -51,6 +52,7 @@ type DataTableProps<T> = {
 
 export function DataTable<T>({
   title,
+  titleAccessory,
   rows,
   columns,
   getRowKey,
@@ -173,7 +175,10 @@ export function DataTable<T>({
   return (
     <section className="rounded-md border border-zinc-200 bg-white shadow-sm">
       <div className="flex flex-col gap-2 border-b border-zinc-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-base font-semibold text-zinc-950">{title}</h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="text-base font-semibold text-zinc-950">{title}</h2>
+          {titleAccessory}
+        </div>
         <div className="flex items-center gap-3 text-sm text-zinc-500">
           <span>{filteredRowCount} of {rows.length} rows</span>
           {hasActiveFilters ? (

@@ -39,9 +39,12 @@ export type TransactionDto = {
   brokerageName?: string | null;
   accountType?: string | null;
   securityId?: string | null;
+  underlyingSecurityId?: string | null;
+  optionId?: string | null;
   source: string;
   type: string;
   action: string | null;
+  optionAction?: string | null;
   assetType: string | null;
   description: string | null;
   amount: MoneyDto;

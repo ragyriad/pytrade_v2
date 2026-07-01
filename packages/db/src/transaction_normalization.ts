@@ -27,6 +27,11 @@ export type NormalizedTransaction = {
 };
 
 const optionSymbolPattern = /^[A-Z]+\d{1,2}[A-Z]{3}\d{2}[CP]\d+(?:\.\d+)?$/i;
+const occOptionSymbolPattern = /^[A-Z]{1,6}\d{6}[CP]\d{8}$/i;
+const spacedOptionPattern =
+  /\b[A-Z]{1,6}\s+(\d{1,2}[A-Z]{3}\d{2}|\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{2,4})\s+(PUTS?|CALLS?)\s+\d+(?:\.\d+)?\b/i;
+const sideFirstOptionPattern =
+  /\b(PUTS?|CALLS?)\s+[A-Z]{1,6}\s+(\d{1,2}[A-Z]{3}\d{2}|\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{2,4})\s+\d+(?:\.\d+)?\b/i;
 
 function normalizeText(value: string | null | undefined): string {
   return value?.trim().toUpperCase().replace(/\s+/g, " ") ?? "";
@@ -41,6 +46,19 @@ function toNumber(value: string | number | null | undefined): number | null {
 function isCashAccount(accountType: string | null | undefined): boolean {
   const normalized = normalizeText(accountType);
   return normalized === "CASH" || normalized === "CASH_USD" || normalized === "CASH_CAD";
+}
+
+function isOptionSymbol(value: string): boolean {
+  return optionSymbolPattern.test(value) || occOptionSymbolPattern.test(value);
+}
+
+function hasOptionEvidence(value: string): boolean {
+  return (
+    optionSymbolPattern.test(value) ||
+    occOptionSymbolPattern.test(value) ||
+    spacedOptionPattern.test(value) ||
+    sideFirstOptionPattern.test(value)
+  );
 }
 
 function securityValue(
@@ -102,24 +120,36 @@ export function normalizeTransaction(
   } else if (action === "REIMBURSEMENT") {
     assetType = "CASH";
   } else if (
-    optionSymbolPattern.test(transactionSymbol) ||
-    optionSymbolPattern.test(securitySymbol) ||
-    optionSymbolPattern.test(rawSecuritySymbol) ||
-    instrumentDescription.includes("OPTION") ||
+    isOptionSymbol(transactionSymbol) ||
+    isOptionSymbol(securitySymbol) ||
+    isOptionSymbol(rawSecuritySymbol) ||
+    hasOptionEvidence(description) ||
+    hasOptionEvidence(securityValue(security, "description", "description")) ||
     instrumentCode === "OPT"
   ) {
     assetType = "OPTION";
   } else if (
+    instrumentDescription === "ETF" ||
+    instrumentCode === "ETF" ||
+    description.includes("ETF") ||
+    description.includes("EXCHANGE TRADED FUND") ||
     instrumentDescription.includes("ETF") ||
     instrumentDescription.includes("EXCHANGE TRADED FUND")
   ) {
     assetType = "ETF";
   } else if (
+    instrumentDescription === "STOCK" ||
+    description.includes("COMMON STOCK") ||
+    description.includes("DEPOSITARY") ||
+    description.includes("SHARES") ||
+    /\bSHS\b/.test(description) ||
     instrumentDescription.includes("COMMON STOCK") ||
     instrumentDescription.includes("DEPOSITARY") ||
+    instrumentDescription.includes("SHARES") ||
     instrumentDescription.includes("EQUITY") ||
     instrumentCode === "CS" ||
-    instrumentCode === "EQUITY"
+    instrumentCode === "EQUITY" ||
+    instrumentCode === "STOCK"
   ) {
     assetType = "STOCK";
   } else if (["DEPOSIT", "WITHDRAWAL", "CONTRIBUTION", "TRANSFER", "FEE"].includes(action)) {

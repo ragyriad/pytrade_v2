@@ -27,6 +27,9 @@ export async function upsertTransaction(
         externalTransactionId: data.externalTransactionId,
         legacyImportKey: data.legacyImportKey,
         securityId: data.securityId,
+        underlyingSecurityId: data.underlyingSecurityId,
+        optionId: data.optionId,
+        optionAction: data.optionAction,
         amount: data.amount,
         price: data.price,
         units: data.units,
@@ -34,6 +37,7 @@ export async function upsertTransaction(
         currencyCode: data.currencyCode,
         symbol: data.symbol,
         tradeDate: data.tradeDate,
+        rawData: data.rawData,
       },
     });
 }
@@ -89,6 +93,9 @@ export async function upsertTransactions(
         externalTransactionId: sql`excluded.external_transaction_id`,
         legacyImportKey: sql`excluded.legacy_import_key`,
         securityId: sql`excluded.security_id`,
+        underlyingSecurityId: sql`excluded.underlying_security_id`,
+        optionId: sql`excluded.option_id`,
+        optionAction: sql`excluded.option_action`,
         amount: sql`excluded.amount`,
         price: sql`excluded.price`,
         units: sql`excluded.units`,
@@ -96,6 +103,7 @@ export async function upsertTransactions(
         currencyCode: sql`excluded.currency_code`,
         symbol: sql`excluded.symbol`,
         tradeDate: sql`excluded.trade_date`,
+        rawData: sql`excluded.raw_data`,
       },
     })
     .returning();  

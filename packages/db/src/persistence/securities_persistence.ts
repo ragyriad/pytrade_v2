@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { DB } from "../db_type.js";
 import { positions } from "../schemas/positions_schema.js";
 import {
@@ -84,17 +84,22 @@ export async function getTransactionsBySecurity(
 ): Promise<Transaction[]> {
   if (accountIds && accountIds.length === 0) return [];
 
+  const securityPredicate = or(
+    eq(transactions.securityId, securityId),
+    eq(transactions.underlyingSecurityId, securityId)
+  );
+
   return db
     .select()
     .from(transactions)
     .where(
       accountIds
         ? and(
-            eq(transactions.securityId, securityId),
+            securityPredicate,
             inArray(transactions.accountId, accountIds),
             eq(transactions.isArchived, false)
           )
-        : and(eq(transactions.securityId, securityId), eq(transactions.isArchived, false))
+        : and(securityPredicate, eq(transactions.isArchived, false))
     )
     .orderBy(desc(transactions.tradeDate));
 }
@@ -125,7 +130,10 @@ export async function getHistoricSecuritiesByAccounts(
       lastTradeDate: sql<Date | null>`max(${transactions.tradeDate})`,
     })
     .from(securities)
-    .innerJoin(transactions, eq(transactions.securityId, securities.id))
+    .innerJoin(
+      transactions,
+      sql`coalesce(${transactions.underlyingSecurityId}, ${transactions.securityId}) = ${securities.id}`
+    )
     .where(
       and(
         inArray(transactions.accountId, accountIds),

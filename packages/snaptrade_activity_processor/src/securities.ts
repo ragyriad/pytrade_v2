@@ -1,4 +1,5 @@
 import type { NewSecurity } from "@repo/db";
+import { isSnapTradeOptionActivity } from "./options.js";
 
 export type SnapTradeActivitySymbol = {
   id?: string | null;
@@ -25,7 +26,21 @@ export type SnapTradeActivitySymbol = {
 };
 
 export type SnapTradeActivityLike = {
+  id?: string | null;
   symbol?: SnapTradeActivitySymbol | null;
+  option_symbol?: {
+    id?: string | null;
+    ticker?: string | null;
+    option_type?: string | null;
+    strike_price?: string | number | null;
+    expiration_date?: string | Date | null;
+    is_mini_option?: boolean | null;
+    underlying_symbol?: SnapTradeActivitySymbol | null;
+  } | null;
+  option_type?: string | null;
+  currency?: {
+    code?: string | null;
+  } | null;
   type?: string | null;
   description?: string | null;
   units?: string | number | null;
@@ -64,6 +79,63 @@ function normalizeText(value: string | null | undefined): string {
   return value?.trim().toUpperCase().replace(/\s+/g, " ") ?? "";
 }
 
+const knownEtfSymbols = new Set([
+  "ARKF",
+  "DLR.TO",
+  "DLR.U.TO",
+  "FHLC",
+  "HDV",
+  "ICLN",
+  "IYT",
+  "KBWD",
+  "SGOV",
+  "URNM",
+  "XLP",
+  "XLU",
+]);
+
+function normalizedSecurityType(symbol: SnapTradeActivitySymbol): {
+  code: string | null;
+  description: string | null;
+} {
+  const displaySymbol = normalizeText(symbol.symbol);
+  const text = normalizeText(
+    [
+      symbol.symbol,
+      symbol.raw_symbol,
+      symbol.description,
+      symbol.type?.code,
+      symbol.type?.description,
+    ]
+      .filter(Boolean)
+      .join(" ")
+  );
+
+  if (
+    knownEtfSymbols.has(displaySymbol) ||
+    text.includes("ETF") ||
+    text.includes("EXCHANGE TRADED FUND")
+  ) {
+    return { code: "ETF", description: "ETF" };
+  }
+
+  if (
+    text.includes("COMMON STOCK") ||
+    text.includes("EQUITY") ||
+    text.includes("DEPOSITARY") ||
+    text.includes("SHARES") ||
+    text.includes(" STOCK") ||
+    text.endsWith(" STOCK")
+  ) {
+    return { code: "STOCK", description: "STOCK" };
+  }
+
+  return {
+    code: clean(symbol.type?.code),
+    description: clean(symbol.type?.description),
+  };
+}
+
 function toNumber(value: string | number | null | undefined): number | null {
   if (value == null) return null;
   const parsed = typeof value === "number" ? value : Number(value);
@@ -86,6 +158,7 @@ function isCashFlowActivity(activity: SnapTradeActivityLike): boolean {
 export function mapSecurityFromActivity(
   activity: SnapTradeActivityLike
 ): NewSecurity | null {
+  if (isSnapTradeOptionActivity(activity)) return null;
   if (isCashFlowActivity(activity)) return null;
 
   const symbol = activity.symbol;
@@ -96,6 +169,7 @@ export function mapSecurityFromActivity(
   if (!securityKey || !displaySymbol) return null;
 
   const seenAt = getActivitySeenAt(activity);
+  const securityType = normalizedSecurityType(symbol);
 
   return {
     securityKey,
@@ -107,8 +181,8 @@ export function mapSecurityFromActivity(
     exchangeCode: clean(symbol.exchange?.code),
     exchangeMicCode: clean(symbol.exchange?.mic_code),
     exchangeName: clean(symbol.exchange?.name),
-    instrumentTypeCode: clean(symbol.type?.code),
-    instrumentTypeDescription: clean(symbol.type?.description),
+    instrumentTypeCode: securityType.code,
+    instrumentTypeDescription: securityType.description,
     figiCode: clean(symbol.figi_code),
     figiInstrumentCode: clean(symbol.figi_instrument?.figi_code),
     logoUrl: clean(symbol.logo_url),

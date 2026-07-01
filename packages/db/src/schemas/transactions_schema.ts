@@ -8,11 +8,13 @@ import {
   index,
   uniqueIndex,
   pgEnum,
-  boolean
+  boolean,
+  jsonb
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { accounts } from "./accounts_schema.js";
 import { securities } from "./securities_schema.js";
+import { options } from "./options_schema.js";
 
 export const transactionTypeEnum = pgEnum("type", [
   "BUY",
@@ -49,9 +51,16 @@ export const transactions = pgTable(
     securityId: uuid("security_id").references(() => securities.id, {
       onDelete: "set null",
     }),
+    underlyingSecurityId: uuid("underlying_security_id").references(() => securities.id, {
+      onDelete: "set null",
+    }),
+    optionId: uuid("option_id").references(() => options.id, {
+      onDelete: "set null",
+    }),
 
     type: varchar("type", { length: 200 }).notNull(),
     action: varchar("action", { length: 50 }),
+    optionAction: varchar("option_action", { length: 50 }),
     assetType: varchar("asset_type", { length: 50 }),
     description: text("description"),
 
@@ -67,6 +76,7 @@ export const transactions = pgTable(
     symbol: varchar("symbol", { length: 20 }),
 
     tradeDate: timestamp("trade_date", { withTimezone: true }).notNull(),
+    rawData: jsonb("raw_data").$type<Record<string, unknown> | null>(),
 
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -75,6 +85,8 @@ export const transactions = pgTable(
   (table) => [
     index("transactions_account_idx").on(table.accountId),
     index("transactions_security_idx").on(table.securityId),
+    index("transactions_underlying_security_idx").on(table.underlyingSecurityId),
+    index("transactions_option_idx").on(table.optionId),
     index("transactions_trade_date_idx").on(table.tradeDate),
     index("transactions_symbol_idx").on(table.symbol),
     index("transactions_action_idx").on(table.action),

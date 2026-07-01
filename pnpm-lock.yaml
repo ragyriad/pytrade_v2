@@ -101,16 +101,6 @@ importers:
         specifier: ^5
         version: 5.9.3
 
-  packages/activity_processor:
-    dependencies:
-      '@repo/db':
-        specifier: workspace:*
-        version: link:../db
-    devDependencies:
-      typescript:
-        specifier: ^5.0.0
-        version: 5.9.3
-
   packages/db:
     dependencies:
       dotenv:
@@ -142,14 +132,24 @@ importers:
         specifier: ^5.0.0
         version: 5.9.3
 
-  packages/snaptrade_sync:
+  packages/snaptrade_activity_processor:
     dependencies:
-      '@repo/activity-processor':
-        specifier: workspace:*
-        version: link:../activity_processor
       '@repo/db':
         specifier: workspace:*
         version: link:../db
+    devDependencies:
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+
+  packages/snaptrade_sync:
+    dependencies:
+      '@repo/db':
+        specifier: workspace:*
+        version: link:../db
+      '@repo/snaptrade-activity-processor':
+        specifier: workspace:*
+        version: link:../snaptrade_activity_processor
       dotenv:
         specifier: ^16.0.0
         version: 16.6.1
