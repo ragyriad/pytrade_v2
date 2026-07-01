@@ -73,6 +73,10 @@ export function mapSnaptradeTransaction(
     typeof (rawData as { external_reference_id?: unknown }).external_reference_id === "string"
       ? ((rawData as { external_reference_id?: string }).external_reference_id ?? null)
       : null;
+  const amount =
+    normalized.action === "TRANSFER"
+      ? "0"
+      : (rawData.amount?.toString() ?? "0");
 
   return {
     accountId,
@@ -91,7 +95,7 @@ export function mapSnaptradeTransaction(
     assetType: options.assetTypeOverride ?? normalized.assetType,
     description: rawData.description ?? null,
 
-    amount: rawData.amount?.toString() ?? "0",
+    amount,
     price: safeNumeric(rawData.price),
     units: safeNumeric(rawData.units),
     fee: safeNumeric(rawData.fee) ?? "0",

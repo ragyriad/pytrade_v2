@@ -16,6 +16,7 @@ export const securities = pgTable(
 
     // Stable application key. Prefer SnapTrade id, then FIGI, then symbol + exchange.
     securityKey: varchar("security_key", { length: 350 }).notNull(),
+    source: varchar("source", { length: 50 }).notNull().default("SNAPTRADE"),
 
     // SnapTrade can be missing symbol ids on some activity rows, so this stays nullable.
     snaptradeSymbolId: varchar("snaptrade_symbol_id", { length: 255 }),
@@ -55,6 +56,7 @@ export const securities = pgTable(
     uniqueIndex("securities_security_key_idx").on(table.securityKey),
     index("securities_snaptrade_symbol_idx").on(table.snaptradeSymbolId),
     index("securities_symbol_idx").on(table.symbol),
+    index("securities_source_idx").on(table.source),
     index("securities_figi_idx").on(table.figiCode),
   ]
 );

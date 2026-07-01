@@ -6,8 +6,10 @@ import {
   db,
   eq,
   inArray,
+  options,
   securities,
   securityAliases,
+  sql,
   transactions,
   users,
   upsertOptions,
@@ -74,12 +76,110 @@ type LegacyActivity = {
   securityId: string | null;
 };
 
-const source = "Questrade Legacy";
+type LegacyDeposit = {
+  id: string;
+  status: string | null;
+  currency: string;
+  amount: string | null;
+  acceptedAt: Date | null;
+  createdAt: Date;
+  lastSynced: Date | null;
+  accountNumber: string | null;
+};
+
+const legacyImportSource = "Questrade Legacy";
+const previousLegacyImportSource = "LEGACY_SQLITE";
 const defaultDumpPath = "C:\\Users\\px13\\Documents\\Projects\\sqlite_dump.sql";
-const skipPostImportRepairs = process.argv.includes("--skip-post-import-repairs");
-const dumpPathArg = process.argv
-  .slice(2)
-  .find((argument) => !argument.startsWith("--"));
+
+type ScriptOptions = {
+  dumpPath: string;
+  includeAccountNumbers: Set<string> | null;
+  excludeAccountNumbers: Set<string>;
+  skipPostImportRepairs: boolean;
+};
+
+function addDelimitedValues(target: Set<string>, value: string | undefined) {
+  if (!value) return;
+
+  for (const entry of value.split(",")) {
+    const normalized = entry.trim();
+    if (normalized) target.add(normalized);
+  }
+}
+
+function parseScriptOptions(args: string[]): ScriptOptions {
+  const includeAccountNumbers = new Set<string>();
+  const excludeAccountNumbers = new Set<string>();
+  let dumpPath = defaultDumpPath;
+  let skipPostImportRepairs = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    const nextValue = () => {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) {
+        throw new Error(`${arg} requires a value.`);
+      }
+      index += 1;
+      return value;
+    };
+
+    if (arg === "--") {
+      continue;
+    }
+
+    if (arg === "--skip-post-import-repairs") {
+      skipPostImportRepairs = true;
+      continue;
+    }
+
+    if (arg === "--account" || arg === "--accounts") {
+      addDelimitedValues(includeAccountNumbers, nextValue());
+      continue;
+    }
+
+    if (arg.startsWith("--account=") || arg.startsWith("--accounts=")) {
+      addDelimitedValues(includeAccountNumbers, arg.slice(arg.indexOf("=") + 1));
+      continue;
+    }
+
+    if (arg === "--exclude-account" || arg === "--exclude-accounts") {
+      addDelimitedValues(excludeAccountNumbers, nextValue());
+      continue;
+    }
+
+    if (arg.startsWith("--exclude-account=") || arg.startsWith("--exclude-accounts=")) {
+      addDelimitedValues(excludeAccountNumbers, arg.slice(arg.indexOf("=") + 1));
+      continue;
+    }
+
+    if (arg === "--dump") {
+      dumpPath = nextValue();
+      continue;
+    }
+
+    if (arg.startsWith("--dump=")) {
+      dumpPath = arg.slice("--dump=".length);
+      continue;
+    }
+
+    if (!arg.startsWith("--")) {
+      dumpPath = arg;
+      continue;
+    }
+
+    throw new Error(`Unknown argument: ${arg}`);
+  }
+
+  return {
+    dumpPath,
+    includeAccountNumbers: includeAccountNumbers.size > 0 ? includeAccountNumbers : null,
+    excludeAccountNumbers,
+    skipPostImportRepairs,
+  };
+}
+
+const scriptOptions = parseScriptOptions(process.argv.slice(2));
 
 function parseSqlValue(raw: string): string | null {
   if (raw.toUpperCase() === "NULL") return null;
@@ -180,6 +280,7 @@ const compactNamedOptionPattern =
   /^([A-Z]{1,6})(\d{1,2})([A-Z]{3})(\d{2})([CP])(\d+(?:\.\d+)?)$/i;
 const compactNumericOptionPattern = /^([A-Z]{1,6})(\d{6})([CP])(\d+(?:\.\d+)?)$/i;
 const legacySymbolAliases: Record<string, string> = {
+  SQ: "XYZ",
   V005059: "VALE",
 };
 const knownEtfSymbols = new Set([
@@ -200,6 +301,7 @@ const knownEtfSymbols = new Set([
 type CanonicalSecurityType = "ETF" | "STOCK" | null;
 type ParsedLegacyOption = {
   underlyingSymbol: string;
+  displayUnderlyingSymbol: string;
   contractType: "CALL" | "PUT";
   strikePrice: string;
   expirationDate: string;
@@ -273,6 +375,11 @@ function optionSide(value: string): "CALL" | "PUT" {
   return normalizeText(value).startsWith("C") ? "CALL" : "PUT";
 }
 
+function canonicalLegacySymbol(symbol: string): string {
+  const normalized = symbol.toUpperCase();
+  return legacySymbolAliases[normalized] ?? normalized;
+}
+
 function formatOccOptionTicker(input: {
   underlyingSymbol: string;
   contractType: "CALL" | "PUT";
@@ -285,6 +392,42 @@ function formatOccOptionTicker(input: {
     .toString()
     .padStart(8, "0");
   return `${input.underlyingSymbol}${year.slice(2)}${month}${day}${side}${strike}`;
+}
+
+function legacyOptionDescription(
+  option: Pick<
+    ParsedLegacyOption,
+    "displayUnderlyingSymbol" | "expirationDate" | "contractType" | "strikePrice"
+  >
+): string {
+  return `${option.displayUnderlyingSymbol} ${option.expirationDate} ${option.contractType} ${Number(
+    option.strikePrice
+  )}`;
+}
+
+function buildParsedLegacyOption(input: {
+  underlyingSymbol: string;
+  contractType: "CALL" | "PUT";
+  strikePrice: string;
+  expirationDate: string;
+  rawSymbol: string | null;
+}): ParsedLegacyOption {
+  const displayUnderlyingSymbol = input.underlyingSymbol.toUpperCase();
+
+  return {
+    underlyingSymbol: canonicalLegacySymbol(displayUnderlyingSymbol),
+    displayUnderlyingSymbol,
+    contractType: input.contractType,
+    strikePrice: input.strikePrice,
+    expirationDate: input.expirationDate,
+    ticker: formatOccOptionTicker({
+      underlyingSymbol: displayUnderlyingSymbol,
+      contractType: input.contractType,
+      strikePrice: input.strikePrice,
+      expirationDate: input.expirationDate,
+    }),
+    rawSymbol: input.rawSymbol,
+  };
 }
 
 function parseLegacyOption(
@@ -302,19 +445,13 @@ function parseLegacyOption(
       const strikePrice = (Number(match[6]) / 1000).toFixed(6);
       const expirationDate = `20${match[2]}-${match[3]}-${match[4]}`;
       const contractType = match[5].toUpperCase() === "C" ? "CALL" : "PUT";
-      return {
-        underlyingSymbol: match[1].toUpperCase(),
+      return buildParsedLegacyOption({
+        underlyingSymbol: match[1],
         contractType,
         strikePrice,
         expirationDate,
-        ticker: formatOccOptionTicker({
-          underlyingSymbol: match[1].toUpperCase(),
-          contractType,
-          strikePrice,
-          expirationDate,
-        }),
         rawSymbol: normalized,
-      };
+      });
     }
 
     const named = normalized.match(compactNamedOptionPattern);
@@ -324,14 +461,13 @@ function parseLegacyOption(
       const contractType = named[5].toUpperCase() === "C" ? "CALL" : "PUT";
       const strikePrice = Number(named[6]).toFixed(6);
       const underlyingSymbol = named[1].toUpperCase();
-      return {
+      return buildParsedLegacyOption({
         underlyingSymbol,
         contractType,
         strikePrice,
         expirationDate,
-        ticker: formatOccOptionTicker({ underlyingSymbol, contractType, strikePrice, expirationDate }),
         rawSymbol: normalized,
-      };
+      });
     }
 
     const numericMatch = normalized.match(compactNumericOptionPattern);
@@ -341,14 +477,13 @@ function parseLegacyOption(
       const contractType = numericMatch[3].toUpperCase() === "C" ? "CALL" : "PUT";
       const strikePrice = Number(numericMatch[4]).toFixed(6);
       const underlyingSymbol = numericMatch[1].toUpperCase();
-      return {
+      return buildParsedLegacyOption({
         underlyingSymbol,
         contractType,
         strikePrice,
         expirationDate,
-        ticker: formatOccOptionTicker({ underlyingSymbol, contractType, strikePrice, expirationDate }),
         rawSymbol: normalized,
-      };
+      });
     }
 
     const sideFirst = normalized.match(sideFirstOptionPattern);
@@ -358,14 +493,13 @@ function parseLegacyOption(
       const contractType = optionSide(sideFirst[1]);
       const strikePrice = Number(sideFirst[4]).toFixed(6);
       const underlyingSymbol = sideFirst[2].toUpperCase();
-      return {
+      return buildParsedLegacyOption({
         underlyingSymbol,
         contractType,
         strikePrice,
         expirationDate,
-        ticker: formatOccOptionTicker({ underlyingSymbol, contractType, strikePrice, expirationDate }),
         rawSymbol: normalized,
-      };
+      });
     }
 
     const spaced = normalized.match(spacedOptionPattern);
@@ -375,14 +509,13 @@ function parseLegacyOption(
       const contractType = optionSide(spaced[3]);
       const strikePrice = Number(spaced[4]).toFixed(6);
       const underlyingSymbol = spaced[1].toUpperCase();
-      return {
+      return buildParsedLegacyOption({
         underlyingSymbol,
         contractType,
         strikePrice,
         expirationDate,
-        ticker: formatOccOptionTicker({ underlyingSymbol, contractType, strikePrice, expirationDate }),
         rawSymbol: normalized,
-      };
+      });
     }
   }
 
@@ -518,7 +651,8 @@ function legacySecurityTypeCode(security: LegacySecurity): string | null {
 
 function normalizeSymbol(symbol: string | null | undefined): string {
   if (!symbol) return "__NO_SYMBOL__";
-  return stripCanadianSuffix(normalizeSecuritySymbol(symbol) ?? symbol.trim());
+  const underlying = extractUnderlyingSymbol(symbol);
+  return stripCanadianSuffix(normalizeSecuritySymbol(underlying ?? symbol) ?? symbol.trim());
 }
 
 function securityLookupKeys(symbol: string | null, currency: string | null): string[] {
@@ -555,6 +689,7 @@ function duplicateKey(input: {
   symbol: string | null;
   tradeDate: Date;
   amount: string | number | null;
+  units: string | number | null;
   currency: string | null;
 }): string {
   return [
@@ -562,6 +697,7 @@ function duplicateKey(input: {
     normalizeSymbol(input.symbol),
     dateKey(input.tradeDate),
     money(input.amount == null ? null : String(input.amount)),
+    numeric(input.units == null ? null : String(input.units), 6) ?? "0.000000",
     input.currency?.trim().toUpperCase() ?? "",
   ].join("|");
 }
@@ -643,22 +779,16 @@ function transactionSymbol(
 }
 
 function legacyImportKey(
-  activity: LegacyActivity,
+  record: { id: string },
   accountId: string,
-  currency: string | null,
-  symbol: string | null
+  _currency: string | null,
+  _symbol: string | null
 ): string {
-  return duplicateKey({
-    accountId,
-    symbol,
-    tradeDate: activity.filledAt ?? activity.submittedAt ?? activity.lastUpdated ?? activity.createdAt,
-    amount: activity.amount,
-    currency,
-  });
+  return [legacyImportSource, accountId, record.id].join("|");
 }
 
 function generatedLegacyId(key: string): string {
-  const hash = createHash("sha1").update(`${source}:${key}`).digest("hex");
+  const hash = createHash("sha1").update(`${legacyImportSource}:${key}`).digest("hex");
   return [
     hash.slice(0, 8),
     hash.slice(8, 12),
@@ -852,6 +982,11 @@ async function mergeAndNormalizeSecurities(): Promise<number> {
           .update(transactions)
           .set({ underlyingSecurityId: canonical.id })
           .where(inArray(transactions.underlyingSecurityId, duplicateIds));
+
+        await db
+          .update(options)
+          .set({ underlyingSecurityId: canonical.id, updatedAt: new Date() })
+          .where(inArray(options.underlyingSecurityId, duplicateIds));
       }
 
       const canonicalAliases = new Set<string>();
@@ -1051,11 +1186,26 @@ async function archiveExactDuplicateTransactions(): Promise<number> {
   return archiveIds.length;
 }
 
+async function normalizeExistingLegacyTransactionMetadata(): Promise<number> {
+  const updated = await db
+    .update(transactions)
+    .set({
+      legacyImportKey: sql`${legacyImportSource} || '|' || ${transactions.accountId}::text || '|' || ${transactions.externalTransactionId}`,
+    })
+    .where(
+      sql`${transactions.source} = ${legacyImportSource} and ${transactions.externalTransactionId} is not null`
+    )
+    .returning({ id: transactions.id });
+
+  return updated.length;
+}
+
 function parseDump(path: string) {
   const contents = readFileSync(path, "utf8");
   const accountsByNumber = new Map<string, LegacyAccount>();
   const securitiesById = new Map<string, LegacySecurity>();
   const activities: LegacyActivity[] = [];
+  const deposits: LegacyDeposit[] = [];
 
   for (const line of contents.split(/\r?\n/)) {
     const accountValues = parseInsertLine(line, "account");
@@ -1117,6 +1267,21 @@ function parseDump(path: string) {
         lastUpdated: requiredDate(activityValues[21]),
         securityId: activityValues[22],
       });
+      continue;
+    }
+
+    const depositValues = parseInsertLine(line, "deposit");
+    if (depositValues) {
+      deposits.push({
+        id: depositValues[0] ?? "",
+        status: depositValues[2],
+        currency: depositValues[3] ?? "CAD",
+        amount: depositValues[4],
+        acceptedAt: toDate(depositValues[7]),
+        createdAt: requiredDate(depositValues[8]),
+        lastSynced: toDate(depositValues[9]),
+        accountNumber: depositValues[10],
+      });
     }
   }
 
@@ -1124,25 +1289,78 @@ function parseDump(path: string) {
     accounts: [...accountsByNumber.values()],
     securities: [...securitiesById.values()],
     activities,
+    deposits,
+    securitiesById,
+  };
+}
+
+type ParsedDump = ReturnType<typeof parseDump>;
+
+function filterParsedDump(
+  parsed: ParsedDump,
+  includeAccountNumbers: Set<string> | null,
+  excludeAccountNumbers: Set<string>
+): ParsedDump {
+  const accounts = parsed.accounts.filter(
+    (account) =>
+      (!includeAccountNumbers || includeAccountNumbers.has(account.accountNumber)) &&
+      !excludeAccountNumbers.has(account.accountNumber)
+  );
+  const accountNumbers = new Set(accounts.map((account) => account.accountNumber));
+  const activities = parsed.activities.filter((activity) =>
+    accountNumbers.has(activity.accountNumber)
+  );
+  const deposits = parsed.deposits.filter(
+    (deposit) => deposit.accountNumber != null && accountNumbers.has(deposit.accountNumber)
+  );
+  const securityIds = new Set(
+    activities
+      .map((activity) => activity.securityId)
+      .filter((securityId): securityId is string => Boolean(securityId))
+  );
+  const securities = parsed.securities.filter((security) => securityIds.has(security.id));
+  const securitiesById = new Map(securities.map((security) => [security.id, security]));
+
+  return {
+    accounts,
+    securities,
+    activities,
+    deposits,
     securitiesById,
   };
 }
 
 async function main() {
-  const dumpPath = resolve(dumpPathArg ?? defaultDumpPath);
+  const dumpPath = resolve(scriptOptions.dumpPath);
   if (!existsSync(dumpPath)) {
     throw new Error(`SQLite dump not found: ${dumpPath}`);
   }
 
-  const parsed = parseDump(dumpPath);
+  const unfilteredParsed = parseDump(dumpPath);
+  const requestedMissingAccounts = scriptOptions.includeAccountNumbers
+    ? [...scriptOptions.includeAccountNumbers].filter(
+        (accountNumber) =>
+          !unfilteredParsed.accounts.some((account) => account.accountNumber === accountNumber)
+      )
+    : [];
+  if (requestedMissingAccounts.length > 0) {
+    throw new Error(`Requested account(s) not found in dump: ${requestedMissingAccounts.join(", ")}`);
+  }
+
+  const parsed = filterParsedDump(
+    unfilteredParsed,
+    scriptOptions.includeAccountNumbers,
+    scriptOptions.excludeAccountNumbers
+  );
   const user = (await db.select().from(users).limit(1))[0];
   if (!user) throw new Error("No user exists. Run the normal seed/sync first.");
 
   const renamedLegacyTransactions = await db
     .update(transactions)
-    .set({ source })
-    .where(eq(transactions.source, "LEGACY_SQLITE"))
+    .set({ source: legacyImportSource })
+    .where(eq(transactions.source, previousLegacyImportSource))
     .returning({ id: transactions.id });
+  const normalizedLegacyMetadata = await normalizeExistingLegacyTransactionMetadata();
 
   const currentAccounts = await db.select().from(accounts);
   const accountsByNumber = new Map(
@@ -1171,20 +1389,7 @@ async function main() {
       updatedAt: account.updatedAt,
     }));
 
-  const legacyQuestradeAccountNumbers = parsed.accounts
-    .filter((account) => account.brokerName === "Questrade")
-    .map((account) => account.accountNumber);
-  const closedLegacyAccounts =
-    legacyQuestradeAccountNumbers.length === 0
-      ? []
-      : await db
-          .update(accounts)
-          .set({ status: "closed" })
-          .where(inArray(accounts.brokerageAccountNumber, legacyQuestradeAccountNumbers))
-          .returning({
-            id: accounts.id,
-            brokerageAccountNumber: accounts.brokerageAccountNumber,
-          });
+  const closedLegacyAccounts: Array<{ id: string; brokerageAccountNumber: string | null }> = [];
 
   if (missingAccounts.length > 0) {
     const inserted = await db.insert(accounts).values(missingAccounts).returning();
@@ -1233,6 +1438,7 @@ async function main() {
 
     missingSecurities.push({
       securityKey: legacyKey,
+      source: legacyImportSource,
       snaptradeSymbolId: null,
       symbol: legacySecurityDisplaySymbol(legacySecurity),
       rawSymbol: legacySecurityRawSymbol(legacySecurity),
@@ -1273,13 +1479,13 @@ async function main() {
     const security = securitiesByLegacyId.get(legacySecurity.id);
     if (!security) continue;
 
-    const aliasKey = `${source}|${legacySecurity.id}`;
+    const aliasKey = `${legacyImportSource}|${legacySecurity.id}`;
     if (aliasKeys.has(aliasKey)) continue;
     aliasKeys.add(aliasKey);
 
     aliasInputs.push({
       securityId: security.id,
-      source,
+      source: legacyImportSource,
       externalId: legacySecurity.id,
       symbol: legacySecurityDisplaySymbol(legacySecurity),
       rawSymbol: legacySecurityRawSymbol(legacySecurity),
@@ -1294,7 +1500,10 @@ async function main() {
   const existingTransactions = await db.select().from(transactions);
   const existingExternalIds = new Set(
     existingTransactions
-      .filter((transaction) => transaction.source === source && transaction.externalTransactionId)
+      .filter(
+        (transaction) =>
+          transaction.source === legacyImportSource && transaction.externalTransactionId
+      )
       .map((transaction) => transaction.externalTransactionId as string)
   );
   const existingDuplicateKeys = new Set<string>();
@@ -1309,6 +1518,7 @@ async function main() {
         symbol: transaction.symbol,
         tradeDate: transaction.tradeDate,
         amount: transaction.amount,
+        units: transaction.units,
         currency: transaction.currencyCode,
       })
     );
@@ -1381,6 +1591,7 @@ async function main() {
       : await ensureSecurity(
           {
             securityKey: `legacy-underlying:${input.parsed.underlyingSymbol}:${input.currency}`,
+            source: legacyImportSource,
             snaptradeSymbolId: null,
             symbol: input.parsed.underlyingSymbol,
             rawSymbol: input.parsed.underlyingSymbol,
@@ -1403,10 +1614,11 @@ async function main() {
     const contractSecurity = await ensureSecurity(
       {
         securityKey: `option:${input.parsed.ticker}`,
+        source: legacyImportSource,
         snaptradeSymbolId: null,
         symbol: input.parsed.ticker,
         rawSymbol: input.parsed.rawSymbol ?? input.parsed.ticker,
-        description: `${input.parsed.underlyingSymbol} ${input.parsed.expirationDate} ${input.parsed.contractType} ${Number(input.parsed.strikePrice)}`,
+        description: legacyOptionDescription(input.parsed),
         currencyCode: input.currency,
         exchangeCode: null,
         exchangeMicCode: null,
@@ -1433,9 +1645,10 @@ async function main() {
       status: "closed",
       isMiniOption: false,
       rawData: {
-        source,
+        source: legacyImportSource,
         legacyActivityId: input.activity.id,
         rawSymbol: input.parsed.rawSymbol,
+        displayUnderlyingSymbol: input.parsed.displayUnderlyingSymbol,
       },
       firstSeenAt: input.tradeDate,
       lastSeenAt: input.tradeDate,
@@ -1476,12 +1689,27 @@ async function main() {
     const symbol = transactionSymbol(activity, legacySecurity, security);
     const key = legacyImportKey(activity, account.id, currency, symbol);
     if (existingDuplicateKeys.has(key)) {
+      exactDuplicates += 1;
+      continue;
+    }
+
+    const candidateType = transactionType(activity);
+    const candidateAmount = candidateType === "TRANSFER" ? "0" : activity.amount;
+    const valueKey = duplicateKey({
+      accountId: account.id,
+      symbol,
+      tradeDate,
+      amount: candidateAmount,
+      units: activity.quantity,
+      currency,
+    });
+    if (existingDuplicateKeys.has(valueKey)) {
       probableDuplicates += 1;
       continue;
     }
 
     const isOptionActivity = isLegacyOptionActivity(activity, legacySecurity);
-    const description = legacyTransactionDescription(activity, legacySecurity);
+    const baseDescription = legacyTransactionDescription(activity, legacySecurity);
     const parsedOption = isOptionActivity
       ? parseLegacyOption(
           activity.symbol,
@@ -1490,9 +1718,10 @@ async function main() {
           legacySecurity?.symbol,
           legacySecurity?.name,
           legacySecurity?.description,
-          description
+          baseDescription
         )
       : null;
+    const description = parsedOption ? legacyOptionDescription(parsedOption) : baseDescription;
     const optionRefs = parsedOption
       ? await ensureLegacyOption({
           parsed: parsedOption,
@@ -1505,7 +1734,7 @@ async function main() {
     const transactionSecurity = optionRefs?.contractSecurity ?? security;
     const underlyingSecurity = optionRefs?.underlyingSecurity ?? (security ?? null);
     const finalSymbol = optionRefs?.underlyingSecurity.symbol ?? symbol;
-    const type = transactionType(activity);
+    const type = candidateType;
     const normalized = normalizeTransaction(
       {
         type,
@@ -1535,7 +1764,7 @@ async function main() {
 
     transactionInputs.push({
       snaptradeTransactionId: null,
-      source,
+      source: legacyImportSource,
       externalTransactionId: activity.id,
       legacyImportKey: key,
       accountId: account.id,
@@ -1547,7 +1776,7 @@ async function main() {
       optionAction: optionRefs ? legacyOptionAction(activity, type) : null,
       assetType: isOptionActivity ? "OPTION" : normalized.assetType,
       description,
-      amount: money(activity.amount),
+      amount: type === "TRANSFER" ? "0" : money(activity.amount),
       price: numeric(activity.price, 6),
       units: numeric(activity.quantity, 6),
       fee: money(activity.commission, "0"),
@@ -1557,6 +1786,77 @@ async function main() {
       rawData: activity as unknown as Record<string, unknown>,
       createdAt: activity.createdAt,
     });
+    existingExternalIds.add(activity.id);
+    existingDuplicateKeys.add(key);
+    existingDuplicateKeys.add(valueKey);
+  }
+
+  for (const deposit of parsed.deposits) {
+    if (!deposit.accountNumber) {
+      unresolvedAccounts.add("<missing deposit account>");
+      continue;
+    }
+
+    const account = accountsByNumber.get(deposit.accountNumber);
+    if (!account) {
+      unresolvedAccounts.add(deposit.accountNumber);
+      continue;
+    }
+
+    if (existingExternalIds.has(deposit.id)) {
+      exactDuplicates += 1;
+      continue;
+    }
+
+    const tradeDate = deposit.acceptedAt ?? deposit.createdAt;
+    const key = legacyImportKey(deposit, account.id, deposit.currency, null);
+    if (existingDuplicateKeys.has(key)) {
+      exactDuplicates += 1;
+      continue;
+    }
+
+    const valueKey = duplicateKey({
+      accountId: account.id,
+      symbol: null,
+      tradeDate,
+      amount: deposit.amount,
+      units: "0",
+      currency: deposit.currency,
+    });
+    if (existingDuplicateKeys.has(valueKey)) {
+      probableDuplicates += 1;
+      continue;
+    }
+
+    const amount = money(deposit.amount);
+    const action = Number(amount) < 0 ? "WITHDRAWAL" : "DEPOSIT";
+    transactionInputs.push({
+      snaptradeTransactionId: null,
+      source: legacyImportSource,
+      externalTransactionId: deposit.id,
+      legacyImportKey: key,
+      accountId: account.id,
+      securityId: null,
+      underlyingSecurityId: null,
+      optionId: null,
+      type: action,
+      action,
+      optionAction: null,
+      assetType: "CASH",
+      description: ["Deposit", deposit.status].filter(Boolean).join(" / "),
+      amount,
+      price: "0",
+      units: "0",
+      fee: "0",
+      currencyCode: deposit.currency.slice(0, 3),
+      symbol: null,
+      tradeDate,
+      rawData: deposit as unknown as Record<string, unknown>,
+      createdAt: deposit.createdAt,
+    });
+    existingExternalIds.add(deposit.id);
+    existingDuplicateKeys.add(key);
+    existingDuplicateKeys.add(valueKey);
   }
 
   const insertedTransactions =
@@ -1575,12 +1875,16 @@ async function main() {
           accounts: parsed.accounts.length,
           securities: parsed.securities.length,
           activities: parsed.activities.length,
+          deposits: parsed.deposits.length,
+          includedAccounts: parsed.accounts.map((account) => account.accountNumber),
+          excludedAccounts: [...scriptOptions.excludeAccountNumbers],
         },
         matchedOrCreated: {
           createdAccounts: missingAccounts.length,
           createdSecurities: insertedSecurities.length,
           upsertedSecurityAliases: upsertedAliases.length,
           renamedLegacyTransactions: renamedLegacyTransactions.length,
+          normalizedLegacyMetadata,
           closedLegacyAccounts: closedLegacyAccounts.length,
         },
         duplicates: {
@@ -1599,7 +1903,7 @@ async function main() {
     )
   );
 
-  if (!skipPostImportRepairs) {
+  if (!scriptOptions.skipPostImportRepairs) {
     const mergedSecurityGroups = await mergeAndNormalizeSecurities();
     const normalizedTransactions = await normalizeTransactionsInPlace();
     const archivedDuplicateTransactions = await archiveExactDuplicateTransactions();

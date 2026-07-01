@@ -13,6 +13,10 @@ const repairs: Array<{ label: string; script: string }> = [
     script: "src/scripts/merge_duplicate_securities.ts",
   },
   {
+    label: "Repair symbol aliases and transaction values",
+    script: "src/scripts/repair_symbol_transaction_values.ts",
+  },
+  {
     label: "Clean up cash interest securities",
     script: "src/scripts/cleanup_cash_interest_securities.ts",
   },
