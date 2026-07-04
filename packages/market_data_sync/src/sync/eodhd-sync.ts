@@ -1,6 +1,6 @@
 import { closeDbConnection, db } from "@repo/db";
 import type { DB } from "@repo/db";
-import { daysAgoDateOnly, oneYearAgoDateOnly, todayDateOnly } from "../dates.js";
+import { daysAgoDateOnly, oneYearAgoDateOnly, todayDateOnly } from "../shared/dates.js";
 import { EodhdHttpError } from "../providers/eodhd/errors.js";
 import { fetchEodhdDividendEvents } from "../providers/eodhd/dividends.js";
 import { fetchLatestEodhdPriceSnapshot } from "../providers/eodhd/prices.js";
@@ -9,7 +9,7 @@ import {
   getEodhdTickerAlternates,
   resolveEodhdTicker,
 } from "../providers/eodhd/tickers.js";
-import type { MarketDataSecurity } from "../providers/types.js";
+import type { MarketDataSecurity } from "../shared/provider-types.js";
 import { persistDividendEvents } from "../persistence/dividends.js";
 import { persistPriceSnapshot } from "../persistence/prices.js";
 import { mapWithConcurrency } from "./concurrency.js";

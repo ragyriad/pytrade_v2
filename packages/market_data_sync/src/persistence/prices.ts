@@ -1,10 +1,7 @@
 import { upsertSecurityPriceSnapshots } from "@repo/db";
 import type { DB, NewSecurityPriceSnapshot } from "@repo/db";
-import type { MarketDataSecurity, ProviderPriceSnapshot } from "../providers/types.js";
-
-function toNumericString(value: number | null): string | null {
-  return value == null ? null : value.toFixed(6);
-}
+import type { MarketDataSecurity, ProviderPriceSnapshot } from "../shared/provider-types.js";
+import { toFixedNumericString } from "../shared/number-values.js";
 
 export function toNewSecurityPriceSnapshot(
   snapshot: ProviderPriceSnapshot,
@@ -17,12 +14,12 @@ export function toNewSecurityPriceSnapshot(
     symbol: security.symbol,
     currencyCode: snapshot.currencyCode ?? security.currencyCode ?? null,
     priceDate: snapshot.priceDate,
-    open: toNumericString(snapshot.open),
-    high: toNumericString(snapshot.high),
-    low: toNumericString(snapshot.low),
-    close: toNumericString(snapshot.close) ?? "0.000000",
-    adjustedClose: toNumericString(snapshot.adjustedClose),
-    volume: toNumericString(snapshot.volume),
+    open: toFixedNumericString(snapshot.open),
+    high: toFixedNumericString(snapshot.high),
+    low: toFixedNumericString(snapshot.low),
+    close: toFixedNumericString(snapshot.close) ?? "0.000000",
+    adjustedClose: toFixedNumericString(snapshot.adjustedClose),
+    volume: toFixedNumericString(snapshot.volume),
     rawData: snapshot.rawData,
   };
 }

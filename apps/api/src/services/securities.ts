@@ -12,12 +12,7 @@ import {
   type Transaction,
   type Account,
 } from "@repo/db";
-import { buildSecurityGainLoss } from "./services/security-performance.js";
-
-export type MoneyDto = {
-  amount: number;
-  currency: string;
-};
+import { toMoneyDto, type MoneyDto } from "../shared/money.js";
 
 export type HistoricSecurityDto = {
   id: string;
@@ -102,7 +97,7 @@ function toHistoricSecurityDto(row: HistoricSecurityRow): HistoricSecurityDto {
     buyCount: row.buyCount,
     sellCount: row.sellCount,
     dividendCount: row.dividendCount,
-    totalGainLoss: buildSecurityGainLoss(
+    totalGainLoss: toMoneyDto(
       row.totalGainLossAmount,
       row.totalGainLossCurrency
     ),

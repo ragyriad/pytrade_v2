@@ -1,10 +1,7 @@
 import { upsertDividendEvents } from "@repo/db";
 import type { DB, NewDividendEvent } from "@repo/db";
-import type { ProviderDividendEvent, MarketDataSecurity } from "../providers/types.js";
-
-function toNumericString(value: number): string {
-  return value.toFixed(6);
-}
+import type { ProviderDividendEvent, MarketDataSecurity } from "../shared/provider-types.js";
+import { toFixedNumericString } from "../shared/number-values.js";
 
 export function toNewDividendEvent(
   event: ProviderDividendEvent,
@@ -17,7 +14,7 @@ export function toNewDividendEvent(
     providerTicker: event.providerTicker,
     symbol: security.symbol,
     currencyCode: event.currencyCode ?? security.currencyCode ?? null,
-    cashAmount: toNumericString(event.cashAmount),
+    cashAmount: toFixedNumericString(event.cashAmount) ?? "0.000000",
     exDate: event.exDate,
     paymentDate: event.paymentDate,
     recordDate: event.recordDate,

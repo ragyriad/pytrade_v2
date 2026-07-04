@@ -1,3 +1,8 @@
+export function toDateOnly(value: string | null | undefined): string | null {
+  if (!value) return null;
+  return value.slice(0, 10);
+}
+
 export function todayDateOnly(): string {
   return new Date().toISOString().slice(0, 10);
 }

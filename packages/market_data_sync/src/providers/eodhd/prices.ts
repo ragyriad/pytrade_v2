@@ -1,4 +1,6 @@
-import type { DateRange, ProviderPriceSnapshot } from "../types.js";
+import type { DateRange, ProviderPriceSnapshot } from "../../shared/provider-types.js";
+import { toDateOnly } from "../../shared/dates.js";
+import { toFiniteNumber } from "../../shared/number-values.js";
 import { fetchEodhdJson } from "./client.js";
 import { EODHD_SOURCE } from "./tickers.js";
 
@@ -12,16 +14,6 @@ type EodhdEodPrice = {
   adjustedClose?: number | string | null;
   volume?: number | string | null;
 };
-
-function toDateOnly(value: string | null | undefined): string | null {
-  if (!value) return null;
-  return value.slice(0, 10);
-}
-
-function toNumber(value: number | string | null | undefined): number | null {
-  const parsed = typeof value === "number" ? value : Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
 
 export async function fetchLatestEodhdPriceSnapshot(
   providerTicker: string,
@@ -38,13 +30,13 @@ export async function fetchLatestEodhdPriceSnapshot(
   );
 
   const latest = rows
-    .filter((row) => row.date && toNumber(row.close) != null)
+    .filter((row) => row.date && toFiniteNumber(row.close) != null)
     .sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
 
   if (!latest) return null;
 
   const priceDate = toDateOnly(latest.date);
-  const close = toNumber(latest.close);
+  const close = toFiniteNumber(latest.close);
 
   if (!priceDate || close == null) return null;
 
@@ -54,12 +46,12 @@ export async function fetchLatestEodhdPriceSnapshot(
     symbol: providerTicker,
     currencyCode: null,
     priceDate,
-    open: toNumber(latest.open),
-    high: toNumber(latest.high),
-    low: toNumber(latest.low),
+    open: toFiniteNumber(latest.open),
+    high: toFiniteNumber(latest.high),
+    low: toFiniteNumber(latest.low),
     close,
-    adjustedClose: toNumber(latest.adjusted_close ?? latest.adjustedClose),
-    volume: toNumber(latest.volume),
+    adjustedClose: toFiniteNumber(latest.adjusted_close ?? latest.adjustedClose),
+    volume: toFiniteNumber(latest.volume),
     rawData: latest as Record<string, unknown>,
   };
 }

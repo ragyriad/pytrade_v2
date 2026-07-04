@@ -1,4 +1,4 @@
-import { daysAgoDateOnly, oneYearAgoDateOnly, todayDateOnly } from "../dates.js";
+import { daysAgoDateOnly, oneYearAgoDateOnly, todayDateOnly } from "../shared/dates.js";
 import { loadMarketDataEnv } from "../env.js";
 import { fetchEodhdDividendEvents } from "../providers/eodhd/dividends.js";
 import { fetchLatestEodhdPriceSnapshot } from "../providers/eodhd/prices.js";

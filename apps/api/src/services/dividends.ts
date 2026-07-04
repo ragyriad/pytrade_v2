@@ -4,32 +4,14 @@ import {
   eq,
   getDividendEventsBySecurity,
   getDividendEventsBySecurities,
-  getSecurityById,
   inArray,
   positions,
   securities,
-  upsertDividendEvents,
   users,
   type DividendEvent,
-  type NewDividendEvent,
   type Position,
-  type Security,
 } from "@repo/db";
-import type { DividendProviderDateRange } from "./data-providers/dividend-provider.js";
-import { fetchTiingoDividendEvents } from "./data-providers/tiingo.js";
-
-export type DividendSyncResultDto = {
-  securityId: string;
-  symbol: string;
-  providerTicker: string;
-  insertedOrUpdatedCount: number;
-  events: DividendEvent[];
-};
-
-type MoneyBreakdownDto = {
-  currency: string;
-  amount: number;
-};
+import type { MoneyBreakdownDto } from "../shared/money.js";
 
 export type DividendIncomeHoldingDto = {
   accountId: string;
@@ -83,89 +65,6 @@ function toNumber(value: string | number | null | undefined): number {
 
 function todayDateOnly(): string {
   return new Date().toISOString().slice(0, 10);
-}
-
-function providerTickerForSecurity(security: Security): string {
-  return (security.rawSymbol ?? security.symbol).trim().toUpperCase();
-}
-
-function toNewDividendEvent(
-  event: Awaited<ReturnType<typeof fetchTiingoDividendEvents>>[number],
-  security: Security | null
-): NewDividendEvent {
-  return {
-    securityId: security?.id ?? null,
-    source: event.source,
-    sourceEventId: event.sourceEventId,
-    providerTicker: event.providerTicker,
-    symbol: security?.symbol ?? event.symbol,
-    currencyCode: event.currencyCode ?? security?.currencyCode ?? null,
-    cashAmount: event.cashAmount.toFixed(6),
-    exDate: event.exDate,
-    paymentDate: event.paymentDate,
-    recordDate: event.recordDate,
-    declarationDate: event.declarationDate,
-    frequency: event.frequency,
-    distributionType: event.distributionType,
-    isSpecial: event.isSpecial,
-    rawData: event.rawData,
-  };
-}
-
-export async function fetchTiingoDividendsForTicker(
-  ticker: string,
-  range: DividendProviderDateRange = {}
-) {
-  return fetchTiingoDividendEvents(ticker, range);
-}
-
-export async function syncTiingoDividendsForSecurity(
-  securityId: string,
-  range: DividendProviderDateRange = {}
-): Promise<DividendSyncResultDto | null> {
-  const security = await getSecurityById(db, securityId);
-  if (!security) return null;
-
-  const providerTicker = providerTickerForSecurity(security);
-  const providerEvents = await fetchTiingoDividendEvents(providerTicker, range);
-  const events = await upsertDividendEvents(
-    db,
-    providerEvents.map((event) => toNewDividendEvent(event, security))
-  );
-
-  return {
-    securityId: security.id,
-    symbol: security.symbol,
-    providerTicker,
-    insertedOrUpdatedCount: events.length,
-    events,
-  };
-}
-
-export async function syncTiingoDividendsForSymbol(
-  symbol: string,
-  range: DividendProviderDateRange = {}
-): Promise<DividendSyncResultDto | null> {
-  const rows = await db
-    .select()
-    .from(securities)
-    .where(eq(securities.symbol, symbol))
-    .limit(1);
-  const security = rows[0] ?? null;
-  const providerTicker = (security ? providerTickerForSecurity(security) : symbol).toUpperCase();
-  const providerEvents = await fetchTiingoDividendEvents(providerTicker, range);
-  const events = await upsertDividendEvents(
-    db,
-    providerEvents.map((event) => toNewDividendEvent(event, security))
-  );
-
-  return {
-    securityId: security?.id ?? "",
-    symbol: security?.symbol ?? symbol,
-    providerTicker,
-    insertedOrUpdatedCount: events.length,
-    events,
-  };
 }
 
 export async function getStoredDividendEventsForSecurity(

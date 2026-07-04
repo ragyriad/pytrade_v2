@@ -3,10 +3,6 @@ import { usersRouter } from "./routers/users.router.js";
 import { accountsRouter } from "./routers/accounts.router.js";
 import { transactionsRouter } from "./routers/transactions.router.js";
 
-// ---------------------------------------------------------------------------
-// Root router — compose all domain routers here
-// ---------------------------------------------------------------------------
-
 export const appRouter = router({
   users: usersRouter,
   accounts: accountsRouter,

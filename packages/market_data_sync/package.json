@@ -6,7 +6,9 @@
   "scripts": {
     "build": "tsc -p tsconfig.market_data_sync.json",
     "sync:eodhd": "tsx src/scripts/sync_eodhd.ts",
-    "test:eodhd": "tsx src/scripts/test_eodhd.ts"
+    "sync:tiingo": "tsx src/scripts/sync_tiingo.ts",
+    "test:eodhd": "tsx src/scripts/test_eodhd.ts",
+    "test:tiingo": "tsx src/scripts/test_tiingo.ts"
   },
   "dependencies": {
     "@repo/db": "workspace:*",

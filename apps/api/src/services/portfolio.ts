@@ -11,16 +11,7 @@ import {
   type Position,
   type Transaction,
 } from "@repo/db";
-
-type MoneyDto = {
-  amount: number;
-  currency: string;
-};
-
-type MoneyBreakdownDto = {
-  currency: string;
-  amount: number;
-};
+import type { MoneyBreakdownDto, MoneyDto } from "../shared/money.js";
 
 export type AccountDto = {
   id: string;

@@ -1,6 +1,6 @@
 import { db, eq, positions, securities, sql } from "@repo/db";
 import type { DB, Security } from "@repo/db";
-import type { MarketDataSecurity } from "../providers/types.js";
+import type { MarketDataSecurity } from "../shared/provider-types.js";
 
 export type SecurityUniverseOptions = {
   includeInactive?: boolean;

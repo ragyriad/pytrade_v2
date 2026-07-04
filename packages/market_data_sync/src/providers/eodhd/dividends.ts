@@ -1,4 +1,6 @@
-import type { DateRange, ProviderDividendEvent } from "../types.js";
+import type { DateRange, ProviderDividendEvent } from "../../shared/provider-types.js";
+import { toDateOnly } from "../../shared/dates.js";
+import { toFiniteNumber } from "../../shared/number-values.js";
 import { fetchEodhdJson } from "./client.js";
 import { EODHD_SOURCE } from "./tickers.js";
 
@@ -12,16 +14,6 @@ type EodhdDividend = {
   unadjustedValue?: number | string | null;
   currency?: string | null;
 };
-
-function toDateOnly(value: string | null | undefined): string | null {
-  if (!value) return null;
-  return value.slice(0, 10);
-}
-
-function toNumber(value: number | string | null | undefined): number | null {
-  const parsed = typeof value === "number" ? value : Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
 
 function buildSourceEventId(row: EodhdDividend, providerTicker: string): string {
   const exDate = toDateOnly(row.date ?? row.exDate) ?? "unknown-date";
@@ -44,7 +36,7 @@ export async function fetchEodhdDividendEvents(
 
   return rows.flatMap((row) => {
     const exDate = toDateOnly(row.date ?? row.exDate);
-    const cashAmount = toNumber(row.value ?? row.unadjustedValue);
+    const cashAmount = toFiniteNumber(row.value ?? row.unadjustedValue);
 
     if (!exDate || cashAmount == null) return [];
 

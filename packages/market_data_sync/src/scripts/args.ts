@@ -1,4 +1,5 @@
 import type { EodhdSyncOptions } from "../sync/eodhd-sync.js";
+import type { TiingoSyncOptions } from "../sync/tiingo-sync.js";
 
 function readNumber(value: string | undefined): number | undefined {
   if (!value) return undefined;
@@ -31,6 +32,35 @@ export function parseEodhdSyncArgs(argv: string[]): EodhdSyncOptions {
     }
     if (key === "--refreshPricesAfterDays") {
       options.refreshPricesAfterDays = readNumber(value);
+    }
+    if (key === "--concurrency") options.concurrency = readNumber(value);
+    if (key === "--maxSecurities") options.maxSecurities = readNumber(value);
+  }
+
+  return options;
+}
+
+export function parseTiingoSyncArgs(argv: string[]): TiingoSyncOptions {
+  const options: TiingoSyncOptions = {};
+
+  for (const arg of argv) {
+    if (arg === "--force") {
+      options.force = true;
+      continue;
+    }
+
+    if (arg === "--includeInactive") {
+      options.includeInactive = true;
+      continue;
+    }
+
+    const [key, value] = arg.split("=");
+    if (!value) continue;
+
+    if (key === "--dividendStartDate") options.dividendStartDate = value;
+    if (key === "--dividendEndDate") options.dividendEndDate = value;
+    if (key === "--refreshDividendsAfterDays") {
+      options.refreshDividendsAfterDays = readNumber(value);
     }
     if (key === "--concurrency") options.concurrency = readNumber(value);
     if (key === "--maxSecurities") options.maxSecurities = readNumber(value);

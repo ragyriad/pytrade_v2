@@ -1,4 +1,4 @@
-import type { MarketDataSecurity } from "../types.js";
+import type { MarketDataSecurity } from "../../shared/provider-types.js";
 
 const EODHD_SOURCE = "EODHD";
 const CANADIAN_EXCHANGE_CODES = new Set(["CA", "CN", "TO", "TSX", "TSXV", "NEO"]);
