@@ -1,0 +1,26 @@
+{
+  "name": "@repo/market-data-sync",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.market_data_sync.json",
+    "sync:eodhd": "tsx src/scripts/sync_eodhd.ts",
+    "test:eodhd": "tsx src/scripts/test_eodhd.ts"
+  },
+  "dependencies": {
+    "@repo/db": "workspace:*",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  }
+}

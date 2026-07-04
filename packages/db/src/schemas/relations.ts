@@ -4,6 +4,7 @@ import { dividendEvents } from "./dividend_events_schema.js";
 import { options } from "./options_schema.js";
 import { positions } from "./positions_schema.js";
 import { securityAliases } from "./security_aliases_schema.js";
+import { securityPriceSnapshots } from "./security_price_snapshots_schema.js";
 import { securities } from "./securities_schema.js";
 import { transactions } from "./transactions_schema.js";
 import { users } from "./users_schema.js";
@@ -73,7 +74,7 @@ export const transactionsRelations = defineRelations(
 );
 
 export const securitiesRelations = defineRelations(
-  { securities, transactions, securityAliases, options, dividendEvents, positions },
+  { securities, transactions, securityAliases, options, dividendEvents, positions, securityPriceSnapshots },
   (r) => ({
     securities: {
       transactions: r.many.transactions({
@@ -105,6 +106,10 @@ export const securitiesRelations = defineRelations(
         from: r.securities.id,
         to: r.dividendEvents.securityId,
       }),
+      priceSnapshots: r.many.securityPriceSnapshots({
+        from: r.securities.id,
+        to: r.securityPriceSnapshots.securityId,
+      }),
     },
   })
 );
@@ -134,6 +139,18 @@ export const dividendEventsRelations = defineRelations(
         from: r.dividendEvents.securityId,
         to: r.securities.id,
         optional: true,
+      }),
+    },
+  })
+);
+
+export const securityPriceSnapshotsRelations = defineRelations(
+  { securityPriceSnapshots, securities },
+  (r) => ({
+    securityPriceSnapshots: {
+      security: r.one.securities({
+        from: r.securityPriceSnapshots.securityId,
+        to: r.securities.id,
       }),
     },
   })

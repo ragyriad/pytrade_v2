@@ -10,6 +10,7 @@ export * from "./persistence/securities_persistence.js";
 export * from "./persistence/options_persistence.js";
 export * from "./persistence/security_aliases_persistence.js";
 export * from "./persistence/dividend_events_persistence.js";
+export * from "./persistence/security_price_snapshots_persistence.js";
 export * from "./seed.js";
 export * from "./mappers/account_mapper.js";
 export * from "./mappers/transaction_mapper.js";
