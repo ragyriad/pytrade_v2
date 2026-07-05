@@ -10,8 +10,11 @@ export type MoneyBreakdownDto = {
 
 export type AccountDto = {
   id: string;
+  brokerageAccountNumber?: string | null;
+  linkedAccountId?: string | null;
   name: string;
   institutionName: string | null;
+  accountCurrency?: string | null;
   type: string | null;
   status: string | null;
   balance: MoneyDto;

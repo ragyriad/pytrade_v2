@@ -174,7 +174,7 @@ export function DividendPositionYieldChart({
                           ) : null}
                         </div>
                         <span className="rounded bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
-                          {formatPercent(row.yieldPercent)}
+                          {formatPercent(row.yieldOnCostPercent)}
                         </span>
                       </div>
                       <div className="mt-3 grid gap-2 text-zinc-600">
@@ -257,7 +257,7 @@ export function DividendPositionYieldChart({
                             textAnchor="middle"
                             className="fill-emerald-800 text-xs font-bold"
                           >
-                            {formatPercent(row.yieldPercent)}
+                            {formatPercent(row.yieldOnCostPercent)}
                           </text>
                         );
                       }}

@@ -15,8 +15,11 @@ import type { MoneyBreakdownDto, MoneyDto } from "../shared/money.js";
 
 export type AccountDto = {
   id: string;
+  brokerageAccountNumber: string | null;
+  linkedAccountId: string | null;
   name: string;
   institutionName: string | null;
+  accountCurrency: string | null;
   type: string | null;
   status: string | null;
   balance: MoneyDto;
@@ -136,8 +139,11 @@ function marketValueForPosition(position: Position): number {
 function toAccountDto(account: Account): AccountDto {
   return {
     id: account.id,
+    brokerageAccountNumber: account.brokerageAccountNumber,
+    linkedAccountId: account.linkedAccountId,
     name: account.name ?? account.brokerageAccountNumber ?? "Account",
     institutionName: account.brokerageName,
+    accountCurrency: account.accountCurrency,
     type: account.type,
     status: account.status,
     balance: {

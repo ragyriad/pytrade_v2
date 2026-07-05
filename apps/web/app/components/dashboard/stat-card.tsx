@@ -1,9 +1,10 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import type { ReactNode } from "react";
 
 type StatCardProps = {
   label: string;
-  value: string;
+  value: ReactNode;
   tone?: "neutral" | "positive" | "negative";
   icon?: IconDefinition;
   align?: "left" | "center";
@@ -37,9 +38,9 @@ export function StatCard({
         <p className="text-sm text-zinc-500">{label}</p>
         {icon ? <FontAwesomeIcon icon={icon} className="h-4 w-4 text-zinc-400" /> : null}
       </div>
-      <p className={`mt-2 whitespace-pre-line text-xl font-semibold tracking-normal ${toneClass}`}>
+      <div className={`mt-2 whitespace-pre-line text-xl font-semibold tracking-normal ${toneClass}`}>
         {value}
-      </p>
+      </div>
     </section>
   );
 }

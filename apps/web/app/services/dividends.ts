@@ -1,6 +1,5 @@
 import { absoluteMoney, divideMoney, groupMoney } from "./value_helpers";
 import { annualizationFactor, getMonthDivisor, type TimelineRange } from "./filter_timeline";
-import { getCurrentCostBasis } from "./portfolio";
 import type { MoneyBreakdownDto, PositionDto, TransactionDto } from "../lib/portfolio-types";
 
 export type DividendPositionYield = {
@@ -15,11 +14,23 @@ export type DividendPositionYield = {
   }>;
   dividendAmount: MoneyBreakdownDto;
   annualizedDividendAmount: MoneyBreakdownDto;
+  marketValue: MoneyBreakdownDto;
   costBasis: MoneyBreakdownDto;
   costPerUnit: MoneyBreakdownDto;
   dividendPerShare: MoneyBreakdownDto;
   annualizedDividendPerShare: MoneyBreakdownDto;
-  yieldPercent: number;
+  yieldOnCostPercent: number;
+};
+
+export type DividendYieldingPositionRow = {
+  id: string;
+  symbol: string;
+  description: string | null;
+  accountId: string;
+  status: "open" | "closed";
+  totalDividends: MoneyBreakdownDto;
+  currentYieldPercent: number | null;
+  yieldOnCostPercent: number | null;
 };
 
 export function getDividendTotals(transactions: TransactionDto[]): MoneyBreakdownDto[] {
@@ -38,7 +49,11 @@ export function getDividendYieldOnCostPercent(
   positions: PositionDto[],
   range: TimelineRange
 ): number | null {
-  const costBasis = getCurrentCostBasis(positions);
+  const costBasis = positions.reduce((sum, position) => {
+    if (position.isCashEquivalent || position.units <= 0) return sum;
+    return sum + getPositionCostBasis(position);
+  }, 0);
+
   if (costBasis === 0) return null;
 
   const totalDividendAmount = getDividendTotals(transactions).reduce(
@@ -69,6 +84,12 @@ function transactionDividendKey(
   return `${transaction.accountId}:${transaction.symbol.toUpperCase()}`;
 }
 
+function transactionDividendCurrencyKey(transaction: TransactionDto): string | null {
+  const key = transactionDividendKey(transaction);
+  if (!key) return null;
+  return `${key}:${transaction.amount.currency}`;
+}
+
 function getSignedUnitChange(transaction: TransactionDto): number {
   if (transaction.units == null) return 0;
 
@@ -77,6 +98,23 @@ function getSignedUnitChange(transaction: TransactionDto): number {
   if (action.includes("SELL")) return -Math.abs(transaction.units);
 
   return 0;
+}
+
+function getUnitsHeldFromTransactions(
+  accountId: string,
+  symbol: string,
+  allTransactions: TransactionDto[],
+  tradeDate: string
+): number | null {
+  const key = `${accountId}:${symbol.toUpperCase()}`;
+  const targetTime = new Date(tradeDate).getTime();
+  const units = allTransactions.reduce((sum, transaction) => {
+    if (transactionDividendKey(transaction) !== key) return sum;
+    if (new Date(transaction.tradeDate).getTime() > targetTime) return sum;
+    return sum + getSignedUnitChange(transaction);
+  }, 0);
+
+  return units > 0 ? units : null;
 }
 
 function getUnitsHeldOnDate(
@@ -94,6 +132,44 @@ function getUnitsHeldOnDate(
   const units = position.units - unitsChangedAfterDate;
 
   return units > 0 ? units : null;
+}
+
+function getAverageBuyCostPerUnit(
+  accountId: string,
+  symbol: string,
+  currency: string,
+  allTransactions: TransactionDto[]
+): number | null {
+  const key = `${accountId}:${symbol.toUpperCase()}`;
+  let totalUnits = 0;
+  let totalCost = 0;
+
+  for (const transaction of allTransactions) {
+    if (transactionDividendKey(transaction) !== key) continue;
+    if (transaction.amount.currency !== currency) continue;
+
+    const action = (transaction.action ?? transaction.type).toUpperCase();
+    if (!action.includes("BUY") || transaction.units == null) continue;
+
+    const units = Math.abs(transaction.units);
+    if (units <= 0) continue;
+
+    totalUnits += units;
+    totalCost += Math.abs(transaction.amount.amount) + Math.abs(transaction.fee.amount);
+  }
+
+  return totalUnits > 0 ? totalCost / totalUnits : null;
+}
+
+function getPositionPriceBySymbol(positions: PositionDto[]): Map<string, MoneyBreakdownDto> {
+  const pricesBySymbol = new Map<string, MoneyBreakdownDto>();
+
+  for (const position of positions) {
+    if (!position.price || position.price.amount <= 0) continue;
+    pricesBySymbol.set(position.symbol.toUpperCase(), position.price);
+  }
+
+  return pricesBySymbol;
 }
 
 function combineDividendYieldRows(rows: DividendPositionYield[]): DividendPositionYield[] {
@@ -115,6 +191,7 @@ function combineDividendYieldRows(rows: DividendPositionYield[]): DividendPositi
     const annualizedAmount =
       current.annualizedDividendAmount.amount + row.annualizedDividendAmount.amount;
     const costBasis = current.costBasis.amount + row.costBasis.amount;
+    const marketValue = current.marketValue.amount + row.marketValue.amount;
     const dividendAmount = current.dividendAmount.amount + row.dividendAmount.amount;
     const units = current.units + row.units;
     const segmentsByAccount = new Map(
@@ -148,6 +225,10 @@ function combineDividendYieldRows(rows: DividendPositionYield[]): DividendPositi
         amount: annualizedAmount,
         currency: current.annualizedDividendAmount.currency,
       },
+      marketValue: {
+        amount: marketValue,
+        currency: current.marketValue.currency,
+      },
       dividendPerShare: {
         amount: units > 0 ? dividendAmount / units : current.dividendPerShare.amount,
         currency: current.dividendPerShare.currency,
@@ -167,13 +248,109 @@ function combineDividendYieldRows(rows: DividendPositionYield[]): DividendPositi
         amount: units > 0 ? costBasis / units : current.costPerUnit.amount,
         currency: current.costPerUnit.currency,
       },
-      yieldPercent: costBasis > 0 ? (annualizedAmount / costBasis) * 100 : 0,
+      yieldOnCostPercent: costBasis > 0 ? (annualizedAmount / costBasis) * 100 : 0,
     });
   }
 
   return Array.from(rowsBySymbol.values()).sort(
     (a, b) => b.dividendAmount.amount - a.dividendAmount.amount
   );
+}
+
+export function getDividendYieldingPositionRows(
+  dividendTransactions: TransactionDto[],
+  allTransactions: TransactionDto[],
+  positions: PositionDto[],
+  range: TimelineRange
+): DividendYieldingPositionRow[] {
+  const positionsByKey = new Map(
+    positions.map((position) => [positionDividendKey(position), position])
+  );
+  const pricesBySymbol = getPositionPriceBySymbol(positions);
+  const rowsByKey = new Map<
+    string,
+    {
+      accountId: string;
+      symbol: string;
+      description: string | null;
+      currency: string;
+      totalDividends: number;
+      dividendPerShare: number;
+      transactions: TransactionDto[];
+    }
+  >();
+
+  for (const transaction of dividendTransactions) {
+    const key = transactionDividendCurrencyKey(transaction);
+    if (!key || !transaction.symbol) continue;
+
+    const current = rowsByKey.get(key);
+    const amount = Math.abs(transaction.amount.amount);
+    const unitsHeld = getUnitsHeldFromTransactions(
+      transaction.accountId,
+      transaction.symbol,
+      allTransactions,
+      transaction.tradeDate
+    );
+
+    rowsByKey.set(key, {
+      accountId: transaction.accountId,
+      symbol: transaction.symbol,
+      description: current?.description ?? transaction.description,
+      currency: transaction.amount.currency,
+      totalDividends: (current?.totalDividends ?? 0) + amount,
+      dividendPerShare:
+        (current?.dividendPerShare ?? 0) + (unitsHeld ? amount / unitsHeld : 0),
+      transactions: [...(current?.transactions ?? []), transaction],
+    });
+  }
+
+  return Array.from(rowsByKey.values())
+    .map((row): DividendYieldingPositionRow => {
+      const position = positionsByKey.get(
+        `${row.accountId}:${row.symbol.toUpperCase()}`
+      );
+      const isOpen = Boolean(position && position.units > 0 && !position.isCashEquivalent);
+      const annualizedDividendPerShare =
+        row.dividendPerShare * annualizationFactor(range, row.transactions);
+      const annualizedDividendAmount = isOpen
+        ? annualizedDividendPerShare * (position?.units ?? 0)
+        : null;
+      const marketValue =
+        isOpen && position ? position.marketValue.amount : null;
+      const currentPrice = pricesBySymbol.get(row.symbol.toUpperCase());
+      const currentYieldPercent =
+        annualizedDividendAmount != null && marketValue && marketValue > 0
+          ? (annualizedDividendAmount / marketValue) * 100
+          : currentPrice?.currency === row.currency && currentPrice.amount > 0
+            ? (annualizedDividendPerShare / currentPrice.amount) * 100
+            : null;
+      const costPerUnit =
+        isOpen && position
+          ? getPositionCostBasis(position) / position.units
+          : getAverageBuyCostPerUnit(row.accountId, row.symbol, row.currency, allTransactions);
+
+      return {
+        id: `${row.accountId}:${row.symbol.toUpperCase()}:${row.currency}`,
+        symbol: row.symbol,
+        description: row.description,
+        accountId: row.accountId,
+        status: isOpen ? "open" : "closed",
+        totalDividends: {
+          amount: row.totalDividends,
+          currency: row.currency,
+        },
+        currentYieldPercent,
+        yieldOnCostPercent:
+          costPerUnit && costPerUnit > 0
+            ? (annualizedDividendPerShare / costPerUnit) * 100
+            : null,
+      };
+    })
+    .sort((a, b) => {
+      if (a.status !== b.status) return a.status === "open" ? -1 : 1;
+      return b.totalDividends.amount - a.totalDividends.amount;
+    });
 }
 
 export function getActiveDividendPositionYields(
@@ -244,6 +421,7 @@ export function getActiveDividendPositionYields(
           amount: annualizedAmount,
           currency: dividends.currency,
         },
+        marketValue: position.marketValue,
         dividendPerShare: {
           amount: dividends.perShareAmount,
           currency: dividends.currency,
@@ -260,7 +438,7 @@ export function getActiveDividendPositionYields(
           amount: costBasis / position.units,
           currency: position.marketValue.currency,
         },
-        yieldPercent: (annualizedAmount / costBasis) * 100,
+        yieldOnCostPercent: (annualizedAmount / costBasis) * 100,
       };
     });
 
