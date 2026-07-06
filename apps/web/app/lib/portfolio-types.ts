@@ -142,6 +142,22 @@ export type DividendYieldingPositionDto = {
   yieldOnCostPercent: number | null;
 };
 
+export type DividendCalendarEventDto = {
+  id: string;
+  securityId: string | null;
+  symbol: string;
+  providerTicker: string;
+  source: string;
+  cashAmount: MoneyBreakdownDto;
+  exDate: string;
+  paymentDate: string | null;
+  recordDate: string | null;
+  declarationDate: string | null;
+  frequency: string | null;
+  distributionType: string | null;
+  isSpecial: boolean;
+};
+
 export type DividendSummaryMetricsDto = {
   totalDividends: MoneyBreakdownDto[];
   annualIncome: MoneyBreakdownDto[];
@@ -157,6 +173,7 @@ export type DividendDashboardSummaryDto = {
   positionYields: DividendPositionYieldDto[];
   positionRows: DividendYieldingPositionDto[];
   transactions: TransactionDto[];
+  calendarEvents: DividendCalendarEventDto[];
 };
 
 export type FeeSummaryDto = {

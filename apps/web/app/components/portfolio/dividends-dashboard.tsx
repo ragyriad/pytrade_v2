@@ -23,10 +23,12 @@ import type {
 } from "../../lib/portfolio-types";
 import { DataTable, type TableColumn } from "../dashboard/data-table";
 import { FilterBar } from "../dashboard/filter-bar";
+import { SegmentedTabs } from "../dashboard/segmented-tabs";
 import { StatCard } from "../dashboard/stat-card";
 import { DividendGrowthChart } from "./dividend-growth-chart";
 import { DividendAccountShareChart } from "./dividend-account-share-chart";
 import { DividendPositionYieldChart } from "./dividend-position-yield-chart";
+import { DividendEventsCalendar } from "./dividend-events-calendar";
 import { MetricValueList } from "../dashboard/metric-value-list";
 
 type DividendsDashboardProps = {
@@ -35,12 +37,16 @@ type DividendsDashboardProps = {
   userId?: string;
 };
 
+type DividendTableTab = "positions" | "transactions" | "calendar";
+
 export function DividendsDashboard({
   dashboard,
   initialSummary,
   userId,
 }: DividendsDashboardProps) {
   const [filters, setFilters] = useState(defaultFilterBarState);
+  const [activeTableTab, setActiveTableTab] =
+    useState<DividendTableTab>("positions");
   const [summary, setSummary] = useState(initialSummary);
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [isSummaryLoading, setIsSummaryLoading] = useState(false);
@@ -332,24 +338,54 @@ export function DividendsDashboard({
           />
         </section>
 
-        <section className="mt-6">
-          <DataTable
-            title="Dividend yielding positions"
-            rows={summary.positionRows}
-            columns={positionColumns}
-            getRowKey={(position) => position.id}
-            emptyMessage="No dividend yielding positions match this view."
+        <section className="mt-6 rounded-md border border-zinc-200 bg-white p-4 shadow-sm">
+          <SegmentedTabs<DividendTableTab>
+            value={activeTableTab}
+            onChange={setActiveTableTab}
+            options={[
+              {
+                id: "positions",
+                label: "Positions",
+                count: summary.positionRows.length,
+              },
+              {
+                id: "transactions",
+                label: "Transactions",
+                count: summary.transactions.length,
+              },
+              {
+                id: "calendar",
+                label: "Calendar",
+                count: summary.calendarEvents.length,
+              },
+            ]}
           />
         </section>
 
         <section className="mt-6">
-          <DataTable
-            title="Dividend transactions"
-            rows={summary.transactions}
-            columns={transactionColumns}
-            getRowKey={(transaction) => transaction.id}
-            emptyMessage="No dividend transactions match this view."
-          />
+          {activeTableTab === "positions" ? (
+            <DataTable
+              title="Dividend yielding positions"
+              rows={summary.positionRows}
+              columns={positionColumns}
+              getRowKey={(position) => position.id}
+              emptyMessage="No dividend yielding positions match this view."
+            />
+          ) : null}
+
+          {activeTableTab === "transactions" ? (
+            <DataTable
+              title="Dividend transactions"
+              rows={summary.transactions}
+              columns={transactionColumns}
+              getRowKey={(transaction) => transaction.id}
+              emptyMessage="No dividend transactions match this view."
+            />
+          ) : null}
+
+          {activeTableTab === "calendar" ? (
+            <DividendEventsCalendar events={summary.calendarEvents} />
+          ) : null}
         </section>
       </div>
     </main>

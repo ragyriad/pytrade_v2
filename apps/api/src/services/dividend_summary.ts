@@ -73,6 +73,22 @@ export type DividendYieldingPositionDto = {
   yieldOnCostPercent: number | null;
 };
 
+export type DividendCalendarEventDto = {
+  id: string;
+  securityId: string | null;
+  symbol: string;
+  providerTicker: string;
+  source: string;
+  cashAmount: MoneyBreakdownDto;
+  exDate: string;
+  paymentDate: string | null;
+  recordDate: string | null;
+  declarationDate: string | null;
+  frequency: string | null;
+  distributionType: string | null;
+  isSpecial: boolean;
+};
+
 export type DividendSummaryMetricsDto = {
   totalDividends: MoneyBreakdownDto[];
   annualIncome: MoneyBreakdownDto[];
@@ -88,6 +104,7 @@ export type DividendDashboardSummaryDto = {
   positionYields: DividendPositionYieldDto[];
   positionRows: DividendYieldingPositionDto[];
   transactions: TransactionDto[];
+  calendarEvents: DividendCalendarEventDto[];
 };
 
 export type DividendSummaryOptions = {
@@ -135,6 +152,24 @@ function toNumber(value: string | number | null | undefined): number {
   if (value == null) return 0;
   const parsed = typeof value === "number" ? value : Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function padDatePart(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+function toDateOnly(value: Date | string | null | undefined): string | null {
+  if (!value) return null;
+
+  if (value instanceof Date) {
+    return [
+      value.getFullYear(),
+      padDatePart(value.getMonth() + 1),
+      padDatePart(value.getDate()),
+    ].join("-");
+  }
+
+  return String(value).slice(0, 10);
 }
 
 function getAnnualDividendRate(events: DividendEvent[]): DividendRate | null {
@@ -192,6 +227,7 @@ function emptySummary(timeline: DividendTimelineRange): DividendDashboardSummary
     positionYields: [],
     positionRows: [],
     transactions: [],
+    calendarEvents: [],
   };
 }
 
@@ -263,6 +299,22 @@ function filterTransactionsByTimeline(
   const start = getTimelineStart(transactions, range);
   if (!start) return [];
   return transactions.filter((transaction) => new Date(transaction.tradeDate) >= start);
+}
+
+function filterDividendEventsByTimeline(
+  events: DividendEvent[],
+  range: DividendTimelineRange,
+  referenceTransactions: TransactionDto[]
+): DividendEvent[] {
+  if (range === "NONE" || range === "ALL") return events;
+
+  const start = getTimelineStart(referenceTransactions, range);
+  if (!start) return events;
+
+  return events.filter((event) => {
+    const exDate = toDateOnly(event.exDate);
+    return exDate ? new Date(`${exDate}T00:00:00.000Z`) >= start : false;
+  });
 }
 
 function getPositionCostBasis(position: PositionDto): number {
@@ -828,6 +880,27 @@ function getDividendYieldingPositionRows(
     });
 }
 
+function toDividendCalendarEventDto(event: DividendEvent): DividendCalendarEventDto {
+  return {
+    id: event.id,
+    securityId: event.securityId,
+    symbol: event.symbol,
+    providerTicker: event.providerTicker,
+    source: event.source,
+    cashAmount: {
+      amount: toNumber(event.cashAmount),
+      currency: event.currencyCode ?? "USD",
+    },
+    exDate: toDateOnly(event.exDate) ?? "",
+    paymentDate: toDateOnly(event.paymentDate),
+    recordDate: toDateOnly(event.recordDate),
+    declarationDate: toDateOnly(event.declarationDate),
+    frequency: event.frequency,
+    distributionType: event.distributionType,
+    isSpecial: event.isSpecial,
+  };
+}
+
 async function getLatestPriceSnapshots(
   positions: PositionDto[],
   transactions: TransactionDto[]
@@ -844,10 +917,10 @@ async function getLatestPriceSnapshots(
   return buildLatestPricesBySecurityId(snapshots);
 }
 
-async function getDividendRates(
+async function getDividendEvents(
   positions: PositionDto[],
   transactions: TransactionDto[]
-): Promise<Map<string, DividendRate>> {
+): Promise<DividendEvent[]> {
   const securityIds = [
     ...new Set(
       [...positions, ...transactions]
@@ -855,7 +928,11 @@ async function getDividendRates(
         .filter((securityId): securityId is string => Boolean(securityId))
     ),
   ];
-  const events = await getDividendEventsBySecurities(db, securityIds);
+
+  return getDividendEventsBySecurities(db, securityIds);
+}
+
+function getDividendRates(events: DividendEvent[]): Map<string, DividendRate> {
   const eventsBySecurityId = new Map<string, DividendEvent[]>();
 
   for (const event of events) {
@@ -918,15 +995,21 @@ export async function getDividendDashboardSummary(
     selectedPositions,
     allTransactions
   );
-  const dividendRatesBySecurityId = await getDividendRates(
+  const dividendEvents = await getDividendEvents(
     selectedPositions,
     allTransactions
   );
+  const dividendRatesBySecurityId = getDividendRates(dividendEvents);
   const transactionsByKey = buildTransactionsByDividendKey(allTransactions);
   const positionYields = getActiveDividendPositionYields(
     timelineTransactions,
     activePositions,
     dividendRatesBySecurityId
+  );
+  const timelineDividendEvents = filterDividendEventsByTimeline(
+    dividendEvents,
+    options.timeline,
+    dividendTransactions
   );
 
   return {
@@ -942,5 +1025,6 @@ export async function getDividendDashboardSummary(
       dividendRatesBySecurityId
     ),
     transactions: timelineTransactions,
+    calendarEvents: timelineDividendEvents.map(toDividendCalendarEventDto),
   };
 }

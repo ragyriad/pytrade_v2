@@ -1,19 +1,22 @@
-import type { DashboardTab } from "../../lib/portfolio-types";
 import { buttonClassName } from "../ui/button";
 
-type TabOption = {
-  id: DashboardTab;
+type TabOption<T extends string> = {
+  id: T;
   label: string;
   count: number;
 };
 
-type SegmentedTabsProps = {
-  value: DashboardTab;
-  options: TabOption[];
-  onChange: (value: DashboardTab) => void;
+type SegmentedTabsProps<T extends string> = {
+  value: T;
+  options: TabOption<T>[];
+  onChange: (value: T) => void;
 };
 
-export function SegmentedTabs({ value, options, onChange }: SegmentedTabsProps) {
+export function SegmentedTabs<T extends string>({
+  value,
+  options,
+  onChange,
+}: SegmentedTabsProps<T>) {
   return (
     <div className="flex w-full flex-wrap rounded-md border border-zinc-200 bg-zinc-50 p-1 sm:inline-flex sm:w-auto">
       {options.map((option) => {
