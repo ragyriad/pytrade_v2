@@ -158,7 +158,7 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
           <span className={`font-medium ${signedValueClassName(security.totalGainLoss.amount)}`}>
             {formatMoney(security.totalGainLoss)}
             {security.totalGainLossPercent == null ? null : (
-              <span className="ml-1 text-xs font-semibold text-zinc-500">
+              <span className="ml-1 text-xs font-semibold text-current opacity-75">
                 ({formatPercent(security.totalGainLossPercent)})
               </span>
             )}
@@ -204,7 +204,7 @@ function SecurityTransactionsSubTable({
   isLoading: boolean;
   error: string | null;
 }) {
-  const pageSize = 10;
+  const pageSize = 20;
   const [pageIndex, setPageIndex] = useState(0);
 
   useEffect(() => {
@@ -286,7 +286,13 @@ function SecurityTransactionsSubTable({
                   </p>
                 </td>
                 <td className="px-4 py-3 text-center">
-                  {transaction.units == null ? "-" : formatNumber(transaction.units)}
+                  {transaction.units == null ? (
+                    "-"
+                  ) : (
+                    <span className={signedValueClassName(transaction.units)}>
+                      {formatNumber(transaction.units)}
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-center">
                   {transaction.price ? formatMoney(transaction.price) : "-"}
@@ -299,9 +305,9 @@ function SecurityTransactionsSubTable({
                   {formatMoney(transaction.amount)}
                 </td>
                 <td
-                  className={`px-4 py-3 text-center ${
-                    transaction.fee.amount > 0 ? "text-rose-700" : "text-zinc-950"
-                  }`}
+                  className={`px-4 py-3 text-center ${signedValueClassName(
+                    transaction.fee.amount
+                  )}`}
                 >
                   {formatMoney(transaction.fee)}
                 </td>

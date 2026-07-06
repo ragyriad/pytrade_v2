@@ -612,11 +612,12 @@ function duplicateSymbol(row: Pick<DuplicateTransactionRow, "symbol" | "descript
 }
 
 function duplicateTransactionKey(transaction: DuplicateTransactionRow): string {
+  const operation = normalizeText(transaction.action ?? transaction.type);
+
   return [
     transaction.account_id,
     dateKey(transaction.trade_date),
-    normalizeText(transaction.type),
-    normalizeText(transaction.action),
+    operation,
     normalizeText(transaction.asset_type),
     decimalKey(transaction.amount),
     decimalKey(transaction.price),

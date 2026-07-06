@@ -2,6 +2,10 @@ import { closeDbConnection, db } from "@repo/db";
 import type { DB } from "@repo/db";
 import { daysAgoDateOnly, oneYearAgoDateOnly, todayDateOnly } from "../shared/dates.js";
 import { EodhdHttpError } from "../providers/eodhd/errors.js";
+import {
+  fetchEodhdForexRateSnapshots,
+  normalizeForexPair,
+} from "../providers/eodhd/forex.js";
 import { fetchEodhdDividendEvents } from "../providers/eodhd/dividends.js";
 import { fetchLatestEodhdPriceSnapshot } from "../providers/eodhd/prices.js";
 import {
@@ -11,10 +15,12 @@ import {
 } from "../providers/eodhd/tickers.js";
 import type { MarketDataSecurity } from "../shared/provider-types.js";
 import { persistDividendEvents } from "../persistence/dividends.js";
+import { persistForexRateSnapshots } from "../persistence/forex.js";
 import { persistPriceSnapshot } from "../persistence/prices.js";
 import { mapWithConcurrency } from "./concurrency.js";
 import {
   getDividendRefreshState,
+  getForexRefreshState,
   getPriceRefreshState,
   shouldRefresh,
 } from "./refresh-policy.js";
@@ -24,8 +30,11 @@ export type EodhdSyncOptions = {
   dividendStartDate?: string;
   dividendEndDate?: string;
   priceLookbackDays?: number;
+  fxPairs?: string[];
+  fxLookbackDays?: number;
   refreshDividendsAfterDays?: number;
   refreshPricesAfterDays?: number;
+  refreshForexAfterDays?: number;
   concurrency?: number;
   force?: boolean;
   includeInactive?: boolean;
@@ -48,7 +57,17 @@ export type EodhdSyncResult = {
   securityCount: number;
   dividendEventCount: number;
   priceSnapshotCount: number;
+  forexRateSnapshotCount: number;
   results: EodhdSecuritySyncResult[];
+  forexResults: EodhdForexSyncResult[];
+};
+
+export type EodhdForexSyncResult = {
+  pair: string;
+  providerTicker: string;
+  status: "synced" | "skipped" | "failed";
+  snapshotCount: number;
+  errors: string[];
 };
 
 type SyncContext = Required<
@@ -57,8 +76,11 @@ type SyncContext = Required<
     | "dividendStartDate"
     | "dividendEndDate"
     | "priceLookbackDays"
+    | "fxPairs"
+    | "fxLookbackDays"
     | "refreshDividendsAfterDays"
     | "refreshPricesAfterDays"
+    | "refreshForexAfterDays"
     | "concurrency"
     | "force"
     | "includeInactive"
@@ -71,8 +93,11 @@ function normalizeOptions(options: EodhdSyncOptions = {}): SyncContext {
     dividendStartDate: options.dividendStartDate ?? oneYearAgoDateOnly(),
     dividendEndDate: options.dividendEndDate ?? todayDateOnly(),
     priceLookbackDays: options.priceLookbackDays ?? 10,
+    fxPairs: options.fxPairs ?? ["USD/CAD"],
+    fxLookbackDays: options.fxLookbackDays ?? 10,
     refreshDividendsAfterDays: options.refreshDividendsAfterDays ?? 7,
     refreshPricesAfterDays: options.refreshPricesAfterDays ?? 1,
+    refreshForexAfterDays: options.refreshForexAfterDays ?? 1,
     concurrency: options.concurrency ?? 2,
     force: options.force ?? false,
     includeInactive: options.includeInactive ?? false,
@@ -179,6 +204,47 @@ async function syncSecurity(
   return result;
 }
 
+async function syncForexPair(
+  database: DB,
+  pair: string,
+  context: SyncContext,
+  forexRefreshState: Map<string, Date | string | null>
+): Promise<EodhdForexSyncResult> {
+  const normalizedPair = normalizeForexPair(pair);
+  const result: EodhdForexSyncResult = {
+    pair: `${normalizedPair.baseCurrency}/${normalizedPair.quoteCurrency}`,
+    providerTicker: normalizedPair.providerTicker,
+    status: "skipped",
+    snapshotCount: 0,
+    errors: [],
+  };
+
+  const refreshForex = shouldRefresh(
+    forexRefreshState.get(normalizedPair.providerTicker),
+    context.refreshForexAfterDays,
+    context.force
+  );
+
+  if (!refreshForex) return result;
+
+  try {
+    const snapshots = await fetchEodhdForexRateSnapshots(pair, {
+      from: daysAgoDateOnly(context.fxLookbackDays),
+      to: todayDateOnly(),
+    });
+    const saved = await persistForexRateSnapshots(database, snapshots);
+
+    result.status = saved.length > 0 ? "synced" : "failed";
+    result.snapshotCount = saved.length;
+    if (saved.length === 0) result.errors.push("No EOD forex rows returned.");
+  } catch (error) {
+    result.status = "failed";
+    result.errors.push(errorMessage(error));
+  }
+
+  return result;
+}
+
 export async function syncEodhdMarketData(
   options: EodhdSyncOptions = {},
   database: DB = db
@@ -186,15 +252,17 @@ export async function syncEodhdMarketData(
   const context = normalizeOptions(options);
   const securities = await getSecurityUniverse(database, context);
   const securityIds = securities.map((security) => security.id);
-  const [dividendRefreshState, priceRefreshState] = await Promise.all([
+  const forexProviderTickers = context.fxPairs.map(
+    (pair) => normalizeForexPair(pair).providerTicker
+  );
+  const [dividendRefreshState, priceRefreshState, forexRefreshState] = await Promise.all([
     getDividendRefreshState(securityIds, EODHD_SOURCE, database),
     getPriceRefreshState(securityIds, EODHD_SOURCE, database),
+    getForexRefreshState(forexProviderTickers, EODHD_SOURCE, database),
   ]);
 
-  const results = await mapWithConcurrency(
-    securities,
-    context.concurrency,
-    (security) =>
+  const [results, forexResults] = await Promise.all([
+    mapWithConcurrency(securities, context.concurrency, (security) =>
       syncSecurity(
         database,
         security,
@@ -202,7 +270,11 @@ export async function syncEodhdMarketData(
         dividendRefreshState,
         priceRefreshState
       )
-  );
+    ),
+    mapWithConcurrency(context.fxPairs, context.concurrency, (pair) =>
+      syncForexPair(database, pair, context, forexRefreshState)
+    ),
+  ]);
 
   return {
     provider: "eodhd",
@@ -215,7 +287,12 @@ export async function syncEodhdMarketData(
       (total, row) => total + row.priceSnapshotCount,
       0
     ),
+    forexRateSnapshotCount: forexResults.reduce(
+      (total, row) => total + row.snapshotCount,
+      0
+    ),
     results,
+    forexResults,
   };
 }
 

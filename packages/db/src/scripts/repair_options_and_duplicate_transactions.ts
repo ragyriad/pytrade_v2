@@ -175,11 +175,12 @@ function findUnderlyingSecurity(
 }
 
 function businessKey(transaction: TransactionRow): string {
+  const operation = normalizeText(transaction.action ?? transaction.type);
+
   return [
     transaction.account_id,
     normalizeDate(transaction.trade_date),
-    normalizeText(transaction.type),
-    normalizeText(transaction.action),
+    operation,
     normalizeText(transaction.asset_type),
     normalizeNumber(transaction.amount),
     normalizeNumber(transaction.price),

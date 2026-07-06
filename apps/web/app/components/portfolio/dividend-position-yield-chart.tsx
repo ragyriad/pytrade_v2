@@ -11,15 +11,14 @@ import {
   YAxis,
 } from "recharts";
 import { formatMoney, formatPercent, normalizeAccountType } from "../../lib/formatters";
-import type { AccountDto } from "../../lib/portfolio-types";
-import type { DividendPositionYield } from "../../services/dividends";
+import type { AccountDto, DividendPositionYieldDto } from "../../lib/portfolio-types";
 
 type DividendPositionYieldChartProps = {
-  rows: DividendPositionYield[];
+  rows: DividendPositionYieldDto[];
   accounts: AccountDto[];
 };
 
-type ChartRow = DividendPositionYield & {
+type ChartRow = DividendPositionYieldDto & {
   label: string;
   totalAmount: number;
   topAccountKey: string | null;

@@ -7,11 +7,11 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { formatNumber, formatPercent } from "../../lib/formatters";
-import type { DividendAccountShareGroup } from "../../services/dividend_metrics";
+import { formatMoney, formatPercent } from "../../lib/formatters";
+import type { DividendAccountShareGroupDto } from "../../lib/portfolio-types";
 
 type DividendAccountShareChartProps = {
-  groups: DividendAccountShareGroup[];
+  groups: DividendAccountShareGroupDto[];
 };
 
 const colors = [
@@ -80,12 +80,13 @@ export function DividendAccountShareChart({ groups }: DividendAccountShareChartP
                         </Pie>
                         <Tooltip
                           formatter={(value, _name, item) => {
-                            const payload = item.payload as DividendAccountShareGroup["rows"][number];
+                            const payload = item.payload as DividendAccountShareGroupDto["rows"][number];
 
                             return [
-                              `${formatNumber(Number(value))} ${payload.currency} (${formatPercent(
-                                payload.percentage
-                              )})`,
+                              `${formatMoney({
+                                amount: Number(value),
+                                currency: payload.currency,
+                              })} (${formatPercent(payload.percentage)})`,
                               payload.label,
                             ];
                           }}
@@ -111,7 +112,7 @@ export function DividendAccountShareChart({ groups }: DividendAccountShareChartP
                             {row.label}
                           </p>
                           <p className="text-xs text-zinc-500">
-                            {formatNumber(row.value)} {row.currency}
+                            {formatMoney({ amount: row.value, currency: row.currency })}
                           </p>
                         </div>
                         <span className="text-sm text-zinc-500">

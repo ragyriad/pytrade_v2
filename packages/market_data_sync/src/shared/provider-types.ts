@@ -47,3 +47,17 @@ export type ProviderPriceSnapshot = {
   volume: number | null;
   rawData: Record<string, unknown>;
 };
+
+export type ProviderForexRateSnapshot = {
+  source: string;
+  providerTicker: string;
+  baseCurrency: string;
+  quoteCurrency: string;
+  rateDate: string;
+  open: number | null;
+  high: number | null;
+  low: number | null;
+  close: number;
+  adjustedClose: number | null;
+  rawData: Record<string, unknown>;
+};

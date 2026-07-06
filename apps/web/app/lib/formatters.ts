@@ -1,13 +1,12 @@
 import type { MoneyBreakdownDto, MoneyDto } from "./portfolio-types";
 
 export function formatMoney(value: MoneyDto): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: value.currency || "USD",
-    currencyDisplay: "code",
+  const amount = new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(value.amount);
+  }).format(Math.abs(value.amount));
+
+  return `${amount} ${value.currency || "USD"}`;
 }
 
 export function formatMoneyBreakdown(
@@ -18,7 +17,7 @@ export function formatMoneyBreakdown(
     `${new Intl.NumberFormat("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(value.amount)} ${value.currency || "USD"}`;
+    }).format(Math.abs(value.amount))} ${value.currency || "USD"}`;
 
   if (values.length === 0) return formatValue(fallback);
 
@@ -29,14 +28,14 @@ export function formatNumber(value: number): string {
   return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(value);
+  }).format(Math.abs(value));
 }
 
 export function formatPercent(value: number): string {
   return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(value) + "%";
+  }).format(Math.abs(value)) + "%";
 }
 
 export function signedValueClassName(value: number): string {

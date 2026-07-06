@@ -3,6 +3,7 @@ export { securities, Security, NewSecurity } from "./securities_schema.js";
 export { securityAliases, SecurityAlias, NewSecurityAlias } from "./security_aliases_schema.js";
 export { dividendEvents, DividendEvent, NewDividendEvent } from "./dividend_events_schema.js";
 export { securityPriceSnapshots, SecurityPriceSnapshot, NewSecurityPriceSnapshot } from "./security_price_snapshots_schema.js";
+export { forexRateSnapshots, ForexRateSnapshot, NewForexRateSnapshot } from "./forex_rate_snapshots_schema.js";
 export { options, Option, NewOption } from "./options_schema.js";
 export { transactions, transactionTypeEnum, NewTransaction, Transaction } from "./transactions_schema.js";
 export { positions, Position, NewPosition } from "./positions_schema.js";

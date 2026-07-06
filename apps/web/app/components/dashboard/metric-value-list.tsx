@@ -2,6 +2,7 @@ type MetricValueRow = {
   id: string;
   value: string;
   suffix?: string;
+  className?: string;
 };
 
 type MetricValueListProps = {
@@ -17,10 +18,13 @@ export function MetricValueList({ rows, emptyValue = "-" }: MetricValueListProps
   return (
     <div className="flex flex-col items-center gap-1">
       {rows.map((row) => (
-        <span key={row.id} className="inline-flex items-baseline justify-center gap-1">
+        <span
+          key={row.id}
+          className={`inline-flex items-baseline justify-center gap-1 ${row.className ?? ""}`}
+        >
           <span>{row.value}</span>
           {row.suffix ? (
-            <span className="text-sm font-medium uppercase tracking-normal text-zinc-500">
+            <span className="text-sm font-medium uppercase tracking-normal text-current">
               {row.suffix}
             </span>
           ) : null}

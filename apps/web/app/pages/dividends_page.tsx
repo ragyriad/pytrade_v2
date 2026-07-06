@@ -1,6 +1,10 @@
 import { DividendsDashboard } from "../components/portfolio/dividends-dashboard";
+import { fetchDividendSummaryFromBackend } from "../api-layer/dividends";
 import { fetchPortfolioDashboardFromBackend } from "../api-layer/dashboard";
-import type { PortfolioDashboardDto } from "../lib/portfolio-types";
+import type {
+  DividendDashboardSummaryDto,
+  PortfolioDashboardDto,
+} from "../lib/portfolio-types";
 
 type PageProps = {
   searchParams?: {
@@ -10,15 +14,22 @@ type PageProps = {
 
 export async function DividendsPage({ searchParams }: PageProps) {
   let dashboard: PortfolioDashboardDto | null = null;
+  let dividendSummary: DividendDashboardSummaryDto | null = null;
   let error: string | null = null;
 
   try {
-    dashboard = await fetchPortfolioDashboardFromBackend(searchParams?.userId);
+    [dashboard, dividendSummary] = await Promise.all([
+      fetchPortfolioDashboardFromBackend(searchParams?.userId),
+      fetchDividendSummaryFromBackend({
+        userId: searchParams?.userId,
+        timeline: "ALL",
+      }),
+    ]);
   } catch (caught) {
     error = caught instanceof Error ? caught.message : "Unable to load dividends.";
   }
 
-  if (error || !dashboard) {
+  if (error || !dashboard || !dividendSummary) {
     return (
       <main className="min-h-screen bg-zinc-50 p-6 text-zinc-950 sm:p-10">
         <div className="mx-auto max-w-5xl rounded-md border border-rose-200 bg-white p-6 shadow-sm">
@@ -30,5 +41,11 @@ export async function DividendsPage({ searchParams }: PageProps) {
     );
   }
 
-  return <DividendsDashboard dashboard={dashboard} />;
+  return (
+    <DividendsDashboard
+      dashboard={dashboard}
+      initialSummary={dividendSummary}
+      userId={searchParams?.userId}
+    />
+  );
 }

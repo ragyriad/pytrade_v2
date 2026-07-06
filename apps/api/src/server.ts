@@ -6,6 +6,10 @@ import {
   getDividendIncomeSummary,
   getStoredDividendEventsForSecurity,
 } from "./services/dividends.js";
+import {
+  getDividendDashboardSummary,
+  type DividendTimelineRange,
+} from "./services/dividend_summary.js";
 import { getAnnualAccountGains } from "./services/account_performance.js";
 import { getPortfolioDashboard } from "./services/portfolio.js";
 import {
@@ -19,6 +23,17 @@ const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:3000";
 const fastify = Fastify({
   logger: true,
 });
+
+const dividendTimelineSchema = z.enum([
+  "NONE",
+  "1M",
+  "3M",
+  "6M",
+  "1Y",
+  "2Y",
+  "5Y",
+  "ALL",
+]);
 
 await fastify.register(cors, {
   origin: [webOrigin],
@@ -157,6 +172,52 @@ fastify.get("/api/dividends/income", async (request, reply) => {
   }
 
   const summary = await getDividendIncomeSummary(query.data.userId);
+
+  if (!summary) {
+    return reply.status(404).send({
+      error: "No user data found. Run the sync or seed a user first.",
+    });
+  }
+
+  return summary;
+});
+
+fastify.get("/api/dividends/summary", async (request, reply) => {
+  const query = z
+    .object({
+      userId: z.string().uuid().optional(),
+      timeline: dividendTimelineSchema.default("ALL"),
+      accountIds: z.string().optional(),
+    })
+    .safeParse(request.query);
+
+  if (!query.success) {
+    return reply.status(400).send({
+      error: "Invalid query string.",
+      issues: query.error.flatten().fieldErrors,
+    });
+  }
+
+  const accountIds =
+    query.data.accountIds == null
+      ? undefined
+      : query.data.accountIds.split(",").filter(Boolean);
+  const invalidAccountId = accountIds?.find(
+    (accountId) => !z.string().uuid().safeParse(accountId).success
+  );
+
+  if (invalidAccountId) {
+    return reply.status(400).send({
+      error: "Invalid account id.",
+      issues: { accountIds: [`Invalid account id: ${invalidAccountId}`] },
+    });
+  }
+
+  const summary = await getDividendDashboardSummary({
+    userId: query.data.userId,
+    timeline: query.data.timeline as DividendTimelineRange,
+    accountIds,
+  });
 
   if (!summary) {
     return reply.status(404).send({

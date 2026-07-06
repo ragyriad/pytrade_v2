@@ -121,7 +121,13 @@ export function OptionsDashboard({ dashboard }: OptionsDashboardProps) {
       align: "right",
       value: (transaction) => transaction.units ?? null,
       render: (transaction) =>
-        transaction.units == null ? "-" : formatNumber(transaction.units),
+        transaction.units == null ? (
+          "-"
+        ) : (
+          <span className={signedValueClassName(transaction.units)}>
+            {formatNumber(transaction.units)}
+          </span>
+        ),
     },
     {
       key: "price",
@@ -147,8 +153,8 @@ export function OptionsDashboard({ dashboard }: OptionsDashboardProps) {
       align: "right",
       value: (transaction) => transaction.fee.amount,
       render: (transaction) => (
-        <span className="font-medium text-rose-700">
-          {formatMoney({ ...transaction.fee, amount: Math.abs(transaction.fee.amount) })}
+        <span className={`font-medium ${signedValueClassName(transaction.fee.amount)}`}>
+          {formatMoney(transaction.fee)}
         </span>
       ),
     },
@@ -363,7 +369,13 @@ function OptionTransactionsSubTable({
                   {accountsById.get(transaction.accountId)?.name ?? "Unknown"}
                 </td>
                 <td className="px-4 py-3 text-center">
-                  {transaction.units == null ? "-" : formatNumber(transaction.units)}
+                  {transaction.units == null ? (
+                    "-"
+                  ) : (
+                    <span className={signedValueClassName(transaction.units)}>
+                      {formatNumber(transaction.units)}
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-center">
                   {transaction.price ? formatMoney(transaction.price) : "-"}
@@ -375,8 +387,12 @@ function OptionTransactionsSubTable({
                 >
                   {formatMoney(transaction.amount)}
                 </td>
-                <td className="px-4 py-3 text-center font-medium text-rose-700">
-                  {formatMoney({ ...transaction.fee, amount: Math.abs(transaction.fee.amount) })}
+                <td
+                  className={`px-4 py-3 text-center font-medium ${signedValueClassName(
+                    transaction.fee.amount
+                  )}`}
+                >
+                  {formatMoney(transaction.fee)}
                 </td>
                 <td className="px-4 py-3 text-left text-zinc-600">
                   {transaction.description ?? "-"}

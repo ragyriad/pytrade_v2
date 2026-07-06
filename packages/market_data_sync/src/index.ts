@@ -2,6 +2,7 @@ export * from "./shared/provider-types.js";
 export * from "./shared/dates.js";
 export * from "./shared/number-values.js";
 export * from "./providers/eodhd/dividends.js";
+export * from "./providers/eodhd/forex.js";
 export * from "./providers/eodhd/prices.js";
 export * from "./providers/eodhd/tickers.js";
 export * from "./providers/tiingo/dividends.js";

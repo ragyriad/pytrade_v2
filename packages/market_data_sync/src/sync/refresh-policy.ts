@@ -3,6 +3,7 @@ import {
   db,
   dividendEvents,
   eq,
+  forexRateSnapshots,
   inArray,
   securityPriceSnapshots,
   sql,
@@ -81,5 +82,39 @@ export async function getPriceRefreshState(
     (rows as RefreshRow[])
       .filter((row) => row.securityId)
       .map((row) => [row.securityId as string, row.latestUpdatedAt])
+  );
+}
+
+type ForexRefreshRow = {
+  providerTicker: string;
+  latestUpdatedAt: Date | string | null;
+};
+
+export async function getForexRefreshState(
+  providerTickers: string[],
+  source: string,
+  database: DB = db
+): Promise<Map<string, Date | string | null>> {
+  if (providerTickers.length === 0) return new Map();
+
+  const rows = await database
+    .select({
+      providerTicker: forexRateSnapshots.providerTicker,
+      latestUpdatedAt: sql<Date>`max(${forexRateSnapshots.updatedAt})`,
+    })
+    .from(forexRateSnapshots)
+    .where(
+      and(
+        inArray(forexRateSnapshots.providerTicker, providerTickers),
+        eq(forexRateSnapshots.source, source)
+      )
+    )
+    .groupBy(forexRateSnapshots.providerTicker);
+
+  return new Map(
+    (rows as ForexRefreshRow[]).map((row) => [
+      row.providerTicker,
+      row.latestUpdatedAt,
+    ])
   );
 }

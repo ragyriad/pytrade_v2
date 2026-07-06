@@ -82,6 +82,83 @@ export type DividendSummaryDto = {
   transactions: TransactionDto[];
 };
 
+export type DividendTimelineRange =
+  | "NONE"
+  | "1M"
+  | "3M"
+  | "6M"
+  | "1Y"
+  | "2Y"
+  | "5Y"
+  | "ALL";
+
+export type PercentBreakdownDto = {
+  currency: string;
+  percent: number | null;
+};
+
+export type DividendAccountShareDto = {
+  id: string;
+  label: string;
+  value: number;
+  percentage: number;
+  currency: string;
+};
+
+export type DividendAccountShareGroupDto = {
+  currency: string;
+  total: number;
+  rows: DividendAccountShareDto[];
+};
+
+export type DividendPositionYieldDto = {
+  id: string;
+  symbol: string;
+  description: string | null;
+  accountId: string | null;
+  units: number;
+  accountSegments: Array<{
+    accountId: string;
+    dividendAmount: MoneyBreakdownDto;
+  }>;
+  dividendAmount: MoneyBreakdownDto;
+  annualizedDividendAmount: MoneyBreakdownDto;
+  marketValue: MoneyBreakdownDto;
+  costBasis: MoneyBreakdownDto;
+  costPerUnit: MoneyBreakdownDto;
+  dividendPerShare: MoneyBreakdownDto;
+  annualizedDividendPerShare: MoneyBreakdownDto;
+  yieldOnCostPercent: number;
+};
+
+export type DividendYieldingPositionDto = {
+  id: string;
+  symbol: string;
+  description: string | null;
+  accountId: string;
+  status: "open" | "closed";
+  totalDividends: MoneyBreakdownDto;
+  currentYieldPercent: number | null;
+  yieldOnCostPercent: number | null;
+};
+
+export type DividendSummaryMetricsDto = {
+  totalDividends: MoneyBreakdownDto[];
+  annualIncome: MoneyBreakdownDto[];
+  monthlyIncome: MoneyBreakdownDto[];
+  currentYieldByCurrency: PercentBreakdownDto[];
+  yieldOnCostByCurrency: PercentBreakdownDto[];
+};
+
+export type DividendDashboardSummaryDto = {
+  timeline: DividendTimelineRange;
+  metrics: DividendSummaryMetricsDto;
+  accountShareGroups: DividendAccountShareGroupDto[];
+  positionYields: DividendPositionYieldDto[];
+  positionRows: DividendYieldingPositionDto[];
+  transactions: TransactionDto[];
+};
+
 export type FeeSummaryDto = {
   totalByCurrency: MoneyBreakdownDto[];
   transactions: TransactionDto[];

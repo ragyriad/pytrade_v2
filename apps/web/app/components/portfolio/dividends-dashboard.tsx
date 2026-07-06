@@ -1,18 +1,23 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   accountMatchesFilters,
   defaultFilterBarState,
-  isActiveAccount,
 } from "../../lib/account-filters";
 import {
   formatDate,
+  formatMoney,
   formatNumber,
   formatPercent,
   normalizeAccountType,
+  signedValueClassName,
 } from "../../lib/formatters";
 import type {
+  DividendDashboardSummaryDto,
+  DividendYieldingPositionDto,
+  MoneyBreakdownDto,
+  PercentBreakdownDto,
   PortfolioDashboardDto,
   TransactionDto,
 } from "../../lib/portfolio-types";
@@ -20,102 +25,92 @@ import { DataTable, type TableColumn } from "../dashboard/data-table";
 import { FilterBar } from "../dashboard/filter-bar";
 import { StatCard } from "../dashboard/stat-card";
 import { DividendGrowthChart } from "./dividend-growth-chart";
-import { filterTransactionsByTimeline } from "../../services/filter_timeline";
-import {
-  getActiveDividendPositionYields,
-  getDividendYieldingPositionRows,
-  type DividendYieldingPositionRow,
-} from "../../services/dividends";
-import {
-  getDividendAccountShareGroups,
-  getDividendIncomeMetrics,
-} from "../../services/dividend_metrics";
 import { DividendAccountShareChart } from "./dividend-account-share-chart";
 import { DividendPositionYieldChart } from "./dividend-position-yield-chart";
 import { MetricValueList } from "../dashboard/metric-value-list";
 
 type DividendsDashboardProps = {
   dashboard: PortfolioDashboardDto;
+  initialSummary: DividendDashboardSummaryDto;
+  userId?: string;
 };
 
-export function DividendsDashboard({ dashboard }: DividendsDashboardProps) {
+export function DividendsDashboard({
+  dashboard,
+  initialSummary,
+  userId,
+}: DividendsDashboardProps) {
   const [filters, setFilters] = useState(defaultFilterBarState);
+  const [summary, setSummary] = useState(initialSummary);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+  const didHydrate = useRef(false);
 
   const accountsById = useMemo(() => {
     return new Map(dashboard.accounts.map((account) => [account.id, account]));
   }, [dashboard.accounts]);
 
-  const scopedTransactions = useMemo(() => {
-    return dashboard.dividends.transactions.filter((transaction) => {
-      const account = accountsById.get(transaction.accountId);
-      return accountMatchesFilters(account, filters);
-    });
-  }, [accountsById, dashboard.dividends.transactions, filters]);
+  const selectedAccountIds = useMemo(() => {
+    return dashboard.accounts
+      .filter((account) => accountMatchesFilters(account, filters))
+      .map((account) => account.id)
+      .sort();
+  }, [dashboard.accounts, filters]);
 
-  const scopedAllTransactions = useMemo(() => {
-    return dashboard.transactions.filter((transaction) => {
-      const account = accountsById.get(transaction.accountId);
-      return accountMatchesFilters(account, filters);
-    });
-  }, [accountsById, dashboard.transactions, filters]);
+  const selectedAccountIdKey = selectedAccountIds.join(",");
 
-  const timelineTransactions = useMemo(
-    () => filterTransactionsByTimeline(scopedTransactions, filters.timeline),
-    [filters.timeline, scopedTransactions]
-  );
+  useEffect(() => {
+    if (!didHydrate.current) {
+      didHydrate.current = true;
+      return;
+    }
 
-  const filteredPositions = useMemo(() => {
-    return dashboard.positions.filter((position) => {
-      const account = accountsById.get(position.accountId);
-      return accountMatchesFilters(account, filters);
-    });
-  }, [accountsById, dashboard.positions, filters]);
+    const controller = new AbortController();
+    const params = new URLSearchParams();
 
-  const activeFilteredPositions = useMemo(() => {
-    return dashboard.positions.filter((position) => {
-      const account = accountsById.get(position.accountId);
-      return isActiveAccount(account) && accountMatchesFilters(account, filters);
-    });
-  }, [accountsById, dashboard.positions, filters]);
+    params.set("timeline", filters.timeline);
+    params.set("accountIds", selectedAccountIdKey);
+    if (userId) params.set("userId", userId);
 
-  const positionYields = useMemo(() => {
-    return getActiveDividendPositionYields(
-      timelineTransactions,
-      scopedAllTransactions,
-      activeFilteredPositions,
-      filters.timeline
-    );
-  }, [activeFilteredPositions, filters.timeline, scopedAllTransactions, timelineTransactions]);
+    setIsSummaryLoading(true);
+    setSummaryError(null);
 
-  const dividendPositionRows = useMemo(() => {
-    return getDividendYieldingPositionRows(
-      timelineTransactions,
-      scopedAllTransactions,
-      filteredPositions,
-      filters.timeline
-    );
-  }, [filteredPositions, filters.timeline, scopedAllTransactions, timelineTransactions]);
+    fetch(`/api/dividends/summary?${params.toString()}`, {
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const body = await response.json().catch(() => null);
+          throw new Error(body?.error ?? "Unable to load dividend summary.");
+        }
 
-  const incomeMetrics = useMemo(
-    () => getDividendIncomeMetrics(positionYields, timelineTransactions),
-    [positionYields, timelineTransactions]
-  );
+        return response.json() as Promise<DividendDashboardSummaryDto>;
+      })
+      .then(setSummary)
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setSummaryError(
+          error instanceof Error ? error.message : "Unable to load dividend summary."
+        );
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsSummaryLoading(false);
+        }
+      });
 
-  const accountShareGroups = useMemo(
-    () => getDividendAccountShareGroups(timelineTransactions, dashboard.accounts),
-    [dashboard.accounts, timelineTransactions]
-  );
+    return () => controller.abort();
+  }, [filters.timeline, selectedAccountIdKey, userId]);
 
-  const formatMoneyMetricRows = (values: typeof incomeMetrics.annualIncome) =>
+  const formatMoneyMetricRows = (values: MoneyBreakdownDto[]) =>
     values.map((value) => ({
       id: value.currency,
-      value: formatNumber(value.amount),
+      value: formatNumber(Math.abs(value.amount)),
       suffix: value.currency,
+      className: signedValueClassName(value.amount),
     }));
 
-  const formatPercentMetricRows = (
-    values: typeof incomeMetrics.currentYieldByCurrency
-  ) =>
+  const formatPercentMetricRows = (values: PercentBreakdownDto[]) =>
     values
       .filter((value) => value.percent != null)
       .map((value) => ({
@@ -126,17 +121,14 @@ export function DividendsDashboard({ dashboard }: DividendsDashboardProps) {
 
   const formatMoneyAmount = (value: { amount: number; currency: string }) => (
     <span className="inline-flex items-baseline justify-end gap-1">
-      <span>{formatNumber(value.amount)}</span>
-      <span className="text-xs font-medium uppercase tracking-normal text-zinc-500">
-        {value.currency}
-      </span>
+      {formatMoney(value)}
     </span>
   );
 
   const formatNullablePercent = (value: number | null) =>
     value == null ? "-" : formatPercent(value);
 
-  const positionColumns: TableColumn<DividendYieldingPositionRow>[] = [
+  const positionColumns: TableColumn<DividendYieldingPositionDto>[] = [
     {
       key: "symbol",
       header: "Symbol",
@@ -193,7 +185,7 @@ export function DividendsDashboard({ dashboard }: DividendsDashboardProps) {
       align: "right",
       value: (position) => position.totalDividends.amount,
       render: (position) => (
-        <span className="font-semibold text-emerald-700">
+        <span className={`font-semibold ${signedValueClassName(position.totalDividends.amount)}`}>
           {formatMoneyAmount(position.totalDividends)}
         </span>
       ),
@@ -257,8 +249,8 @@ export function DividendsDashboard({ dashboard }: DividendsDashboardProps) {
       header: "Amount",
       align: "center",
       render: (transaction) => (
-        <span className="font-semibold text-emerald-700">
-          {formatNumber(transaction.amount.amount)}
+        <span className={`font-semibold ${signedValueClassName(transaction.amount.amount)}`}>
+          {formatMoney(transaction.amount)}
         </span>
       ),
     },
@@ -275,29 +267,41 @@ export function DividendsDashboard({ dashboard }: DividendsDashboardProps) {
           />
         </section>
 
+        {summaryError ? (
+          <section className="mt-6 rounded-md border border-rose-200 bg-white p-4 text-sm text-rose-700 shadow-sm">
+            {summaryError}
+          </section>
+        ) : null}
+
+        {isSummaryLoading ? (
+          <div className="mt-4 text-sm font-medium text-zinc-500">
+            Updating dividend summary...
+          </div>
+        ) : null}
+
         <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <StatCard
             label="Total dividends"
-            value={<MetricValueList rows={formatMoneyMetricRows(incomeMetrics.totalDividends)} />}
+            value={<MetricValueList rows={formatMoneyMetricRows(summary.metrics.totalDividends)} />}
             tone="positive"
             align="center"
           />
           <StatCard
             label="Annual dividend income"
-            value={<MetricValueList rows={formatMoneyMetricRows(incomeMetrics.annualIncome)} />}
+            value={<MetricValueList rows={formatMoneyMetricRows(summary.metrics.annualIncome)} />}
             tone="positive"
             align="center"
           />
           <StatCard
             label="Monthly dividend income"
-            value={<MetricValueList rows={formatMoneyMetricRows(incomeMetrics.monthlyIncome)} />}
+            value={<MetricValueList rows={formatMoneyMetricRows(summary.metrics.monthlyIncome)} />}
             tone="positive"
             align="center"
           />
           <StatCard
             label="Current yield"
             value={
-              <MetricValueList rows={formatPercentMetricRows(incomeMetrics.currentYieldByCurrency)} />
+              <MetricValueList rows={formatPercentMetricRows(summary.metrics.currentYieldByCurrency)} />
             }
             tone="positive"
             align="center"
@@ -305,7 +309,7 @@ export function DividendsDashboard({ dashboard }: DividendsDashboardProps) {
           <StatCard
             label="Yield on cost"
             value={
-              <MetricValueList rows={formatPercentMetricRows(incomeMetrics.yieldOnCostByCurrency)} />
+              <MetricValueList rows={formatPercentMetricRows(summary.metrics.yieldOnCostByCurrency)} />
             }
             tone="positive"
             align="center"
@@ -313,16 +317,16 @@ export function DividendsDashboard({ dashboard }: DividendsDashboardProps) {
         </section>
 
         <section className="mt-6">
-          <DividendAccountShareChart groups={accountShareGroups} />
+          <DividendAccountShareChart groups={summary.accountShareGroups} />
         </section>
 
         <section className="mt-6">
-          <DividendPositionYieldChart rows={positionYields} accounts={dashboard.accounts} />
+          <DividendPositionYieldChart rows={summary.positionYields} accounts={dashboard.accounts} />
         </section>
 
         <section className="mt-6">
           <DividendGrowthChart
-            transactions={timelineTransactions}
+            transactions={summary.transactions}
             range={filters.timeline}
             onRangeChange={(timeline) => setFilters({ ...filters, timeline })}
           />
@@ -331,7 +335,7 @@ export function DividendsDashboard({ dashboard }: DividendsDashboardProps) {
         <section className="mt-6">
           <DataTable
             title="Dividend yielding positions"
-            rows={dividendPositionRows}
+            rows={summary.positionRows}
             columns={positionColumns}
             getRowKey={(position) => position.id}
             emptyMessage="No dividend yielding positions match this view."
@@ -341,7 +345,7 @@ export function DividendsDashboard({ dashboard }: DividendsDashboardProps) {
         <section className="mt-6">
           <DataTable
             title="Dividend transactions"
-            rows={timelineTransactions}
+            rows={summary.transactions}
             columns={transactionColumns}
             getRowKey={(transaction) => transaction.id}
             emptyMessage="No dividend transactions match this view."

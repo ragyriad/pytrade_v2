@@ -12,6 +12,9 @@ export function toRequiredFiniteNumber(
   return parsed;
 }
 
-export function toFixedNumericString(value: number | null): string | null {
-  return value == null ? null : value.toFixed(6);
+export function toFixedNumericString(
+  value: number | null,
+  scale = 6
+): string | null {
+  return value == null ? null : value.toFixed(scale);
 }

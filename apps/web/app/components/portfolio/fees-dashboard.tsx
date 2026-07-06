@@ -81,8 +81,8 @@ export function FeesDashboard({ dashboard }: FeesDashboardProps) {
       key: "fee",
       header: "Fee",
       render: (transaction) => (
-        <span className="font-semibold text-rose-700">
-          {formatMoney({ ...transaction.fee, amount: Math.abs(transaction.fee.amount) })}
+        <span className={`font-semibold ${signedValueClassName(transaction.fee.amount)}`}>
+          {formatMoney(transaction.fee)}
         </span>
       ),
     },

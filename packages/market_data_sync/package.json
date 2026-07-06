@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.market_data_sync.json",
-    "sync:eodhd": "tsx src/scripts/sync_eodhd.ts",
-    "sync:tiingo": "tsx src/scripts/sync_tiingo.ts",
-    "test:eodhd": "tsx src/scripts/test_eodhd.ts",
-    "test:tiingo": "tsx src/scripts/test_tiingo.ts"
+    "sync": "tsx src/scripts/sync.ts",
+    "sync:eodhd": "tsx src/scripts/sync.ts --provider=eodhd",
+    "sync:tiingo": "tsx src/scripts/sync.ts --provider=tiingo",
+    "test:eodhd": "tsx src/scripts/test_provider.ts --provider=eodhd",
+    "test:tiingo": "tsx src/scripts/test_provider.ts --provider=tiingo"
   },
   "dependencies": {
     "@repo/db": "workspace:*",
