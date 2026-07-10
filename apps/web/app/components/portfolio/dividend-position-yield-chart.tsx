@@ -25,11 +25,19 @@ type ChartRow = DividendPositionYieldDto & {
   [accountKey: `account_${string}`]: number;
 };
 
+type YieldLabelProps = {
+  x?: number | string;
+  y?: number | string;
+  width?: number | string;
+  value?: number | string | null;
+  payload?: ChartRow;
+};
+
 const accountColors = [
+  "#2f6f9f",
   "#059669",
   "#eab308",
-  "#2563eb",
-  "#dc2626",
+  "#be123c",
   "#7c3aed",
   "#0891b2",
   "#ea580c",
@@ -95,16 +103,16 @@ export function DividendPositionYieldChart({
   const currency = chartRows[0]?.dividendAmount.currency ?? "USD";
 
   return (
-    <section className="rounded-md border border-zinc-200 bg-white p-6 text-center shadow-sm">
+    <section className="app-panel p-6 text-center">
       <div className="text-left">
-        <h2 className="text-base font-semibold text-zinc-950">Active dividend yield</h2>
-        <p className="mt-1 text-sm text-zinc-500">
+        <h2 className="text-base font-semibold text-foreground">Active dividend yield</h2>
+        <p className="mt-1 text-sm text-muted">
           Total dividends received, stacked by account
         </p>
       </div>
 
       {visibleAccountIds.length > 0 ? (
-        <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-left text-xs text-zinc-600">
+        <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-left text-xs text-muted">
           {visibleAccountIds.map((accountId) => (
             <div key={accountId} className="flex items-center gap-2">
               <span
@@ -119,7 +127,7 @@ export function DividendPositionYieldChart({
 
       <div className="mt-6 h-[28rem]">
         {chartRows.length === 0 ? (
-          <div className="flex h-full items-center justify-center rounded-md border border-dashed border-zinc-200 text-sm text-zinc-500">
+          <div className="flex h-full items-center justify-center rounded-md border border-dashed border-border text-sm text-muted">
             No active dividend positions match this view.
           </div>
         ) : (
@@ -129,12 +137,12 @@ export function DividendPositionYieldChart({
               margin={{ left: 34, right: 28, top: 34, bottom: 30 }}
               barCategoryGap="22%"
             >
-              <CartesianGrid stroke="#e4e4e7" strokeDasharray="4 4" vertical={false} />
+              <CartesianGrid stroke="#d8e1ea" strokeDasharray="4 4" vertical={false} />
               <XAxis
                 dataKey="label"
                 type="category"
-                axisLine={{ stroke: "#a1a1aa" }}
-                tick={{ fill: "#52525b", fontSize: 12, fontWeight: 600 }}
+                axisLine={{ stroke: "#d8e1ea" }}
+                tick={{ fill: "#667085", fontSize: 12, fontWeight: 600 }}
                 tickLine={false}
                 tickMargin={14}
                 interval={0}
@@ -145,7 +153,7 @@ export function DividendPositionYieldChart({
                 type="number"
                 width={112}
                 axisLine={false}
-                tick={{ fill: "#52525b", fontSize: 12 }}
+                tick={{ fill: "#667085", fontSize: 12 }}
                 tickLine={false}
                 tickFormatter={(value) => formatAxisMoney(Number(value), currency)}
               />
@@ -162,21 +170,21 @@ export function DividendPositionYieldChart({
                   );
 
                   return (
-                    <div className="min-w-72 rounded-md border border-emerald-100 bg-white p-4 text-left text-sm shadow-lg shadow-zinc-200/70">
-                      <div className="flex items-start justify-between gap-4 border-b border-zinc-100 pb-3">
+                    <div className="min-w-72 rounded-md border border-border bg-surface p-4 text-left text-sm shadow-lg">
+                      <div className="flex items-start justify-between gap-4 border-b border-border pb-3">
                         <div>
-                          <p className="text-base font-semibold text-zinc-950">{row.symbol}</p>
+                          <p className="text-base font-semibold text-foreground">{row.symbol}</p>
                           {row.description ? (
-                            <p className="mt-1 max-w-64 text-xs leading-5 text-zinc-500">
+                            <p className="mt-1 max-w-64 text-xs leading-5 text-muted">
                               {row.description}
                             </p>
                           ) : null}
                         </div>
-                        <span className="rounded bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
+                        <span className="rounded bg-primary-50 px-2 py-1 text-xs font-semibold text-primary-700">
                           {formatPercent(row.yieldOnCostPercent)}
                         </span>
                       </div>
-                      <div className="mt-3 grid gap-2 text-zinc-600">
+                      <div className="mt-3 grid gap-2 text-muted">
                         {activeSegments.map((segment) => (
                           <div key={segment.accountId} className="flex justify-between gap-4">
                             <span className="flex items-center gap-2">
@@ -188,39 +196,39 @@ export function DividendPositionYieldChart({
                               />
                               {accountLabels.get(segment.accountId)}
                             </span>
-                            <span className="font-semibold text-zinc-950">
+                            <span className="font-semibold text-foreground">
                               {formatMoney(segment.dividendAmount)}
                             </span>
                           </div>
                         ))}
-                        <div className="my-1 border-t border-zinc-100" />
+                        <div className="my-1 border-t border-border" />
                         <div className="flex justify-between gap-4">
                           <span>Total dividends</span>
-                          <span className="font-semibold text-zinc-950">
+                          <span className="font-semibold text-foreground">
                             {formatMoney(row.dividendAmount)}
                           </span>
                         </div>
                         <div className="flex justify-between gap-4">
                           <span>Annualized dividends</span>
-                          <span className="font-semibold text-zinc-950">
+                          <span className="font-semibold text-foreground">
                             {formatMoney(row.annualizedDividendAmount)}
                           </span>
                         </div>
                         <div className="flex justify-between gap-4">
                           <span>Dividend per share</span>
-                          <span className="font-semibold text-zinc-950">
+                          <span className="font-semibold text-foreground">
                             {formatMoney(row.dividendPerShare)}
                           </span>
                         </div>
                         <div className="flex justify-between gap-4">
                           <span>Cost per unit</span>
-                          <span className="font-semibold text-zinc-950">
+                          <span className="font-semibold text-foreground">
                             {formatMoney(row.costPerUnit)}
                           </span>
                         </div>
                         <div className="flex justify-between gap-4">
                           <span>Position amount</span>
-                          <span className="font-semibold text-zinc-950">
+                          <span className="font-semibold text-foreground">
                             {formatMoney(row.costBasis)}
                           </span>
                         </div>
@@ -242,9 +250,9 @@ export function DividendPositionYieldChart({
                   >
                     <LabelList
                       position="top"
-                      content={(props: any) => {
-                        const { x, y, width, value, payload } = props;
-                        const row = payload as ChartRow | undefined;
+                      content={(props) => {
+                        const { x, y, width, value, payload } = props as YieldLabelProps;
+                        const row = payload;
                         if (!row || row.topAccountKey !== key || Number(value ?? 0) <= 0) {
                           return null;
                         }
@@ -254,7 +262,7 @@ export function DividendPositionYieldChart({
                             x={Number(x) + Number(width) / 2}
                             y={Number(y) - 8}
                             textAnchor="middle"
-                            className="fill-emerald-800 text-xs font-bold"
+                            className="fill-primary-800 text-xs font-bold"
                           >
                             {formatPercent(row.yieldOnCostPercent)}
                           </text>

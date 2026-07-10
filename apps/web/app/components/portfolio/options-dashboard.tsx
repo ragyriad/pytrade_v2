@@ -112,7 +112,7 @@ export function OptionsDashboard({ dashboard }: OptionsDashboardProps) {
       header: "Symbol",
       value: (transaction) => transaction.symbol ?? "-",
       render: (transaction) => (
-        <span className="font-semibold text-sky-700">{transaction.symbol ?? "-"}</span>
+        <span className="font-semibold text-primary-700">{transaction.symbol ?? "-"}</span>
       ),
     },
     {
@@ -184,8 +184,8 @@ export function OptionsDashboard({ dashboard }: OptionsDashboardProps) {
             onClick={() => setSelectedSecurityId(selected ? null : security.id)}
             className={
               selected
-                ? "justify-start border-sky-500 bg-sky-50 text-sky-800 shadow-sm shadow-sky-100 hover:bg-sky-100"
-                : "justify-start text-sky-700 hover:text-sky-800"
+                ? "justify-start border-primary-500 bg-primary-50 text-primary-800 shadow-sm hover:bg-primary-100"
+                : "justify-start text-primary-700 hover:text-primary-800"
             }
           >
             {security.symbol}
@@ -219,7 +219,7 @@ export function OptionsDashboard({ dashboard }: OptionsDashboardProps) {
       align: "right",
       value: (security) => security.totalFees.reduce((sum, fee) => sum + fee.amount, 0),
       render: (security) => (
-        <span className="font-medium text-rose-700">
+        <span className="font-medium text-negative">
           {formatMoneyBreakdown(security.totalFees, fallbackMoney())}
         </span>
       ),
@@ -247,9 +247,9 @@ export function OptionsDashboard({ dashboard }: OptionsDashboardProps) {
   ];
 
   return (
-    <main className="min-h-screen bg-zinc-50 text-zinc-950">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm">
+    <main className="app-main">
+      <div className="app-page">
+        <section className="app-panel p-4">
           <FilterBar accounts={dashboard.accounts} value={filters} onChange={setFilters} />
         </section>
 
@@ -277,7 +277,7 @@ export function OptionsDashboard({ dashboard }: OptionsDashboardProps) {
           />
         </section>
 
-        <section className="mt-6 rounded-md border border-zinc-200 bg-white p-4 shadow-sm">
+        <section className="app-panel mt-6 p-4">
           <SegmentedTabs
             value={activeTab}
             onChange={(tab) => {
@@ -338,10 +338,10 @@ function OptionTransactionsSubTable({
   transactions: TransactionDto[];
 }) {
   return (
-    <div className="border-t border-sky-100 bg-sky-50/40 p-4">
-      <div className="overflow-x-auto rounded-md border border-zinc-200 bg-white shadow-sm">
+    <div className="border-t border-primary-100 bg-primary-50 p-4">
+      <div className="overflow-x-auto rounded-md border border-border bg-surface shadow-sm">
         <table className="w-full min-w-[980px] text-sm">
-          <thead className="bg-zinc-100 text-xs uppercase text-zinc-500">
+          <thead className="bg-surface-muted text-xs uppercase text-muted">
             <tr>
               <th className="px-4 py-3 text-center font-medium">Date</th>
               <th className="px-4 py-3 text-center font-medium">Action</th>
@@ -354,11 +354,11 @@ function OptionTransactionsSubTable({
               <th className="px-4 py-3 text-left font-medium">Description</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100">
+          <tbody className="divide-y divide-border">
             {transactions.map((transaction, index) => (
               <tr
                 key={transaction.id}
-                className={index % 2 === 0 ? "bg-white" : "bg-zinc-50"}
+                className={index % 2 === 0 ? "bg-surface" : "bg-surface-muted"}
               >
                 <td className="px-4 py-3 text-center">{formatDate(transaction.tradeDate)}</td>
                 <td className="px-4 py-3 text-center">
@@ -394,7 +394,7 @@ function OptionTransactionsSubTable({
                 >
                   {formatMoney(transaction.fee)}
                 </td>
-                <td className="px-4 py-3 text-left text-zinc-600">
+                <td className="px-4 py-3 text-left text-muted">
                   {transaction.description ?? "-"}
                 </td>
               </tr>

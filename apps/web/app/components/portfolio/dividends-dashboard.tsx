@@ -142,7 +142,7 @@ export function DividendsDashboard({
       value: (position) => position.symbol,
       render: (position) => (
         <div>
-          <p className="font-semibold text-zinc-950">{position.symbol}</p>
+          <p className="font-semibold text-foreground">{position.symbol}</p>
           <p className="line-clamp-1 text-xs text-zinc-500">
             {position.description ?? "Dividend yielding security"}
           </p>
@@ -159,7 +159,7 @@ export function DividendsDashboard({
 
         return (
           <div>
-            <p className="font-medium text-zinc-950">{account?.name ?? "Unknown"}</p>
+            <p className="font-medium text-foreground">{account?.name ?? "Unknown"}</p>
             <p className="text-xs text-zinc-500">
               {[account?.institutionName, normalizeAccountType(account?.type ?? null)]
                 .filter(Boolean)
@@ -177,8 +177,8 @@ export function DividendsDashboard({
         <span
           className={
             position.status === "open"
-              ? "font-medium text-emerald-700"
-              : "text-zinc-500"
+              ? "font-medium text-positive"
+              : "text-muted"
           }
         >
           {position.status}
@@ -263,9 +263,9 @@ export function DividendsDashboard({
   ];
 
   return (
-    <main className="min-h-screen bg-zinc-50 text-zinc-950">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm">
+    <main className="app-main">
+      <div className="app-page">
+        <section className="app-panel p-4">
           <FilterBar
             accounts={dashboard.accounts}
             value={filters}
@@ -338,7 +338,7 @@ export function DividendsDashboard({
           />
         </section>
 
-        <section className="mt-6 rounded-md border border-zinc-200 bg-white p-4 shadow-sm">
+        <section className="app-panel mt-6 p-4">
           <SegmentedTabs<DividendTableTab>
             value={activeTableTab}
             onChange={setActiveTableTab}

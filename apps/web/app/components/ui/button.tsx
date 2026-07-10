@@ -1,15 +1,17 @@
 import Link from "next/link";
+import { forwardRef } from "react";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 
-type ButtonVariant = "ghost" | "outline" | "solid";
+type ButtonVariant = "ghost" | "outline" | "solid" | "plain";
 
 const base =
-  "inline-flex h-9 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2";
+  "inline-flex h-9 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2";
 
 const variants: Record<ButtonVariant, string> = {
-  ghost: "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950",
-  outline: "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50",
-  solid: "bg-emerald-700 text-white hover:bg-emerald-800",
+  ghost: "text-muted hover:bg-primary-50 hover:text-primary-900",
+  outline: "border border-border bg-surface text-primary-800 hover:bg-primary-50",
+  solid: "bg-primary-700 text-white hover:bg-primary-800",
+  plain: "",
 };
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -30,11 +32,23 @@ export function Button({ variant = "outline", className = "", ...props }: Button
   return <button className={buttonClassName(variant, className)} {...props} />;
 }
 
-export function ButtonLink({
-  variant = "ghost",
-  className = "",
-  href,
-  ...props
-}: ButtonLinkProps) {
-  return <Link href={href} className={buttonClassName(variant, className)} {...props} />;
-}
+export const ButtonLink = forwardRef<HTMLAnchorElement, ButtonLinkProps>(
+  function ButtonLink(
+    {
+      variant = "ghost",
+      className = "",
+      href,
+      ...props
+    },
+    ref
+  ) {
+    return (
+      <Link
+        ref={ref}
+        href={href}
+        className={buttonClassName(variant, className)}
+        {...props}
+      />
+    );
+  }
+);

@@ -14,7 +14,7 @@ import { formatDate, formatMoney } from "../../lib/formatters";
 import type { TransactionDto } from "../../lib/portfolio-types";
 import { timelineOptions, type TimelineRange } from "../../services/filter_timeline";
 
-const colors = ["#047857", "#2563eb", "#7c3aed", "#ca8a04"];
+const colors = ["#2f6f9f", "#047857", "#7c3aed", "#b45309"];
 
 type ChartRow = {
   date: string;
@@ -68,11 +68,11 @@ export function DividendGrowthChart({
   const { currencies, rows } = buildChartRows(transactions);
 
   return (
-    <section className="rounded-md border border-zinc-200 bg-white p-5 text-center shadow-sm">
+    <section className="app-panel p-5 text-center">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-base font-semibold text-zinc-950">Cumulative dividends</h2>
-          <p className="mt-1 text-sm text-zinc-500">Dividend income over time</p>
+          <h2 className="text-base font-semibold text-foreground">Cumulative dividends</h2>
+          <p className="mt-1 text-sm text-muted">Dividend income over time</p>
         </div>
         <div className="flex justify-center gap-2">
           {timelineOptions.map((option) => (
@@ -90,13 +90,13 @@ export function DividendGrowthChart({
 
       <div className="mt-5 h-80">
         {rows.length === 0 ? (
-          <div className="flex h-full items-center justify-center rounded-md border border-dashed border-zinc-200 text-sm text-zinc-500">
+          <div className="flex h-full items-center justify-center rounded-md border border-dashed border-border text-sm text-muted">
             No dividend history for this view.
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={rows} margin={{ left: 8, right: 24, top: 10, bottom: 0 }}>
-              <CartesianGrid stroke="#e4e4e7" strokeDasharray="3 3" />
+              <CartesianGrid stroke="#d8e1ea" strokeDasharray="3 3" />
               <XAxis dataKey="displayDate" tick={{ fontSize: 12 }} minTickGap={28} />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip

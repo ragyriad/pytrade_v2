@@ -63,20 +63,20 @@ function TableSearch({ value, onChange }: TableSearchProps) {
       <span className="sr-only">Search rows</span>
       <FontAwesomeIcon
         icon={faMagnifyingGlass}
-        className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400"
+        className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted"
       />
       <input
         type="search"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="Search rows"
-        className="h-9 w-full rounded-md border border-zinc-200 bg-white pl-9 pr-9 text-sm text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
+        className="app-control-focus h-9 w-full rounded-md border border-border bg-surface pl-9 pr-9 text-sm text-foreground outline-none transition placeholder:text-muted"
       />
       {value ? (
         <button
           type="button"
           onClick={() => onChange("")}
-          className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+          className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-muted hover:bg-primary-50 hover:text-primary-800"
         >
           <span className="sr-only">Clear search</span>
           <FontAwesomeIcon icon={faXmark} className="h-3 w-3" />
@@ -219,22 +219,22 @@ export function DataTable<T>({
   };
 
   return (
-    <section className="rounded-md border border-zinc-200 bg-white shadow-sm">
-      <div className="flex flex-col gap-3 border-b border-zinc-200 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+    <section className="app-panel overflow-hidden">
+      <div className="flex flex-col gap-3 border-b border-border px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <div className="flex flex-wrap items-center gap-3">
-            <h2 className="text-base font-semibold text-zinc-950">{title}</h2>
+            <h2 className="text-base font-semibold text-foreground">{title}</h2>
             {titleAccessory}
           </div>
           <TableSearch value={globalFilter} onChange={setGlobalFilter} />
         </div>
-        <div className="flex items-center gap-3 text-sm text-zinc-500">
+        <div className="flex items-center gap-3 text-sm text-muted">
           <span>{filteredRowCount} of {rows.length} rows</span>
           {hasActiveFilters ? (
             <button
               type="button"
               onClick={clearFilters}
-              className="font-medium text-emerald-700 hover:text-emerald-800"
+              className="font-medium text-primary-700 hover:text-primary-800"
             >
               Clear filters
             </button>
@@ -243,7 +243,7 @@ export function DataTable<T>({
       </div>
       <div className="hidden overflow-x-auto md:block">
         <table className="w-full min-w-[860px] text-left text-sm">
-          <thead className="bg-zinc-50 text-xs uppercase text-zinc-500">
+          <thead className="sticky top-0 z-10 bg-surface-muted text-xs uppercase text-muted">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -267,7 +267,7 @@ export function DataTable<T>({
                           <button
                             type="button"
                             onClick={header.column.getToggleSortingHandler()}
-                            className="inline-flex items-center gap-1 rounded px-1 py-0.5 hover:bg-zinc-100"
+                            className="inline-flex items-center gap-1 rounded px-1 py-0.5 hover:bg-primary-50 hover:text-primary-900"
                           >
                             {flexRender(header.column.columnDef.header, header.getContext())}
                             <FontAwesomeIcon
@@ -278,30 +278,30 @@ export function DataTable<T>({
                                     ? faArrowDown
                                     : faSort
                               }
-                              className="h-3 w-3 text-zinc-400"
+                              className="h-3 w-3 text-muted"
                             />
                           </button>
                           {(columns.find((column) => column.key === header.column.id)?.enableFilter ?? true) ? (
                             <DetailsDropdown className="group relative">
-                              <summary className="inline-flex h-6 w-6 cursor-pointer list-none items-center justify-center rounded hover:bg-zinc-100">
+                              <summary className="inline-flex h-6 w-6 cursor-pointer list-none items-center justify-center rounded hover:bg-primary-50">
                                 <FontAwesomeIcon
                                   icon={faFilter}
                                   className={`h-3 w-3 ${
                                     getColumnFilterValues(header.column.id).length > 0
-                                      ? "text-emerald-700"
-                                      : "text-zinc-400"
+                                      ? "text-primary-700"
+                                      : "text-muted"
                                   }`}
                                 />
                               </summary>
-                              <div className="absolute right-0 z-30 mt-2 max-h-72 w-60 overflow-auto rounded-md border border-zinc-200 bg-white p-2 text-left normal-case shadow-xl">
+                              <div className="absolute right-0 z-30 mt-2 max-h-72 w-60 overflow-auto rounded-md border border-border bg-surface p-2 text-left normal-case shadow-xl">
                                 <div className="mb-2 flex items-center justify-between gap-2">
-                                  <span className="text-xs font-semibold text-zinc-500">
+                                  <span className="text-xs font-semibold text-muted">
                                     Filter
                                   </span>
                                   <button
                                     type="button"
                                     onClick={() => clearColumnFilter(header.column.id)}
-                                    className="text-xs font-medium text-emerald-700"
+                                    className="text-xs font-medium text-primary-700"
                                   >
                                     Clear
                                   </button>
@@ -311,15 +311,15 @@ export function DataTable<T>({
                                     key={value}
                                     className={`flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-xs transition ${
                                       getColumnFilterValues(header.column.id).includes(value)
-                                        ? "bg-emerald-50 text-emerald-950"
-                                        : "text-zinc-700 hover:bg-zinc-50"
+                                        ? "bg-primary-50 text-primary-900"
+                                        : "text-foreground hover:bg-surface-muted"
                                     }`}
                                   >
                                     <input
                                       type="checkbox"
                                       checked={getColumnFilterValues(header.column.id).includes(value)}
                                       onChange={() => toggleFilterValue(header.column.id, value)}
-                                      className="h-3.5 w-3.5 rounded border-zinc-300 text-emerald-700 focus:ring-emerald-600"
+                                      className="h-3.5 w-3.5 rounded border-border text-primary-700 focus:ring-primary-600"
                                     />
                                     <span className="truncate">{value}</span>
                                   </label>
@@ -335,21 +335,21 @@ export function DataTable<T>({
               </tr>
             ))}
           </thead>
-          <tbody className="divide-y divide-zinc-100">
+          <tbody className="divide-y divide-border">
             {table.getRowModel().rows.length === 0 ? (
               <tr>
-                <td className="px-5 py-8 text-center text-zinc-500" colSpan={columns.length}>
+                <td className="px-5 py-8 text-center text-muted" colSpan={columns.length}>
                   {emptyMessage}
                 </td>
               </tr>
             ) : (
               table.getRowModel().rows.map((row, rowIndex) => {
                 const expanded = isRowExpanded?.(row.original) ?? false;
-                const rowShade = rowIndex % 2 === 0 ? "bg-white" : "bg-zinc-50";
+                const rowShade = rowIndex % 2 === 0 ? "bg-surface" : "bg-surface-muted";
 
                 return (
                   <Fragment key={row.id}>
-                    <tr className={`${rowShade} transition-colors hover:bg-emerald-50/60`}>
+                    <tr className={`${rowShade} transition-colors hover:bg-primary-50`}>
                       {row.getVisibleCells().map((cell) => {
                         const align = alignByColumnId.get(cell.column.id);
 
@@ -387,29 +387,29 @@ export function DataTable<T>({
           </tbody>
         </table>
       </div>
-      <div className="divide-y divide-zinc-100 md:hidden">
+      <div className="divide-y divide-border md:hidden">
         {table.getRowModel().rows.length === 0 ? (
-          <div className="px-5 py-8 text-center text-sm text-zinc-500">
+          <div className="px-5 py-8 text-center text-sm text-muted">
             {emptyMessage}
           </div>
         ) : (
           table.getRowModel().rows.map((row, rowIndex) => {
             const expanded = isRowExpanded?.(row.original) ?? false;
-            const rowShade = rowIndex % 2 === 0 ? "bg-white" : "bg-zinc-50";
+            const rowShade = rowIndex % 2 === 0 ? "bg-surface" : "bg-surface-muted";
 
             return (
               <Fragment key={row.id}>
-                <article className={`${rowShade} px-4 py-3`}>
+                <article className={`${rowShade} px-4 py-3 transition-colors active:bg-primary-50`}>
                   <dl className="grid gap-3">
                     {columns.map((column) => (
                       <div
                         key={column.key}
                         className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-start gap-3"
                       >
-                        <dt className="text-xs font-semibold uppercase text-zinc-500">
+                        <dt className="text-xs font-semibold uppercase text-muted">
                           {column.header}
                         </dt>
-                        <dd className="min-w-0 text-sm text-zinc-950">
+                        <dd className="min-w-0 text-sm text-foreground">
                           {column.render(row.original)}
                         </dd>
                       </div>
@@ -436,8 +436,8 @@ export function DataTable<T>({
           })
         )}
       </div>
-      <div className="flex flex-col gap-3 border-t border-zinc-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm text-zinc-500">
+      <div className="flex flex-col gap-3 border-t border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-sm text-muted">
           Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount() || 1}
         </div>
         <div className="flex items-center gap-2">
@@ -454,7 +454,7 @@ export function DataTable<T>({
           <select
             value={table.getState().pagination.pageSize}
             onChange={(event) => table.setPageSize(Number(event.target.value))}
-            className="h-9 rounded-md border border-zinc-200 bg-white px-2 text-sm text-zinc-950 outline-none focus:border-emerald-600"
+            className="h-9 rounded-md border border-border bg-surface px-2 text-sm text-foreground outline-none focus:border-primary-600"
           >
             {[10, 20, 30, 50].map((pageSize) => (
               <option key={pageSize} value={pageSize}>

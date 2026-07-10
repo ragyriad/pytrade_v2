@@ -63,33 +63,33 @@ function FilterBarMultiSelect({
 
   return (
     <div className={`relative max-w-full flex-none ${className ?? ""}`}>
-      <div className="mb-1 inline-flex items-center gap-2 text-xs font-medium uppercase text-zinc-500">
+      <div className="mb-1 inline-flex items-center gap-2 text-xs font-medium uppercase text-muted">
         <FontAwesomeIcon icon={icon} className="h-3 w-3" />
         {label}
       </div>
       <DetailsDropdown className="group relative">
-        <summary className="flex h-10 w-full cursor-pointer list-none items-center justify-between gap-3 rounded-md border border-zinc-200 bg-white px-3 text-left text-sm text-zinc-950 shadow-sm outline-none transition hover:border-zinc-300 group-open:border-emerald-600 group-open:ring-2 group-open:ring-emerald-600/20">
+        <summary className="app-control-focus flex h-10 w-full cursor-pointer list-none items-center justify-between gap-3 rounded-md border border-border bg-surface px-3 text-left text-sm text-foreground shadow-sm outline-none transition hover:border-primary-200">
           <span className="min-w-0 truncate">{buttonLabel}</span>
           <span className="flex items-center gap-2">
             {value.length > 0 ? (
-              <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+              <span className="rounded-full bg-primary-50 px-2 py-0.5 text-xs font-semibold text-primary-700">
                 {value.length}
               </span>
             ) : null}
             <FontAwesomeIcon
               icon={faChevronDown}
-              className="h-3 w-3 text-zinc-400 transition group-open:rotate-180"
+              className="h-3 w-3 text-muted transition group-open:rotate-180"
             />
           </span>
         </summary>
-        <div className="absolute left-0 z-40 mt-2 max-h-80 w-full min-w-64 overflow-auto rounded-md border border-zinc-200 bg-white p-2 shadow-xl">
-          <div className="mb-2 flex items-center justify-between gap-2 border-b border-zinc-100 px-2 pb-2">
-            <span className="text-xs font-semibold uppercase text-zinc-500">{label}</span>
+        <div className="absolute left-0 z-40 mt-2 max-h-80 w-full min-w-64 overflow-auto rounded-md border border-border bg-surface p-2 shadow-xl">
+          <div className="mb-2 flex items-center justify-between gap-2 border-b border-border px-2 pb-2">
+            <span className="text-xs font-semibold uppercase text-muted">{label}</span>
             {value.length > 0 ? (
               <button
                 type="button"
                 onClick={() => onChange([])}
-                className="inline-flex items-center gap-1 rounded px-1.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
+                className="inline-flex items-center gap-1 rounded px-1.5 py-1 text-xs font-medium text-primary-700 hover:bg-primary-50"
               >
                 <FontAwesomeIcon icon={faXmark} className="h-3 w-3" />
                 Clear
@@ -105,8 +105,8 @@ function FilterBarMultiSelect({
                   key={option.value}
                   className={`flex cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm transition ${
                     checked
-                      ? "bg-emerald-50 text-emerald-950"
-                      : "text-zinc-700 hover:bg-zinc-50"
+                      ? "bg-primary-50 text-primary-900"
+                      : "text-foreground hover:bg-surface-muted"
                   }`}
                 >
                   <input
@@ -118,8 +118,8 @@ function FilterBarMultiSelect({
                   <span
                     className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
                       checked
-                        ? "border-emerald-700 bg-emerald-700 text-white"
-                        : "border-zinc-300 bg-white"
+                        ? "border-primary-700 bg-primary-700 text-white"
+                        : "border-border bg-surface"
                     }`}
                   >
                     {checked ? <FontAwesomeIcon icon={faCheck} className="h-2.5 w-2.5" /> : null}

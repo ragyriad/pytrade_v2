@@ -121,7 +121,7 @@ export function DataExplorer({ dashboard }: DataExplorerProps) {
       key: "name",
       header: "Account",
       value: (account) => account.name,
-      render: (account) => <span className="font-medium text-zinc-950">{account.name}</span>,
+      render: (account) => <span className="font-medium text-foreground">{account.name}</span>,
     },
     {
       key: "brokerage",
@@ -226,9 +226,9 @@ export function DataExplorer({ dashboard }: DataExplorerProps) {
   ];
 
   return (
-    <main className="min-h-screen bg-zinc-50 text-zinc-950">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm">
+    <main className="app-main">
+      <div className="app-page">
+        <section className="app-panel p-4">
           <div className="flex flex-col gap-4">
             <FilterBar
               accounts={dashboard.accounts}
@@ -237,22 +237,22 @@ export function DataExplorer({ dashboard }: DataExplorerProps) {
             />
             {activeTab === "transactions" ? (
               <div className="flex flex-wrap items-end gap-3">
-                <label className="flex w-fit flex-col gap-1 text-xs font-medium uppercase text-zinc-500">
+                <label className="flex w-fit flex-col gap-1 text-xs font-medium uppercase text-muted">
                   <span>From</span>
                   <input
                     type="date"
                     value={dateRange.from}
                     onChange={(event) => handleDateRangeChange("from", event.target.value)}
-                    className="h-10 min-w-40 rounded-md border border-zinc-200 bg-white px-3 text-sm normal-case text-zinc-950 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
+                    className="app-control-focus h-10 min-w-40 rounded-md border border-border bg-surface px-3 text-sm normal-case text-foreground outline-none transition"
                   />
                 </label>
-                <label className="flex w-fit flex-col gap-1 text-xs font-medium uppercase text-zinc-500">
+                <label className="flex w-fit flex-col gap-1 text-xs font-medium uppercase text-muted">
                   <span>To</span>
                   <input
                     type="date"
                     value={dateRange.to}
                     onChange={(event) => handleDateRangeChange("to", event.target.value)}
-                    className="h-10 min-w-40 rounded-md border border-zinc-200 bg-white px-3 text-sm normal-case text-zinc-950 outline-none transition focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
+                    className="app-control-focus h-10 min-w-40 rounded-md border border-border bg-surface px-3 text-sm normal-case text-foreground outline-none transition"
                   />
                 </label>
               </div>

@@ -193,11 +193,11 @@ export function DividendEventsCalendar({ events }: DividendEventsCalendarProps) 
   const visibleRangeLabel = `${monthLabel(monthKeys[0])} - ${monthLabel(monthKeys[1])}`;
 
   return (
-    <section className="rounded-md border border-zinc-200 bg-white p-5 shadow-sm">
+    <section className="app-panel p-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h2 className="text-base font-semibold text-zinc-950">Dividend calendar</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <h2 className="text-base font-semibold text-foreground">Dividend calendar</h2>
+          <p className="mt-1 text-sm text-muted">
             Stored dividend ex-date and payment events
           </p>
         </div>
@@ -211,9 +211,9 @@ export function DividendEventsCalendar({ events }: DividendEventsCalendarProps) 
             <FontAwesomeIcon icon={faChevronLeft} className="h-3 w-3" />
             <span className="sr-only">Previous two months</span>
           </Button>
-          <div className="min-w-52 rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-center text-sm font-semibold text-zinc-700">
+          <div className="min-w-52 rounded-md border border-border bg-surface-muted px-3 py-2 text-center text-sm font-semibold text-foreground">
             {visibleRangeLabel}
-            <span className="ml-2 text-xs font-medium text-zinc-500">
+            <span className="ml-2 text-xs font-medium text-muted">
               {visibleEventCount} events
             </span>
           </div>
@@ -238,7 +238,7 @@ export function DividendEventsCalendar({ events }: DividendEventsCalendarProps) 
       </div>
 
       {calendarItems.length === 0 ? (
-        <div className="mt-5 flex min-h-56 items-center justify-center rounded-md border border-dashed border-zinc-200 text-sm text-zinc-500">
+        <div className="mt-5 flex min-h-56 items-center justify-center rounded-md border border-dashed border-border text-sm text-muted">
           No dividend events match this view.
         </div>
       ) : (
@@ -246,14 +246,14 @@ export function DividendEventsCalendar({ events }: DividendEventsCalendarProps) 
           {monthKeys.map((monthKey) => (
             <article
               key={monthKey}
-              className="overflow-hidden rounded-md border border-zinc-200 bg-white"
+              className="overflow-hidden rounded-md border border-border bg-surface"
             >
-              <div className="border-b border-zinc-100 bg-zinc-50 px-4 py-3">
-                <h3 className="text-sm font-semibold text-zinc-950">
+              <div className="border-b border-border bg-surface-muted px-4 py-3">
+                <h3 className="text-sm font-semibold text-foreground">
                   {monthLabel(monthKey)}
                 </h3>
               </div>
-              <div className="grid grid-cols-7 border-b border-zinc-100 bg-zinc-50 text-center text-[11px] font-semibold uppercase text-zinc-500">
+              <div className="grid grid-cols-7 border-b border-border bg-surface-muted text-center text-[11px] font-semibold uppercase text-muted">
                 {weekdayLabels.map((label) => (
                   <div key={label} className="px-2 py-2">
                     {label}
@@ -267,13 +267,13 @@ export function DividendEventsCalendar({ events }: DividendEventsCalendarProps) 
                   return (
                     <div
                       key={cell.key}
-                      className={`min-h-28 border-b border-r border-zinc-100 p-2 ${
-                        cell.day == null ? "bg-zinc-50/60" : "bg-white"
+                      className={`min-h-28 border-b border-r border-border p-2 ${
+                        cell.day == null ? "bg-surface-muted" : "bg-surface"
                       }`}
                     >
                       {cell.day == null ? null : (
                         <>
-                          <div className="mb-1 text-right text-xs font-semibold text-zinc-500">
+                          <div className="mb-1 text-right text-xs font-semibold text-muted">
                             {cell.day}
                           </div>
                           <div className="space-y-1">

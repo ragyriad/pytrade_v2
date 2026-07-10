@@ -39,9 +39,9 @@ export function formatPercent(value: number): string {
 }
 
 export function signedValueClassName(value: number): string {
-  if (value > 0) return "text-emerald-700";
-  if (value < 0) return "text-rose-700";
-  return "text-zinc-950";
+  if (value > 0) return "text-positive";
+  if (value < 0) return "text-negative";
+  return "text-foreground";
 }
 
 export function formatDate(value: string | null): string {

@@ -15,11 +15,11 @@ type DividendAccountShareChartProps = {
 };
 
 const colors = [
+  "#2f6f9f",
   "#047857",
-  "#2563eb",
   "#7c3aed",
-  "#dc2626",
-  "#ca8a04",
+  "#be123c",
+  "#b45309",
   "#0891b2",
   "#4f46e5",
   "#be185d",
@@ -31,19 +31,19 @@ const colors = [
 
 export function DividendAccountShareChart({ groups }: DividendAccountShareChartProps) {
   return (
-    <section className="rounded-md border border-zinc-200 bg-white p-5 shadow-sm">
+    <section className="app-panel p-5">
       <div className="text-left">
-        <h2 className="text-base font-semibold text-zinc-950">
+        <h2 className="text-base font-semibold text-foreground">
           Dividend share by account
         </h2>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-muted">
           Total received dividends by account
         </p>
       </div>
 
       <div className="mt-5">
         {groups.length === 0 ? (
-          <div className="flex h-72 items-center justify-center rounded-md border border-dashed border-zinc-200 text-sm text-zinc-500">
+          <div className="flex h-72 items-center justify-center rounded-md border border-dashed border-border text-sm text-muted">
             No dividend transactions match this view.
           </div>
         ) : (
@@ -55,7 +55,7 @@ export function DividendAccountShareChart({ groups }: DividendAccountShareChartP
               >
                 <div className="min-w-0">
                   {groups.length > 1 ? (
-                    <p className="text-center text-sm font-semibold text-zinc-700">
+                    <p className="text-center text-sm font-semibold text-foreground">
                       {group.currency}
                     </p>
                   ) : null}
@@ -101,21 +101,21 @@ export function DividendAccountShareChart({ groups }: DividendAccountShareChartP
                     {group.rows.map((row, index) => (
                       <div
                         key={row.id}
-                        className="grid grid-cols-[12px_1fr_auto] items-center gap-3 rounded-md border border-zinc-100 bg-zinc-50 px-3 py-2"
+                        className="grid grid-cols-[12px_1fr_auto] items-center gap-3 rounded-md border border-border bg-surface-muted px-3 py-2"
                       >
                         <span
                           className="h-3 w-3 rounded-sm"
                           style={{ backgroundColor: colors[index % colors.length] }}
                         />
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-zinc-900">
+                          <p className="truncate text-sm font-medium text-foreground">
                             {row.label}
                           </p>
-                          <p className="text-xs text-zinc-500">
+                          <p className="text-xs text-muted">
                             {formatMoney({ amount: row.value, currency: row.currency })}
                           </p>
                         </div>
-                        <span className="text-sm text-zinc-500">
+                        <span className="text-sm text-muted">
                           {formatPercent(row.percentage)}
                         </span>
                       </div>

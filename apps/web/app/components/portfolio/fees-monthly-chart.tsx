@@ -13,7 +13,7 @@ import { buildMonthlyFeeRows } from "../../services/fees";
 import { formatMoney } from "../../lib/formatters";
 import type { TransactionDto } from "../../lib/portfolio-types";
 
-const colors = ["#dc2626", "#ca8a04", "#7c3aed", "#2563eb"];
+const colors = ["#be123c", "#b45309", "#7c3aed", "#2f6f9f"];
 
 type FeesMonthlyChartProps = {
   transactions: TransactionDto[];
@@ -23,19 +23,19 @@ export function FeesMonthlyChart({ transactions }: FeesMonthlyChartProps) {
   const { currencies, rows } = buildMonthlyFeeRows(transactions);
 
   return (
-    <section className="rounded-md border border-zinc-200 bg-white p-5 text-center shadow-sm">
-      <h2 className="text-base font-semibold text-zinc-950">Monthly fees</h2>
-      <p className="mt-1 text-sm text-zinc-500">Fee totals by month across the available history</p>
+    <section className="app-panel p-5 text-center">
+      <h2 className="text-base font-semibold text-foreground">Monthly fees</h2>
+      <p className="mt-1 text-sm text-muted">Fee totals by month across the available history</p>
 
       <div className="mt-5 h-80">
         {rows.length === 0 ? (
-          <div className="flex h-full items-center justify-center rounded-md border border-dashed border-zinc-200 text-sm text-zinc-500">
+          <div className="flex h-full items-center justify-center rounded-md border border-dashed border-border text-sm text-muted">
             No fee history for this view.
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={rows} margin={{ left: 8, right: 24, top: 10, bottom: 0 }}>
-              <CartesianGrid stroke="#e4e4e7" strokeDasharray="3 3" />
+              <CartesianGrid stroke="#d8e1ea" strokeDasharray="3 3" />
               <XAxis dataKey="label" tick={{ fontSize: 12 }} minTickGap={20} />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip

@@ -38,26 +38,37 @@ async function fetchSecurityTransactions(
 }
 
 export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardProps) {
-  const [selectedSecurityId, setSelectedSecurityId] = useState<string | null>(null);
+  const [expandedSecurityIds, setExpandedSecurityIds] = useState<Set<string>>(
+    () => new Set()
+  );
   const [transactionResponses, setTransactionResponses] = useState<
     Record<string, SecurityTransactionsResponseDto>
   >({});
-  const [loadingSecurityId, setLoadingSecurityId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [loadingSecurityIds, setLoadingSecurityIds] = useState<Set<string>>(
+    () => new Set()
+  );
+  const [errorsBySecurityId, setErrorsBySecurityId] = useState<Record<string, string>>({});
 
   async function selectSecurity(security: HistoricSecurityDto) {
-    if (selectedSecurityId === security.id) {
-      setSelectedSecurityId(null);
-      setError(null);
+    const nextExpanded = new Set(expandedSecurityIds);
+
+    if (nextExpanded.has(security.id)) {
+      nextExpanded.delete(security.id);
+      setExpandedSecurityIds(nextExpanded);
       return;
     }
 
-    setSelectedSecurityId(security.id);
-    setError(null);
+    nextExpanded.add(security.id);
+    setExpandedSecurityIds(nextExpanded);
+    setErrorsBySecurityId((current) => {
+      const next = { ...current };
+      delete next[security.id];
+      return next;
+    });
 
     if (transactionResponses[security.id]) return;
 
-    setLoadingSecurityId(security.id);
+    setLoadingSecurityIds((current) => new Set(current).add(security.id));
 
     try {
       const response = await fetchSecurityTransactions(security.id, userId);
@@ -66,9 +77,17 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
         [security.id]: response,
       }));
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Unable to load transactions.");
+      setErrorsBySecurityId((current) => ({
+        ...current,
+        [security.id]:
+          caught instanceof Error ? caught.message : "Unable to load transactions.",
+      }));
     } finally {
-      setLoadingSecurityId(null);
+      setLoadingSecurityIds((current) => {
+        const next = new Set(current);
+        next.delete(security.id);
+        return next;
+      });
     }
   }
 
@@ -78,17 +97,17 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
       header: "Symbol",
       align: "left",
       render: (security) => {
-        const selected = security.id === selectedSecurityId;
+        const selected = expandedSecurityIds.has(security.id);
 
         return (
         <Button
           type="button"
-          variant={selected ? "outline" : "ghost"}
+          variant="plain"
           onClick={() => selectSecurity(security)}
           className={
             selected
-              ? "justify-start border-emerald-500 bg-emerald-50 text-emerald-800 shadow-sm shadow-emerald-100 hover:bg-emerald-100"
-              : "justify-start bg-blue-50 text-blue-800 hover:bg-blue-100"
+              ? "security-symbol-button-selected"
+              : "security-symbol-button"
           }
         >
           {security.symbol}
@@ -102,7 +121,7 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
       align: "left",
       render: (security) => (
         <div>
-          <p className="font-medium text-zinc-950">
+          <p className="font-medium text-foreground">
             {security.description ?? security.rawSymbol ?? security.symbol}
           </p>
           <p className="text-xs text-zinc-500">
@@ -122,7 +141,7 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
       render: (security) => (
         <span
           className={
-            security.status === "active" ? "font-medium text-emerald-700" : "text-zinc-500"
+            security.status === "active" ? "font-medium text-positive" : "text-muted"
           }
         >
           {security.status}
@@ -138,7 +157,7 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
       key: "dividends",
       header: "Dividends",
       render: (security) => (
-        <span className="font-medium text-emerald-700">
+        <span className="font-medium text-positive">
           {formatNumber(security.dividendCount)}
         </span>
       ),
@@ -173,19 +192,19 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
   ];
 
   return (
-    <main className="min-h-screen bg-zinc-50 px-4 py-6 text-zinc-950 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6">
+    <main className="app-main">
+      <div className="app-page flex flex-col gap-6">
         <DataTable
           title="Historic Securities"
           rows={securities}
           columns={securityColumns}
           getRowKey={(security) => security.id}
           emptyMessage="No security history found. Run the SnapTrade sync to populate securities."
-          isRowExpanded={(security) => security.id === selectedSecurityId}
+          isRowExpanded={(security) => expandedSecurityIds.has(security.id)}
           renderExpandedRow={(security) => (
             <SecurityTransactionsSubTable
-              error={security.id === selectedSecurityId ? error : null}
-              isLoading={loadingSecurityId === security.id}
+              error={errorsBySecurityId[security.id] ?? null}
+              isLoading={loadingSecurityIds.has(security.id)}
               transactions={transactionResponses[security.id]?.transactions ?? []}
             />
           )}
@@ -222,10 +241,10 @@ function SecurityTransactionsSubTable({
 
   if (isLoading) {
     return (
-      <div className="border-t border-emerald-100 bg-emerald-50/60 p-8 text-center text-sm text-zinc-600">
-        <div className="mx-auto flex max-w-sm items-center justify-center gap-3 rounded-md border border-emerald-200 bg-white px-4 py-3 shadow-sm">
+      <div className="border-t border-primary-100 bg-primary-50 p-8 text-center text-sm text-muted">
+        <div className="mx-auto flex max-w-sm items-center justify-center gap-3 rounded-md border border-primary-200 bg-surface px-4 py-3 shadow-sm">
           <MoneySpinner />
-          <span className="font-medium text-zinc-700">Loading transaction history</span>
+          <span className="font-medium text-foreground">Loading transaction history</span>
         </div>
       </div>
     );
@@ -241,17 +260,17 @@ function SecurityTransactionsSubTable({
 
   if (transactions.length === 0) {
     return (
-      <div className="border-t border-zinc-200 bg-zinc-50 p-5 text-center text-sm text-zinc-500">
+      <div className="border-t border-border bg-surface-muted p-5 text-center text-sm text-muted">
         No transactions found for this security.
       </div>
     );
   }
 
   return (
-    <div className="border-t border-emerald-100 bg-emerald-50/40 p-4">
-      <div className="overflow-x-auto rounded-md border border-zinc-200 bg-white shadow-sm">
+    <div className="border-t border-primary-100 bg-primary-50 p-4">
+      <div className="overflow-x-auto rounded-md border border-border bg-surface shadow-sm">
         <table className="w-full min-w-[940px] text-sm">
-          <thead className="bg-zinc-100 text-xs uppercase text-zinc-500">
+          <thead className="bg-surface-muted text-xs uppercase text-muted">
             <tr>
               <th className="px-4 py-3 text-center font-medium">Date</th>
               <th className="px-4 py-3 text-center font-medium">Action</th>
@@ -264,11 +283,11 @@ function SecurityTransactionsSubTable({
               <th className="px-4 py-3 text-left font-medium">Description</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100">
+          <tbody className="divide-y divide-border">
             {pageTransactions.map((transaction, index) => (
               <tr
                 key={transaction.id}
-                className={index % 2 === 0 ? "bg-white" : "bg-zinc-50"}
+                className={index % 2 === 0 ? "bg-surface" : "bg-surface-muted"}
               >
                 <td className="px-4 py-3 text-center">{formatDate(transaction.tradeDate)}</td>
                 <td className="px-4 py-3 text-center">
@@ -276,7 +295,7 @@ function SecurityTransactionsSubTable({
                 </td>
                 <td className="px-4 py-3 text-center">{transaction.assetType ?? "Other"}</td>
                 <td className="px-4 py-3 text-left">
-                  <p className="font-medium text-zinc-950">
+                  <p className="font-medium text-foreground">
                     {transaction.accountName ?? transaction.accountId}
                   </p>
                   <p className="text-xs text-zinc-500">
@@ -316,8 +335,8 @@ function SecurityTransactionsSubTable({
             ))}
           </tbody>
         </table>
-        <div className="flex flex-col gap-3 border-t border-zinc-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-zinc-500">
+        <div className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm text-muted">
             Showing {pageStart + 1}-{pageEnd} of {transactions.length} transactions
           </div>
           <div className="flex items-center gap-2">
@@ -330,7 +349,7 @@ function SecurityTransactionsSubTable({
             >
               Previous
             </Button>
-            <span className="min-w-20 text-center text-sm text-zinc-500">
+            <span className="min-w-20 text-center text-sm text-muted">
               Page {currentPageIndex + 1} of {pageCount}
             </span>
             <Button

@@ -69,7 +69,7 @@ export function PortfolioDashboard({ dashboard }: PortfolioDashboardProps) {
     {
       key: "symbol",
       header: "Symbol",
-      render: (position) => <span className="font-semibold text-zinc-950">{position.symbol}</span>,
+      render: (position) => <span className="font-semibold text-foreground">{position.symbol}</span>,
     },
     {
       key: "description",
@@ -136,9 +136,9 @@ export function PortfolioDashboard({ dashboard }: PortfolioDashboardProps) {
   ];
 
   return (
-    <main className="min-h-screen bg-zinc-50 text-zinc-950">
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <section className="rounded-md border border-zinc-200 bg-white p-4 shadow-sm">
+    <main className="app-main">
+      <div className="app-page">
+        <section className="app-panel p-4">
           <FilterBar accounts={activeAccounts} value={filters} onChange={setFilters} />
         </section>
 

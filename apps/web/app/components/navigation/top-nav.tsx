@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState, type MouseEvent } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChartPie,
@@ -22,34 +26,78 @@ const links = [
   { href: "/fees", label: "Fees", icon: faReceipt },
 ];
 
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (callback: () => void) => void;
+};
+
+function isActivePath(pathname: string, href: string): boolean {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function TopNav() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [optimisticHref, setOptimisticHref] = useState<string | null>(null);
+  const pathnameHref = links.find((link) => isActivePath(pathname, link.href))?.href ?? "/";
+  const activeHref = optimisticHref ?? pathnameHref;
+
+  const handleNavigate = (href: string) => (event: MouseEvent<HTMLAnchorElement>) => {
+    if (isActivePath(pathname, href)) return;
+
+    event.preventDefault();
+    setOptimisticHref(href);
+    const navigate = () => router.push(href);
+    const viewTransitionDocument = document as ViewTransitionDocument;
+
+    if (viewTransitionDocument.startViewTransition) {
+      viewTransitionDocument.startViewTransition(navigate);
+      return;
+    }
+
+    navigate();
+  };
+
+  useEffect(() => {
+    setOptimisticHref(null);
+  }, [pathname]);
+
   return (
-    <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/95 backdrop-blur">
-      <div className="relative mx-auto flex min-h-24 max-w-7xl flex-col items-center justify-center gap-2 px-4 py-3 sm:px-6 lg:px-8">
-        <h1 className="text-lg font-semibold tracking-normal text-zinc-950">
-          <Link href="/">PyTrade</Link>
-        </h1>
-        <nav
-          className="flex max-w-full items-center gap-2 overflow-x-auto"
-          aria-label="Primary navigation"
-        >
-          {links.map((link) => (
-            <ButtonLink
-              key={link.href}
-              href={link.href}
-              variant="ghost"
+    <>
+      <header className="sticky top-0 z-30 hidden border-b border-primary-900 text-white md:block">
+        <div className="metallic-primary-bar">
+          <div className="relative mx-auto flex min-h-20 max-w-7xl items-center gap-6 px-6 py-3 lg:px-8">
+            <h1 className="shrink-0 text-lg font-semibold tracking-normal">
+              <Link href="/" onClick={handleNavigate("/")}>PyTrade</Link>
+            </h1>
+            <nav
+              className="relative flex min-w-0 flex-1 items-stretch justify-center gap-1 overflow-x-auto px-1"
+              aria-label="Primary navigation"
             >
-              <FontAwesomeIcon icon={link.icon} className="h-4 w-4" />
-              {link.label}
-            </ButtonLink>
-          ))}
-        </nav>
-        <DetailsDropdown className="absolute right-4 top-1/2 min-w-32 -translate-y-1/2 text-right sm:right-6 lg:right-8">
-          <summary className={`${buttonClassName("outline")} cursor-pointer list-none`}>
+              {links.map((link) => {
+                const active = link.href === activeHref;
+
+                return (
+                  <ButtonLink
+                    key={link.href}
+                    href={link.href}
+                    variant="plain"
+                    onClick={handleNavigate(link.href)}
+                    aria-current={active ? "page" : undefined}
+                    className={active ? "nav-bar-button nav-bar-button-active" : "nav-bar-button"}
+                  >
+                    <FontAwesomeIcon icon={link.icon} className="h-4 w-4" />
+                    {link.label}
+                  </ButtonLink>
+                );
+              })}
+            </nav>
+            <DetailsDropdown className="relative min-w-20 text-right">
+              <summary className={buttonClassName("plain", "nav-icon-button")}>
             <FontAwesomeIcon icon={faUser} className="h-4 w-4" />
             <FontAwesomeIcon icon={faChevronDown} className="h-3 w-3" />
           </summary>
-          <div className="absolute right-0 mt-2 w-44 rounded-md border border-zinc-200 bg-white p-2 text-left shadow-lg">
+              <div className="absolute right-0 mt-2 w-44 rounded-md border border-border bg-surface p-2 text-left text-foreground shadow-lg">
             <button className={buttonClassName("ghost", "w-full justify-start")}>
               <FontAwesomeIcon icon={faUser} className="h-4 w-4" />
               Demo user
@@ -61,6 +109,40 @@ export function TopNav() {
           </div>
         </DetailsDropdown>
       </div>
-    </header>
+        </div>
+      </header>
+
+      <header className="border-b border-border bg-surface px-4 py-3 md:hidden">
+        <Link
+          href="/"
+          onClick={handleNavigate("/")}
+          className="text-base font-semibold tracking-normal text-primary-900"
+        >
+          PyTrade
+        </Link>
+      </header>
+
+      <nav
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-6 border-t border-primary-900 bg-surface px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-10px_30px_rgba(22,55,85,0.14)] md:hidden"
+        aria-label="Primary navigation"
+      >
+        {links.map((link) => {
+          const active = link.href === activeHref;
+
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={handleNavigate(link.href)}
+              aria-current={active ? "page" : undefined}
+              className={active ? "mobile-nav-button mobile-nav-button-active" : "mobile-nav-button"}
+            >
+              <FontAwesomeIcon icon={link.icon} className="h-4 w-4" />
+              <span className="max-w-full truncate">{link.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+    </>
   );
 }

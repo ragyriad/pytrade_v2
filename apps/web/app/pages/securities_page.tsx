@@ -21,10 +21,10 @@ export async function SecuritiesPage({ searchParams }: PageProps) {
 
   if (error || !securities) {
     return (
-      <main className="min-h-screen bg-zinc-50 p-6 text-zinc-950 sm:p-10">
-        <div className="mx-auto max-w-5xl rounded-md border border-rose-200 bg-white p-6 text-center shadow-sm">
-          <p className="text-sm font-medium text-rose-700">Securities unavailable</p>
-          <p className="mt-3 text-sm text-zinc-600">{error}</p>
+      <main className="app-main p-6 sm:p-10">
+        <div className="app-panel mx-auto max-w-5xl border-negative p-6 text-center">
+          <p className="text-sm font-medium text-negative">Securities unavailable</p>
+          <p className="mt-3 text-sm text-muted">{error}</p>
         </div>
       </main>
     );

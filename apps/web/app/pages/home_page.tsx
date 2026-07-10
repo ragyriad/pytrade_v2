@@ -23,12 +23,12 @@ export async function HomePage({ searchParams }: PageProps) {
 
   if (error || !dashboard) {
     return (
-      <main className="min-h-screen bg-zinc-50 p-6 text-zinc-950 sm:p-10">
-        <div className="mx-auto max-w-5xl rounded-md border border-rose-200 bg-white p-6 shadow-sm">
-          <p className="text-sm font-medium text-rose-700">Portfolio unavailable</p>
+      <main className="app-main p-6 sm:p-10">
+        <div className="app-panel mx-auto max-w-5xl border-negative p-6">
+          <p className="text-sm font-medium text-negative">Portfolio unavailable</p>
           <h1 className="mt-3 text-2xl font-semibold">API data could not be loaded.</h1>
-          <p className="mt-3 text-sm text-zinc-600">{error}</p>
-          <p className="mt-5 text-sm text-zinc-500">
+          <p className="mt-3 text-sm text-muted">{error}</p>
+          <p className="mt-5 text-sm text-muted">
             Expected API: <code>{backendApiBaseUrl}/api/portfolio/dashboard</code>
           </p>
         </div>

@@ -3,21 +3,126 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-background: #f5f7fb;
+  --color-foreground: #111827;
+  --color-surface: #ffffff;
+  --color-surface-muted: #eef3f8;
+  --color-border: #d8e1ea;
+  --color-muted: #667085;
+  --color-primary-50: #eef6ff;
+  --color-primary-100: #d9eaff;
+  --color-primary-200: #b8d6f4;
+  --color-primary-500: #3f7fb5;
+  --color-primary-600: #2f6f9f;
+  --color-primary-700: #255a86;
+  --color-primary-800: #1c466b;
+  --color-primary-900: #163755;
+  --color-positive: #047857;
+  --color-negative: #be123c;
+  --color-warning: #b45309;
+  --shadow-panel: 0 14px 40px rgba(22, 55, 85, 0.08);
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: var(--color-foreground);
+  background:
+    linear-gradient(180deg, rgba(238, 246, 255, 0.78) 0%, rgba(245, 247, 251, 0) 24rem),
+    var(--color-background);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+@media (max-width: 767px) {
+  body {
+    padding-bottom: 5rem;
+  }
+}
+
+@layer components {
+  .app-main {
+    @apply min-h-screen;
+    color: var(--color-foreground);
+    background: var(--color-background);
+  }
+
+  .app-page {
+    @apply mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-6 lg:px-8;
+  }
+
+  .app-panel {
+    @apply rounded-md border shadow-sm;
+    border-color: var(--color-border);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .app-control-focus {
+    @apply focus:ring-2;
+  }
+
+  .app-control-focus:focus {
+    border-color: var(--color-primary-600);
+    --tw-ring-color: var(--color-primary-200);
+  }
+
+  .metallic-primary-bar {
+    background:
+      linear-gradient(105deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 28%),
+      linear-gradient(180deg, var(--color-primary-500), var(--color-primary-800));
+    box-shadow: 0 12px 30px rgba(22, 55, 85, 0.28);
+  }
+
+  .nav-bar-button {
+    @apply h-12 px-3.5 text-base duration-200 ease-out;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .nav-bar-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+  }
+
+  .nav-bar-button-active,
+  .nav-bar-button-active:hover {
+    background: #ffffff;
+    color: var(--color-primary-800);
+    box-shadow: 0 8px 20px rgba(22, 55, 85, 0.16);
+  }
+
+  .nav-icon-button {
+    @apply cursor-pointer list-none border;
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+  }
+
+  .nav-icon-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+  }
+
+  .mobile-nav-button {
+    @apply relative flex min-w-0 flex-col items-center justify-center gap-1 rounded-md px-1 py-2 text-[10px] font-semibold transition-colors duration-200;
+    color: var(--color-muted);
+  }
+
+  .mobile-nav-button:hover {
+    background: var(--color-primary-50);
+    color: var(--color-primary-800);
+  }
+
+  .mobile-nav-button-active,
+  .mobile-nav-button-active:hover {
+    color: var(--color-primary-800);
+  }
+
+  .security-symbol-button {
+    @apply justify-start border border-amber-600 bg-amber-600 text-white hover:border-amber-700 hover:bg-amber-700 hover:text-white;
+  }
+
+  .security-symbol-button-selected,
+  .security-symbol-button-selected:hover {
+    @apply justify-start border border-amber-600 bg-white text-amber-700 shadow-sm;
+  }
 }
 
 @layer utilities {

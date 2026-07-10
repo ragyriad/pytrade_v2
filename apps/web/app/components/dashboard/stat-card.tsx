@@ -19,14 +19,14 @@ export function StatCard({
 }: StatCardProps) {
   const toneClass =
     tone === "positive"
-      ? "text-emerald-700"
+      ? "text-positive"
       : tone === "negative"
-        ? "text-rose-700"
-        : "text-zinc-950";
+        ? "text-negative"
+        : "text-foreground";
 
   return (
     <section
-      className={`rounded-md border border-zinc-200 bg-white p-5 shadow-sm ${
+      className={`app-panel p-5 ${
         align === "center" ? "text-center" : ""
       }`}
     >
@@ -35,8 +35,8 @@ export function StatCard({
           align === "center" ? "justify-center" : "justify-between"
         }`}
       >
-        <p className="text-sm text-zinc-500">{label}</p>
-        {icon ? <FontAwesomeIcon icon={icon} className="h-4 w-4 text-zinc-400" /> : null}
+        <p className="text-sm text-muted">{label}</p>
+        {icon ? <FontAwesomeIcon icon={icon} className="h-4 w-4 text-primary-500" /> : null}
       </div>
       <div className={`mt-2 whitespace-pre-line text-xl font-semibold tracking-normal ${toneClass}`}>
         {value}

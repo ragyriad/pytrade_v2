@@ -18,7 +18,7 @@ export function SegmentedTabs<T extends string>({
   onChange,
 }: SegmentedTabsProps<T>) {
   return (
-    <div className="flex w-full flex-wrap rounded-md border border-zinc-200 bg-zinc-50 p-1 sm:inline-flex sm:w-auto">
+    <div className="flex w-full flex-wrap rounded-md border border-border bg-surface-muted p-1 sm:inline-flex sm:w-auto">
       {options.map((option) => {
         const active = option.id === value;
 
@@ -31,13 +31,13 @@ export function SegmentedTabs<T extends string>({
               "ghost",
               `min-w-0 flex-1 sm:flex-none ${
               active
-                ? "bg-white text-zinc-950 shadow-sm hover:bg-white"
-                : "text-zinc-600 hover:text-zinc-950"
+                ? "bg-surface text-primary-900 shadow-sm hover:bg-surface"
+                : "text-muted hover:text-primary-900"
               }`
             )}
           >
             {option.label}
-            <span className="ml-2 text-xs text-zinc-400">{option.count}</span>
+            <span className="ml-2 text-xs text-muted">{option.count}</span>
           </button>
         );
       })}
