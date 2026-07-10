@@ -293,13 +293,15 @@ export function DividendEventsCalendar({ events }: DividendEventsCalendarProps) 
                                 <div
                                   key={item.calendarId}
                                   title={title}
-                                  className={`rounded border px-2 py-1 ${style.bg} ${style.border} ${style.text}`}
+                                  className={`rounded border px-2 py-1.5 ${style.bg} ${style.border} ${style.text}`}
                                 >
                                   <div className="flex min-w-0 items-center gap-1.5">
                                     <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${style.dot}`} />
-                                    <span className="truncate text-[11px] font-bold">
+                                    <span className="min-w-0 truncate text-[11px] font-bold">
                                       {item.symbol}
                                     </span>
+                                  </div>
+                                  <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1">
                                     <span className="rounded bg-white/70 px-1 text-[9px] font-bold uppercase">
                                       {item.eventKind === "payment" ? "Pay" : "Ex"}
                                     </span>
@@ -308,9 +310,9 @@ export function DividendEventsCalendar({ events }: DividendEventsCalendarProps) 
                                         Special
                                       </span>
                                     ) : null}
-                                  </div>
-                                  <div className="mt-0.5 truncate text-[10px] font-semibold opacity-90">
-                                    {formatMoney(item.cashAmount)}
+                                    <span className="min-w-0 truncate text-[10px] font-semibold opacity-90">
+                                      {formatMoney(item.cashAmount)}
+                                    </span>
                                   </div>
                                 </div>
                               );

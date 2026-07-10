@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type MouseEvent } from "react";
+import type { MouseEvent } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChartPie,
@@ -38,15 +38,12 @@ function isActivePath(pathname: string, href: string): boolean {
 export function TopNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const [optimisticHref, setOptimisticHref] = useState<string | null>(null);
-  const pathnameHref = links.find((link) => isActivePath(pathname, link.href))?.href ?? "/";
-  const activeHref = optimisticHref ?? pathnameHref;
+  const activeHref = links.find((link) => isActivePath(pathname, link.href))?.href ?? "/";
 
   const handleNavigate = (href: string) => (event: MouseEvent<HTMLAnchorElement>) => {
     if (isActivePath(pathname, href)) return;
 
     event.preventDefault();
-    setOptimisticHref(href);
     const navigate = () => router.push(href);
     const viewTransitionDocument = document as ViewTransitionDocument;
 
@@ -57,10 +54,6 @@ export function TopNav() {
 
     navigate();
   };
-
-  useEffect(() => {
-    setOptimisticHref(null);
-  }, [pathname]);
 
   return (
     <>
