@@ -11,7 +11,6 @@ import {
   formatNumber,
   formatPercent,
   normalizeAccountType,
-  signedValueClassName,
 } from "../../lib/formatters";
 import type {
   DividendDashboardSummaryDto,
@@ -25,7 +24,10 @@ import { DataTable, type TableColumn } from "../dashboard/data-table";
 import { FilterBar } from "../dashboard/filter-bar";
 import { SegmentedTabs } from "../dashboard/segmented-tabs";
 import { StatCard } from "../dashboard/stat-card";
+import { DividendCurrentYearChart } from "./dividend-current-year-chart";
 import { DividendGrowthChart } from "./dividend-growth-chart";
+import { DividendMonthlyGrowthChart } from "./dividend-monthly-growth-chart";
+import { DividendTotalBarChart } from "./dividend-total-bar-chart";
 import { DividendAccountShareChart } from "./dividend-account-share-chart";
 import { DividendPositionYieldChart } from "./dividend-position-yield-chart";
 import { DividendEventsCalendar } from "./dividend-events-calendar";
@@ -64,6 +66,15 @@ export function DividendsDashboard({
   }, [dashboard.accounts, filters]);
 
   const selectedAccountIdKey = selectedAccountIds.join(",");
+  const selectedAccountIdSet = useMemo(
+    () => new Set(selectedAccountIds),
+    [selectedAccountIds]
+  );
+  const currentYearDividendTransactions = useMemo(() => {
+    return dashboard.dividends.transactions.filter((transaction) =>
+      selectedAccountIdSet.has(transaction.accountId)
+    );
+  }, [dashboard.dividends.transactions, selectedAccountIdSet]);
 
   useEffect(() => {
     if (!didHydrate.current) {
@@ -113,7 +124,6 @@ export function DividendsDashboard({
       id: value.currency,
       value: formatNumber(Math.abs(value.amount)),
       suffix: value.currency,
-      className: signedValueClassName(value.amount),
     }));
 
   const formatPercentMetricRows = (values: PercentBreakdownDto[]) =>
@@ -177,7 +187,7 @@ export function DividendsDashboard({
         <span
           className={
             position.status === "open"
-              ? "font-medium text-positive"
+              ? "font-medium text-primary-700"
               : "text-muted"
           }
         >
@@ -191,7 +201,7 @@ export function DividendsDashboard({
       align: "right",
       value: (position) => position.totalDividends.amount,
       render: (position) => (
-        <span className={`font-semibold ${signedValueClassName(position.totalDividends.amount)}`}>
+        <span className="font-semibold text-foreground">
           {formatMoneyAmount(position.totalDividends)}
         </span>
       ),
@@ -255,7 +265,7 @@ export function DividendsDashboard({
       header: "Amount",
       align: "center",
       render: (transaction) => (
-        <span className={`font-semibold ${signedValueClassName(transaction.amount.amount)}`}>
+        <span className="font-semibold text-foreground">
           {formatMoney(transaction.amount)}
         </span>
       ),
@@ -265,13 +275,6 @@ export function DividendsDashboard({
   return (
     <main className="app-main">
       <div className="app-page">
-        <section className="app-panel p-4">
-          <FilterBar
-            accounts={dashboard.accounts}
-            value={filters}
-            onChange={setFilters}
-          />
-        </section>
 
         {summaryError ? (
           <section className="mt-6 rounded-md border border-rose-200 bg-white p-4 text-sm text-rose-700 shadow-sm">
@@ -285,40 +288,52 @@ export function DividendsDashboard({
           </div>
         ) : null}
 
-        <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <StatCard
-            label="Total dividends"
-            value={<MetricValueList rows={formatMoneyMetricRows(summary.metrics.totalDividends)} />}
-            tone="positive"
-            align="center"
+        <section className="app-panel p-4 mt-6">
+          <FilterBar
+            accounts={dashboard.accounts}
+            value={filters}
+            onChange={setFilters}
           />
-          <StatCard
-            label="Annual dividend income"
-            value={<MetricValueList rows={formatMoneyMetricRows(summary.metrics.annualIncome)} />}
-            tone="positive"
-            align="center"
-          />
-          <StatCard
-            label="Monthly dividend income"
-            value={<MetricValueList rows={formatMoneyMetricRows(summary.metrics.monthlyIncome)} />}
-            tone="positive"
-            align="center"
-          />
-          <StatCard
-            label="Current yield"
-            value={
-              <MetricValueList rows={formatPercentMetricRows(summary.metrics.currentYieldByCurrency)} />
-            }
-            tone="positive"
-            align="center"
-          />
-          <StatCard
-            label="Yield on cost"
-            value={
-              <MetricValueList rows={formatPercentMetricRows(summary.metrics.yieldOnCostByCurrency)} />
-            }
-            tone="positive"
-            align="center"
+        </section>
+
+        <section className="mt-6 grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+          <DividendTotalBarChart totals={summary.metrics.totalDividends} />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <StatCard
+              label="Annual dividend income"
+              value={<MetricValueList rows={formatMoneyMetricRows(summary.metrics.annualIncome)} />}
+              align="center"
+            />
+            <StatCard
+              label="Monthly dividend income"
+              value={<MetricValueList rows={formatMoneyMetricRows(summary.metrics.monthlyIncome)} />}
+              align="center"
+            />
+            <StatCard
+              label="Current yield"
+              value={
+                <MetricValueList rows={formatPercentMetricRows(summary.metrics.currentYieldByCurrency)} />
+              }
+              align="center"
+            />
+            <StatCard
+              label="Yield on cost"
+              value={
+                <MetricValueList rows={formatPercentMetricRows(summary.metrics.yieldOnCostByCurrency)} />
+              }
+              align="center"
+            />
+          </div>
+        </section>
+
+        <section className="mt-6">
+          <DividendMonthlyGrowthChart transactions={summary.transactions} />
+        </section>
+
+        <section className="mt-6">
+          <DividendCurrentYearChart
+            transactions={currentYearDividendTransactions}
+            futureMonthlyIncome={summary.metrics.monthlyIncome}
           />
         </section>
 
@@ -331,11 +346,7 @@ export function DividendsDashboard({
         </section>
 
         <section className="mt-6">
-          <DividendGrowthChart
-            transactions={summary.transactions}
-            range={filters.timeline}
-            onRangeChange={(timeline) => setFilters({ ...filters, timeline })}
-          />
+          <DividendGrowthChart transactions={summary.transactions} />
         </section>
 
         <section className="app-panel mt-6 p-4">

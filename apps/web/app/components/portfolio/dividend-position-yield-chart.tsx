@@ -104,11 +104,10 @@ export function DividendPositionYieldChart({
 
   return (
     <section className="app-panel p-6 text-center">
-      <div className="text-left">
-        <h2 className="text-base font-semibold text-foreground">Active dividend yield</h2>
-        <p className="mt-1 text-sm text-muted">
+      <div className="border-b border-border pb-4 text-left">
+        <h2 className="text-base font-semibold text-primary-700">
           Total dividends received, stacked by account
-        </p>
+        </h2>
       </div>
 
       {visibleAccountIds.length > 0 ? (

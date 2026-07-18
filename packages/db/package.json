@@ -34,7 +34,9 @@
     "data:repair-symbol-values:apply": "tsx src/scripts/repair_symbol_transaction_values.ts --apply",
     "transactions:normalize:dry-run": "tsx src/scripts/normalize_transactions.ts",
     "transactions:normalize:apply": "tsx src/scripts/normalize_transactions.ts --apply",
-    "legacy:import-sqlite-data": "tsx ../../scripts/legacy/import_legacy_sqlite_data.ts",
+    "transactions:normalize-credit-card:dry-run": "tsx src/scripts/normalize_credit_card_transactions.ts",
+    "transactions:normalize-credit-card:apply": "tsx src/scripts/normalize_credit_card_transactions.ts --apply",
+    "legacy:import-sqlite-data": "tsx src/scripts/import_legacy_sqlite_data.ts",
     "tfsa-merge:review-report": "tsx src/scripts/generate_tfsa_merge_review_report.ts",
     "tfsa-merge:legacy-by-date:dry-run": "tsx src/scripts/merge_tfsa_legacy_by_date.ts",
     "tfsa-merge:legacy-by-date:apply": "tsx src/scripts/merge_tfsa_legacy_by_date.ts --apply"

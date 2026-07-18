@@ -31,97 +31,61 @@ const colors = [
 
 export function DividendAccountShareChart({ groups }: DividendAccountShareChartProps) {
   return (
-    <section className="app-panel p-5">
-      <div className="text-left">
-        <h2 className="text-base font-semibold text-foreground">
+    <section className="app-panel p-4">
+      <div className="border-b border-border pb-3 text-left">
+        <h2 className="text-base font-semibold text-primary-700">
           Dividend share by account
         </h2>
-        <p className="mt-1 text-sm text-muted">
-          Total received dividends by account
-        </p>
       </div>
 
-      <div className="mt-5">
+      <div className="mt-4">
         {groups.length === 0 ? (
           <div className="flex h-72 items-center justify-center rounded-md border border-dashed border-border text-sm text-muted">
             No dividend transactions match this view.
           </div>
         ) : (
-          <div className="grid gap-8">
+          <div className="grid gap-3 sm:grid-cols-2">
             {groups.map((group) => (
               <div
                 key={group.currency}
-                className="grid gap-6 lg:grid-cols-[340px_1fr] lg:items-center"
+                className="h-56 min-w-0"
               >
-                <div className="min-w-0">
-                  {groups.length > 1 ? (
-                    <p className="text-center text-sm font-semibold text-foreground">
-                      {group.currency}
-                    </p>
-                  ) : null}
-                  <div className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={group.rows}
-                          dataKey="value"
-                          nameKey="label"
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={64}
-                          outerRadius={112}
-                          paddingAngle={1}
-                          stroke="#ffffff"
-                          strokeWidth={2}
-                        >
-                          {group.rows.map((row, index) => (
-                            <Cell key={row.id} fill={colors[index % colors.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          formatter={(value, _name, item) => {
-                            const payload = item.payload as DividendAccountShareGroupDto["rows"][number];
-
-                            return [
-                              `${formatMoney({
-                                amount: Number(value),
-                                currency: payload.currency,
-                              })} (${formatPercent(payload.percentage)})`,
-                              payload.label,
-                            ];
-                          }}
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={group.rows}
+                      dataKey="value"
+                      nameKey="label"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={58}
+                      outerRadius={92}
+                      paddingAngle={1}
+                      stroke="#ffffff"
+                      strokeWidth={2}
+                    >
+                      {group.rows.map((row, index) => (
+                        <Cell
+                          key={row.id}
+                          fill={colors[index % colors.length]}
                         />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value, _name, item) => {
+                        const payload = item.payload as DividendAccountShareGroupDto["rows"][number];
 
-                <div className="scrollbar-thick max-h-72 overflow-y-auto pr-3">
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {group.rows.map((row, index) => (
-                      <div
-                        key={row.id}
-                        className="grid grid-cols-[12px_1fr_auto] items-center gap-3 rounded-md border border-border bg-surface-muted px-3 py-2"
-                      >
-                        <span
-                          className="h-3 w-3 rounded-sm"
-                          style={{ backgroundColor: colors[index % colors.length] }}
-                        />
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-foreground">
-                            {row.label}
-                          </p>
-                          <p className="text-xs text-muted">
-                            {formatMoney({ amount: row.value, currency: row.currency })}
-                          </p>
-                        </div>
-                        <span className="text-sm text-muted">
-                          {formatPercent(row.percentage)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                        return [
+                          `${formatMoney({
+                            amount: Number(value),
+                            currency: payload.currency,
+                          })} (${formatPercent(payload.percentage)})`,
+                          payload.label,
+                        ];
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
             ))}
           </div>

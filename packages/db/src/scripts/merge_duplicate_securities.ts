@@ -14,6 +14,7 @@ const client = postgres(connectionString);
 type SecurityRow = {
   id: string;
   security_key: string;
+  source: string;
   snaptrade_symbol_id: string | null;
   symbol: string;
   raw_symbol: string | null;
@@ -36,6 +37,7 @@ type SecurityRow = {
 
 type CanonicalSecurity = {
   symbol: string;
+  rawSymbol?: string;
   description: string;
   instrumentTypeDescription: string;
 };
@@ -53,6 +55,11 @@ const optionSymbolPattern = /^([A-Z]+)\d{1,2}[A-Z]{3}\d{2}[CP]\d+(?:\.\d+)?$/i;
 const occOptionSymbolPattern = /^([A-Z]{1,6})\d{6}[CP]\d{8}$/i;
 
 const securityFixesBySymbol: Record<string, CanonicalSecurity> = {
+  AAPL: {
+    symbol: "AAPL",
+    description: "Apple Inc.",
+    instrumentTypeDescription: "STOCK",
+  },
   AMC: {
     symbol: "AMC",
     description: "AMC Entertainment Holdings, Inc.",
@@ -88,6 +95,12 @@ const securityFixesBySymbol: Record<string, CanonicalSecurity> = {
     description: "Walt Disney Company (The)",
     instrumentTypeDescription: "STOCK",
   },
+  "DOC.VN": {
+    symbol: "DOC.VN",
+    rawSymbol: "DOC",
+    description: "CloudMD Software & Services Inc",
+    instrumentTypeDescription: "STOCK",
+  },
   ENPH: {
     symbol: "ENPH",
     description: "Enphase Energy, Inc.",
@@ -113,10 +126,20 @@ const securityFixesBySymbol: Record<string, CanonicalSecurity> = {
     description: "Moderna, Inc.",
     instrumentTypeDescription: "STOCK",
   },
+  NIO: {
+    symbol: "NIO",
+    description: "NIO Inc.",
+    instrumentTypeDescription: "STOCK",
+  },
   NVDA: {
     symbol: "NVDA",
     description: "NVIDIA Corporation",
     instrumentTypeDescription: "STOCK",
+  },
+  SGOV: {
+    symbol: "SGOV",
+    description: "iShares 0-3 Month Treasury Bond ETF",
+    instrumentTypeDescription: "ETF",
   },
   SHOP: {
     symbol: "SHOP",
@@ -128,6 +151,11 @@ const securityFixesBySymbol: Record<string, CanonicalSecurity> = {
     description: "Sprott Uranium Miners ETF",
     instrumentTypeDescription: "ETF",
   },
+  VALE: {
+    symbol: "VALE",
+    description: "Vale S.A.",
+    instrumentTypeDescription: "STOCK",
+  },
   XYZ: {
     symbol: "XYZ",
     description: "Block, Inc.",
@@ -136,8 +164,25 @@ const securityFixesBySymbol: Record<string, CanonicalSecurity> = {
 };
 
 const successorSymbols: Record<string, string> = {
+  DOC: "DOC.VN",
   SQ: "XYZ",
 };
+
+function uniqueUpperSymbols(rows: SecurityRow[]): string[] {
+  return Array.from(
+    new Set(
+      rows
+        .flatMap((row) => [row.symbol, row.raw_symbol])
+        .map((value) => value?.trim().toUpperCase())
+        .filter((value): value is string => Boolean(value))
+    )
+  );
+}
+
+function targetRawSymbol(target: CanonicalSecurity): string {
+  const suffixMatch = target.symbol.match(/^(.+)\.(TO|VN)$/);
+  return target.rawSymbol ?? suffixMatch?.[1] ?? target.symbol;
+}
 
 function parseOnlySymbols(): Set<string> | null {
   const values: string[] = [];
@@ -262,6 +307,7 @@ function needsRequestedSingleRowUpdate(row: SecurityRow, target: CanonicalSecuri
   return (
     hasOptionDisplay(row) ||
     row.symbol.toUpperCase() !== target.symbol ||
+    (row.raw_symbol?.toUpperCase() ?? "") !== targetRawSymbol(target) ||
     (targetHasCanonicalType &&
       (normalizeInstrumentTypeDescription(row.instrument_type_description) !==
         target.instrumentTypeDescription ||
@@ -368,6 +414,7 @@ async function main() {
     select
       securities.id,
       securities.security_key,
+      securities.source,
       securities.snaptrade_symbol_id,
       securities.symbol,
       securities.raw_symbol,
@@ -409,6 +456,7 @@ async function main() {
         update securities
         set
           symbol = ${plan.target.symbol},
+          raw_symbol = ${targetRawSymbol(plan.target)},
           description = ${plan.target.description},
           instrument_type_code = ${plan.target.instrumentTypeDescription},
           instrument_type_description = ${plan.target.instrumentTypeDescription},
@@ -431,44 +479,112 @@ async function main() {
       `;
 
       const duplicateIds = plan.remove.map((row) => row.id);
-      if (duplicateIds.length === 0) continue;
+      const allPlanIds = plan.rows.map((row) => row.id);
+      const oldSymbols = uniqueUpperSymbols(plan.rows);
 
       if (plan.target.instrumentTypeDescription === "OPTION") {
-        await tx`
-          update transactions
-          set security_id = ${plan.canonical.id}
-          where security_id in ${tx(duplicateIds)}
-        `;
+        if (duplicateIds.length > 0) {
+          await tx`
+            update transactions
+            set security_id = ${plan.canonical.id}
+            where security_id in ${tx(duplicateIds)}
+          `;
+        }
       } else {
         await tx`
           update transactions
-          set security_id = ${plan.canonical.id}, underlying_security_id = ${plan.canonical.id}
-          where security_id in ${tx(duplicateIds)}
+          set security_id = ${plan.canonical.id}, symbol = ${plan.target.symbol}
+          where security_id in ${tx(allPlanIds)}
         `;
 
         await tx`
           update transactions
           set underlying_security_id = ${plan.canonical.id}
-          where underlying_security_id in ${tx(duplicateIds)}
+          where underlying_security_id in ${tx(allPlanIds)}
         `;
 
         await tx`
           update options
           set underlying_security_id = ${plan.canonical.id}, updated_at = now()
-          where underlying_security_id in ${tx(duplicateIds)}
+          where underlying_security_id in ${tx(allPlanIds)}
+        `;
+
+        await tx`
+          update positions
+          set
+            security_id = ${plan.canonical.id},
+            symbol = ${plan.target.symbol},
+            raw_symbol = ${targetRawSymbol(plan.target)},
+            description = ${plan.target.description},
+            instrument_type_code = ${plan.target.instrumentTypeDescription},
+            instrument_type_description = ${plan.target.instrumentTypeDescription}
+          where
+            security_id in ${tx(allPlanIds)}
+            or upper(symbol) in ${tx(oldSymbols)}
+            or upper(coalesce(raw_symbol, '')) in ${tx(oldSymbols)}
+        `;
+
+        await tx`
+          update dividend_events
+          set
+            security_id = ${plan.canonical.id},
+            symbol = ${plan.target.symbol},
+            updated_at = now()
+          where
+            security_id in ${tx(allPlanIds)}
+            or upper(symbol) in ${tx(oldSymbols)}
+        `;
+
+        await tx`
+          update security_price_snapshots
+          set
+            security_id = ${plan.canonical.id},
+            symbol = ${plan.target.symbol},
+            updated_at = now()
+          where
+            security_id in ${tx(allPlanIds)}
+            or upper(symbol) in ${tx(oldSymbols)}
         `;
       }
 
-      await tx`
-        update security_aliases
-        set security_id = ${plan.canonical.id}, updated_at = now()
-        where security_id in ${tx(duplicateIds)}
-      `;
+      for (const row of plan.rows) {
+        await tx`
+          insert into security_aliases (
+            security_id,
+            source,
+            external_id,
+            symbol,
+            raw_symbol,
+            currency_code,
+            exchange_code,
+            exchange_mic_code
+          )
+          values (
+            ${plan.canonical.id},
+            ${row.source},
+            ${row.snaptrade_symbol_id ?? row.security_key},
+            ${row.symbol},
+            ${row.raw_symbol},
+            ${row.currency_code},
+            ${row.exchange_code},
+            ${row.exchange_mic_code}
+          )
+          on conflict do nothing
+        `;
+      }
 
-      await tx`
-        delete from securities
-        where id in ${tx(duplicateIds)}
-      `;
+      if (duplicateIds.length > 0) {
+        await tx`
+          update security_aliases
+          set security_id = ${plan.canonical.id}, updated_at = now()
+          where security_id in ${tx(duplicateIds)}
+        `;
+
+        await tx`
+          delete from securities
+          where id in ${tx(duplicateIds)}
+        `;
+      }
     }
   });
 

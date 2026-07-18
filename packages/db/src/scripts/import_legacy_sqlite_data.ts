@@ -26,7 +26,7 @@ import {
   type Security,
   type SecurityAlias,
   type Transaction,
-} from "../../packages/db/dist/index.js";
+} from "../index.js";
 
 type LegacyAccount = {
   accountNumber: string;
@@ -1545,7 +1545,7 @@ async function main() {
   async function ensureSecurity(input: NewSecurity, preferSymbolLookup: boolean): Promise<Security> {
     const existingByKey = securitiesByLookup.get(`${input.securityKey}|`);
     const existingBySymbol = preferSymbolLookup
-      ? securityLookupKeys(input.symbol, input.currencyCode)
+      ? securityLookupKeys(input.symbol, input.currencyCode ?? null)
           .map((lookupKey) => securitiesByLookup.get(lookupKey))
           .find(Boolean)
       : undefined;

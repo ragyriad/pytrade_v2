@@ -11,6 +11,7 @@ import {
   type DividendTimelineRange,
 } from "./services/dividend_summary.js";
 import { getAnnualAccountGains } from "./services/account_performance.js";
+import { getCashDashboard } from "./services/cash.js";
 import { getPortfolioDashboard } from "./services/portfolio.js";
 import {
   getHistoricSecurities,
@@ -64,6 +65,31 @@ fastify.get("/api/portfolio/dashboard", async (request, reply) => {
   }
 
   const dashboard = await getPortfolioDashboard(query.data.userId);
+
+  if (!dashboard) {
+    return reply.status(404).send({
+      error: "No user data found. Run the sync or seed a user first.",
+    });
+  }
+
+  return dashboard;
+});
+
+fastify.get("/api/cash/dashboard", async (request, reply) => {
+  const query = z
+    .object({
+      userId: z.string().uuid().optional(),
+    })
+    .safeParse(request.query);
+
+  if (!query.success) {
+    return reply.status(400).send({
+      error: "Invalid query string.",
+      issues: query.error.flatten().fieldErrors,
+    });
+  }
+
+  const dashboard = await getCashDashboard(query.data.userId);
 
   if (!dashboard) {
     return reply.status(404).send({

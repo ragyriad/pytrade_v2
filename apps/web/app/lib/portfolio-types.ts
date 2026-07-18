@@ -241,3 +241,43 @@ export type SecurityTransactionsResponseDto = {
   security: HistoricSecurityDto;
   transactions: TransactionDto[];
 };
+
+export type CashAccountDto = {
+  id: string;
+  name: string;
+  institutionName: string | null;
+  accountCurrency: string | null;
+  type: string | null;
+  status: string | null;
+  category: "cash" | "credit";
+  balance: MoneyDto;
+  lastSyncedAt: string | null;
+};
+
+export type CashTransactionDto = {
+  id: string;
+  accountId: string;
+  source: string;
+  type: string;
+  action: string | null;
+  assetType: string | null;
+  description: string | null;
+  amount: MoneyDto;
+  fee: MoneyDto;
+  symbol: string | null;
+  tradeDate: string;
+  isArchived: boolean;
+};
+
+export type CashDashboardDto = {
+  accounts: CashAccountDto[];
+  cashAccounts: CashAccountDto[];
+  creditAccounts: CashAccountDto[];
+  cashTransactions: CashTransactionDto[];
+  creditCardExpenses: CashTransactionDto[];
+  totalCash: MoneyBreakdownDto[];
+  currentInterestRates: Array<{
+    currency: string;
+    percent: number | null;
+  }>;
+};

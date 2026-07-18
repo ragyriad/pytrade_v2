@@ -96,6 +96,10 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
       key: "symbol",
       header: "Symbol",
       align: "left",
+      value: (security) =>
+        [security.symbol, security.rawSymbol, security.description]
+          .filter(Boolean)
+          .join(" "),
       render: (security) => {
         const selected = expandedSecurityIds.has(security.id);
 
@@ -119,6 +123,16 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
       key: "description",
       header: "Security",
       align: "left",
+      value: (security) =>
+        [
+          security.description,
+          security.rawSymbol,
+          security.symbol,
+          security.exchangeCode,
+          security.exchangeMicCode,
+        ]
+          .filter(Boolean)
+          .join(" "),
       render: (security) => (
         <div>
           <p className="font-medium text-foreground">
@@ -133,11 +147,13 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
     {
       key: "type",
       header: "Type",
+      value: (security) => security.instrumentType ?? "Unknown",
       render: (security) => security.instrumentType ?? "Unknown",
     },
     {
       key: "status",
       header: "Status",
+      value: (security) => security.status,
       render: (security) => (
         <span
           className={
@@ -151,11 +167,13 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
     {
       key: "transactions",
       header: "Total transactions",
+      value: (security) => security.transactionCount,
       render: (security) => formatNumber(security.transactionCount),
     },
     {
       key: "dividends",
       header: "Dividends",
+      value: (security) => security.dividendCount,
       render: (security) => (
         <span className="font-medium text-positive">
           {formatNumber(security.dividendCount)}
@@ -165,6 +183,7 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
     {
       key: "gainLoss",
       header: "Net Gain/Loss",
+      value: (security) => security.totalGainLoss.amount,
       render: (security) =>
         security.status === "active" ? (
           <div className="inline-flex flex-col items-center gap-1">
@@ -187,6 +206,7 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
     {
       key: "lastTrade",
       header: "Last Trade",
+      value: (security) => security.lastTradeDate,
       render: (security) => formatDate(security.lastTradeDate),
     },
   ];

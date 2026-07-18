@@ -10,6 +10,7 @@ import {
   faChevronDown,
   faReceipt,
   faGear,
+  faMoneyBillWave,
   faTable,
   faUser,
   faWallet,
@@ -19,11 +20,12 @@ import { DetailsDropdown } from "../ui/details-dropdown";
 
 const links = [
   { href: "/", label: "Portfolio", icon: faChartPie },
-  { href: "/data", label: "Data Tables", icon: faTable },
   { href: "/securities", label: "Securities", icon: faChartLine },
-  { href: "/options", label: "Options", icon: faChartLine },
   { href: "/dividends", label: "Dividends", icon: faWallet },
+  { href: "/data", label: "Data Tables", icon: faTable },
+  { href: "/options", label: "Options", icon: faChartLine },
   { href: "/fees", label: "Fees", icon: faReceipt },
+  { href: "/cash", label: "Cash", icon: faMoneyBillWave }
 ];
 
 type ViewTransitionDocument = Document & {
@@ -116,7 +118,7 @@ export function TopNav() {
       </header>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-6 border-t border-primary-900 bg-surface px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-10px_30px_rgba(22,55,85,0.14)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-7 border-t border-primary-900 bg-surface px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-10px_30px_rgba(22,55,85,0.14)] md:hidden"
         aria-label="Primary navigation"
       >
         {links.map((link) => {

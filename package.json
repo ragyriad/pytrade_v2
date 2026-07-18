@@ -30,6 +30,8 @@
     "securities:merge-duplicates:apply": "pnpm --filter @repo/db securities:merge-duplicates:apply",
     "transactions:normalize:dry-run": "pnpm --filter @repo/db transactions:normalize:dry-run",
     "transactions:normalize:apply": "pnpm --filter @repo/db transactions:normalize:apply",
+    "transactions:normalize-credit-card:dry-run": "pnpm --filter @repo/db transactions:normalize-credit-card:dry-run",
+    "transactions:normalize-credit-card:apply": "pnpm --filter @repo/db transactions:normalize-credit-card:apply",
     "legacy:import-sqlite-data": "pnpm --filter @repo/db legacy:import-sqlite-data"
   },
   "devDependencies": {

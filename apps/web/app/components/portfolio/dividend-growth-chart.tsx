@@ -9,12 +9,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Button } from "../ui/button";
 import { formatDate, formatMoney } from "../../lib/formatters";
 import type { TransactionDto } from "../../lib/portfolio-types";
-import { timelineOptions, type TimelineRange } from "../../services/filter_timeline";
-
-const colors = ["#2f6f9f", "#047857", "#7c3aed", "#b45309"];
+import { dividendCurrencyColor } from "./dividend-chart-colors";
 
 type ChartRow = {
   date: string;
@@ -24,8 +21,6 @@ type ChartRow = {
 
 type DividendGrowthChartProps = {
   transactions: TransactionDto[];
-  range: TimelineRange;
-  onRangeChange: (range: TimelineRange) => void;
 };
 
 function buildChartRows(transactions: TransactionDto[]): {
@@ -60,32 +55,21 @@ function buildChartRows(transactions: TransactionDto[]): {
   };
 }
 
-export function DividendGrowthChart({
-  transactions,
-  range,
-  onRangeChange,
-}: DividendGrowthChartProps) {
+export function DividendGrowthChart({ transactions }: DividendGrowthChartProps) {
   const { currencies, rows } = buildChartRows(transactions);
 
   return (
-    <section className="app-panel p-5 text-center">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-base font-semibold text-foreground">Cumulative dividends</h2>
-          <p className="mt-1 text-sm text-muted">Dividend income over time</p>
-        </div>
-        <div className="flex justify-center gap-2">
-          {timelineOptions.map((option) => (
-            <Button
-              key={option.value}
-              type="button"
-              variant={range === option.value ? "solid" : "outline"}
-              onClick={() => onRangeChange(option.value)}
-            >
-              {option.label}
-            </Button>
-          ))}
-        </div>
+    <section className="app-panel p-5">
+      <div className="border-b border-border pb-4 text-left">
+        <p className="text-xs font-semibold uppercase tracking-normal text-primary-700">
+          Dividend growth
+        </p>
+        <h2 className="mt-1 text-lg font-semibold text-foreground">
+          Cumulative dividends
+        </h2>
+        <p className="mt-1 text-sm text-muted">
+          Running dividend income based on the selected timeline
+        </p>
       </div>
 
       <div className="mt-5 h-80">
@@ -95,7 +79,7 @@ export function DividendGrowthChart({
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={rows} margin={{ left: 8, right: 24, top: 10, bottom: 0 }}>
+            <AreaChart data={rows} margin={{ left: 8, right: 24, top: 18, bottom: 0 }}>
               <CartesianGrid stroke="#d8e1ea" strokeDasharray="3 3" />
               <XAxis dataKey="displayDate" tick={{ fontSize: 12 }} minTickGap={28} />
               <YAxis tick={{ fontSize: 12 }} />
@@ -110,10 +94,12 @@ export function DividendGrowthChart({
                   key={currency}
                   type="monotone"
                   dataKey={currency}
-                  stroke={colors[index % colors.length]}
-                  fill={colors[index % colors.length]}
+                  stroke={dividendCurrencyColor(currency, index)}
+                  fill={dividendCurrencyColor(currency, index)}
                   fillOpacity={0.16}
                   strokeWidth={2}
+                  isAnimationActive
+                  animationDuration={850}
                 />
               ))}
             </AreaChart>

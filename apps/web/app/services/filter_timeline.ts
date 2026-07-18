@@ -1,10 +1,10 @@
-import type { TransactionDto } from "../lib/portfolio-types";
-
 export type TimelineRange = "NONE" | "1M" | "3M" | "6M" | "1Y" | "2Y" | "5Y" | "ALL";
 
+type TimelineTransaction = {
+  tradeDate: string;
+};
+
 export const timelineOptions: Array<{ value: TimelineRange; label: string }> = [
-  { value: "NONE", label: "None" },
-  { value: "1M", label: "1 month" },
   { value: "3M", label: "3 months" },
   { value: "6M", label: "6 months" },
   { value: "1Y", label: "1 year" },
@@ -13,8 +13,8 @@ export const timelineOptions: Array<{ value: TimelineRange; label: string }> = [
   { value: "ALL", label: "All" },
 ];
 
-export function getTimelineStart(
-  transactions: TransactionDto[],
+export function getTimelineStart<T extends TimelineTransaction>(
+  transactions: T[],
   range: TimelineRange
 ): Date | null {
   if (transactions.length === 0) return null;
@@ -42,17 +42,17 @@ export function getTimelineStart(
   return start;
 }
 
-export function filterTransactionsByTimeline(
-  transactions: TransactionDto[],
+export function filterTransactionsByTimeline<T extends TimelineTransaction>(
+  transactions: T[],
   range: TimelineRange
-): TransactionDto[] {
+): T[] {
   if (range === "NONE") return transactions;
   const start = getTimelineStart(transactions, range);
   if (!start) return [];
   return transactions.filter((transaction) => new Date(transaction.tradeDate) >= start);
 }
 
-export function getMonthDivisor(transactions: TransactionDto[], range: TimelineRange): number {
+export function getMonthDivisor(transactions: TimelineTransaction[], range: TimelineRange): number {
   if (range === "NONE") return getMonthDivisor(transactions, "ALL");
   if (range === "1M") return 1;
   if (range === "3M") return 3;
@@ -71,7 +71,7 @@ export function getMonthDivisor(transactions: TransactionDto[], range: TimelineR
   return Math.max(months, 1);
 }
 
-export function annualizationFactor(range: TimelineRange, transactions: TransactionDto[]): number {
+export function annualizationFactor(range: TimelineRange, transactions: TimelineTransaction[]): number {
   const months = getMonthDivisor(transactions, range);
   return months > 0 ? 12 / months : 1;
 }
