@@ -147,6 +147,32 @@ export async function getTransactionsByAccount(
 }
 
 /**
+ * Returns the newest SnapTrade activity date stored for an account. Imported
+ * statement rows are deliberately excluded from this sync watermark.
+ */
+export async function getLatestSnaptradeTransactionDate(
+  db: DB,
+  accountId: string
+): Promise<Date | null> {
+  const rows = await db
+    .select({
+      latestTradeDate: sql<Date | null>`max(${transactions.tradeDate})`,
+    })
+    .from(transactions)
+    .where(
+      and(
+        eq(transactions.accountId, accountId),
+        sql`${transactions.snaptradeTransactionId} is not null`
+      )
+    );
+  const value = rows[0]?.latestTradeDate;
+  if (!value) return null;
+
+  const parsed = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+/**
  * Deletes all transactions for a given account.
  * Used when an account is being fully re-synced from scratch.
  *

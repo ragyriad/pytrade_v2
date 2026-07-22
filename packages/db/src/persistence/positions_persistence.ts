@@ -1,4 +1,4 @@
-import { eq, inArray, sql, and } from "drizzle-orm";
+import { eq, inArray, and } from "drizzle-orm";
 import { DB } from "../db_type.js";
 import { positions, Position, NewPosition } from "../schemas/positions_schema.js";
  
@@ -6,37 +6,102 @@ import { positions, Position, NewPosition } from "../schemas/positions_schema.js
 // Writes
 // ---------------------------------------------------------------------------
  
+type PositionIdentity = Pick<
+  NewPosition,
+  "snaptradeInstrumentId" | "snaptradeSymbolId" | "symbol"
+>;
+
+/** Prefer SnapTrade's stable UniversalSymbol id, with fallbacks for brokers
+ * that omit it. */
+function getPositionIdentity(position: PositionIdentity): string {
+  const instrumentId = position.snaptradeInstrumentId?.trim();
+  if (instrumentId) return `instrument:${instrumentId}`;
+
+  const positionSymbolId = position.snaptradeSymbolId?.trim();
+  if (positionSymbolId) return `position-symbol:${positionSymbolId}`;
+
+  return `ticker:${position.symbol.trim().toUpperCase()}`;
+}
+
+async function upsertPositionRows(
+  db: DB,
+  accountId: string,
+  data: NewPosition[]
+): Promise<Set<string>> {
+  const current = await db
+    .select()
+    .from(positions)
+    .where(eq(positions.accountId, accountId));
+  const currentByIdentity = new Map(
+    current.map((position) => [getPositionIdentity(position), position])
+  );
+  const incomingByIdentity = new Map(
+    data.map((position) => [getPositionIdentity(position), position])
+  );
+  const retainedIds = new Set<string>();
+
+  for (const incoming of incomingByIdentity.values()) {
+    if (incoming.accountId !== accountId) {
+      throw new Error(
+        `Cannot sync position for account ${incoming.accountId} into ${accountId}`
+      );
+    }
+
+    const existing = currentByIdentity.get(getPositionIdentity(incoming));
+    const { id: _id, createdAt: _createdAt, ...values } = incoming;
+    const syncedAt = incoming.syncedAt ?? new Date();
+
+    if (existing) {
+      await db
+        .update(positions)
+        .set({ ...values, syncedAt })
+        .where(eq(positions.id, existing.id));
+      retainedIds.add(existing.id);
+      continue;
+    }
+
+    const inserted = await db
+      .insert(positions)
+      .values({ ...values, syncedAt })
+      .returning({ id: positions.id });
+    retainedIds.add(inserted[0].id);
+  }
+
+  return retainedIds;
+}
+
 /**
- * Replaces all positions for an account in a single transaction.
- *
- * This is the correct sync strategy for positions — they are a point-in-time
- * snapshot, not an append log. A sold position simply disappears from the next
- * API response. Delete-and-reinsert inside a transaction guarantees no stale
- * rows remain after a sell, and is atomic so readers never see a half-written
- * state.
- *
- * Always prefer this over upsertPositions during a full sync run.
- *
- * @example
- * await replaceAccountPositions(db, accountId, mappedPositions);
+ * Reconciles a complete positions snapshot without deleting and recreating
+ * unchanged rows. New holdings are inserted and only holdings absent from the
+ * latest SnapTrade snapshot are removed.
  */
-export async function replaceAccountPositions(
+export async function reconcileAccountPositions(
   db: DB,
   accountId: string,
   data: NewPosition[]
 ): Promise<void> {
   await db.transaction(async (tx) => {
-    await tx.delete(positions).where(eq(positions.accountId, accountId));
-    if (data.length > 0) {
-      await tx.insert(positions).values(data);
+    const retainedIds = await upsertPositionRows(tx, accountId, data);
+    const current = await tx
+      .select({ id: positions.id })
+      .from(positions)
+      .where(eq(positions.accountId, accountId));
+    const staleIds = current
+      .map(({ id }) => id)
+      .filter((id) => !retainedIds.has(id));
+
+    if (staleIds.length > 0) {
+      await tx.delete(positions).where(inArray(positions.id, staleIds));
     }
   });
 }
+
+/** @deprecated Use reconcileAccountPositions. */
+export const replaceAccountPositions = reconcileAccountPositions;
  
 /**
- * Upserts positions keyed on (accountId, symbol).
- * Use only for partial single-position refreshes.
- * For full syncs always use replaceAccountPositions.
+ * Upserts partial position data using SnapTrade instrument identifiers where
+ * available. Unlike reconciliation, this does not remove missing rows.
  *
  * @example
  * await upsertPositions(db, mappedPositions);
@@ -47,26 +112,17 @@ export async function upsertPositions(
 ): Promise<void> {
   if (data.length === 0) return;
  
-  await db
-    .insert(positions)
-    .values(data)
-    .onConflictDoUpdate({
-      target: [positions.accountId, positions.symbol],
-      set: {
-        units: sql`excluded.units`,
-        securityId: sql`excluded.security_id`,
-        fractionalUnits: sql`excluded.fractional_units`,
-        price: sql`excluded.price`,
-        averagePurchasePrice: sql`excluded.average_purchase_price`,
-        openPnl: sql`excluded.open_pnl`,
-        currencyCode: sql`excluded.currency_code`,
-        cashEquivalent: sql`excluded.cash_equivalent`,
-        isQuotable: sql`excluded.is_quotable`,
-        isTradable: sql`excluded.is_tradable`,
-        logoUrl: sql`excluded.logo_url`,
-        syncedAt: sql`now()`,
-      },
-    });
+  const byAccount = new Map<string, NewPosition[]>();
+  for (const position of data) {
+    const accountPositions = byAccount.get(position.accountId) ?? [];
+    accountPositions.push(position);
+    byAccount.set(position.accountId, accountPositions);
+  }
+  await db.transaction(async (tx) => {
+    for (const [accountId, accountPositions] of byAccount) {
+      await upsertPositionRows(tx, accountId, accountPositions);
+    }
+  });
 }
  
 /**

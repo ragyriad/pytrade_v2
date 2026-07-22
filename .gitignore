@@ -25,6 +25,7 @@ next-env.d.ts
 # Environment and local config
 .env
 .env.*
+.env_v2
 !.env.example
 !.env.sample
 *.local
@@ -72,6 +73,7 @@ scripts/deleted_duplicate_transactions_2026-06-27.sql
 *.backup
 dumps/
 exports/
+/generated files/
 
 # Brokerage/API snapshots and credentials
 packages/snaptrade_sync/src/data/*.json

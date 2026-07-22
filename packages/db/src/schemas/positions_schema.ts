@@ -16,9 +16,9 @@ import { securities } from "./securities_schema.js";
 // ---------------------------------------------------------------------------
 // positions
 // One row per position held in an account at the time of the last sync.
-// This is a snapshot table — rows are replaced on each holdings sync,
-// not appended. There is no history here; that belongs in a separate
-// holdings_snapshots table if you need it later.
+// This is a current-state snapshot table. Rows are reconciled in place on each
+// holdings sync; there is no history here. Historical holdings belong in a
+// separate holdings_snapshots table if needed later.
 // ---------------------------------------------------------------------------
 
 export const positions = pgTable(

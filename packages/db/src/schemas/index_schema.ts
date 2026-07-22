@@ -7,5 +7,8 @@ export { forexRateSnapshots, ForexRateSnapshot, NewForexRateSnapshot } from "./f
 export { options, Option, NewOption } from "./options_schema.js";
 export { transactions, transactionTypeEnum, NewTransaction, Transaction } from "./transactions_schema.js";
 export { positions, Position, NewPosition } from "./positions_schema.js";
+export { holdings, Holding, NewHolding } from "./holdings_schema.js";
+export { accountBalances, AccountBalance, NewAccountBalance } from "./account_balances_schema.js";
+export { orders, Order, NewOrder } from "./orders_schema.js";
 export { users, User, NewUser, rolesEnum } from "./users_schema.js";
-export { usersRelations, accountsRelations, transactionsRelations, securitiesRelations, securityAliasesRelations, optionsRelations, dividendEventsRelations, positionsRelations, securityPriceSnapshotsRelations } from "./relations.js";
+export { usersRelations, accountsRelations, transactionsRelations, securitiesRelations, securityAliasesRelations, optionsRelations, dividendEventsRelations, positionsRelations, holdingsRelations, accountBalancesRelations, ordersRelations, securityPriceSnapshotsRelations } from "./relations.js";

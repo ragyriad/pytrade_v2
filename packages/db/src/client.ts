@@ -6,7 +6,6 @@ import * as schema from "./schemas/index_schema.js";
 dotenv.config({ path: getWorkspaceParentEnvPath() });
 
 const connectionString = process.env.DATABASE_URL!;
-console.log("DATABASE_URL =", connectionString);
 export const db = drizzle(connectionString, { schema: schema });
 
 export async function checkDbConnection() {

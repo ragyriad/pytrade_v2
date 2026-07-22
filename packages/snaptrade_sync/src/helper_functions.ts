@@ -57,8 +57,8 @@ const DIGITS = "0123456789";
 
 
 /**
- * Save an array to a JSON file inside a `data/` folder located next to the
- * running script.
+ * Save an array to a JSON file inside the repository's Git-ignored
+ * `generated files/` folder.
  *
  * Final filename format:
  *   {filename}_{brokerage}.json          ← first save
@@ -68,7 +68,7 @@ const DIGITS = "0123456789";
  * @param data        - The array to serialise.
  * @param filename    - Base name for the file (the "entity" segment).
  * @param brokerage   - Brokerage name; appended after the base name.
- * @param directory   - Optional subfolder inside `data/` (e.g. "reports/2024").
+ * @param directory   - Optional subfolder inside `generated files/`.
  * @returns           - SaveResult containing the resolved path, filename, and
  *                      the increment number used (null if no increment needed).
  */
@@ -92,7 +92,7 @@ export function saveListToJson({
   // ── Build target folder ────────────────────────────────────────────────────
   // __dirname resolves to the directory containing THIS file, mirroring
   // Python's os.path.dirname(os.path.abspath(__file__)).
-  const targetFolder = path.join(__dirname, "data", directory);
+  const targetFolder = path.resolve(__dirname, "../../../generated files", directory);
   fs.mkdirSync(targetFolder, { recursive: true });
 
   // ── Build the base filename ────────────────────────────────────────────────

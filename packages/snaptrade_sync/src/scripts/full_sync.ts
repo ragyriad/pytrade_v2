@@ -1,17 +1,27 @@
-import { syncAccounts } from "../sync_functions.js";
+import {
+  DEFAULT_SNAPTRADE_ACTIVITY_START_DATE,
+  getTransactionSyncStartDate,
+  syncAccounts,
+} from "../sync_functions.js";
 import { processAccountActivities } from "@repo/snaptrade-activity-processor";
 import {
   getAccountBySnaptradeId,
+  mapSnaptradeBalance,
   markAccountSynced,
-  replaceAccountPositions,
+  reconcileAccountBalances,
+  reconcileAccountPositions,
+  upsertAccountOrders,
 } from "@repo/db";
-import type { NewPosition } from "@repo/db";
+import type { NewAccountBalance, NewOrder, NewPosition } from "@repo/db";
 import { db, createSeed } from "@repo/db";
 import {
   getSnaptradeTransactionsByAccountId,
+  getSnaptradeBalancesByAccount,
+  getSnaptradeOrdersByAccount,
   getSnaptradePositionsByAccount,
 } from "../snaptrade.js";
 import { mapSnaptradePositionsWithSecurities } from "../position_securities.js";
+import { mapSnaptradeOrdersWithSecurities } from "../order_securities.js";
 
 async function closeDatabase() {
   const client = (db as typeof db & { $client?: { end?: () => Promise<void> } }).$client;
@@ -22,7 +32,7 @@ async function main() {
   try {
     const adminUser = await createSeed(db);
 
-    const startDate = "2019-01-01";
+    const fallbackStartDate = DEFAULT_SNAPTRADE_ACTIVITY_START_DATE;
     const endDate = new Date().toISOString().split("T")[0];
 
     // ------------------------------------------------------------------
@@ -77,9 +87,26 @@ async function main() {
       accountName: string;
       rawPositions: Awaited<ReturnType<typeof getSnaptradePositionsByAccount>>;
     }> = [];
+    const allRawBalancesByAccount: Array<{
+      dbAccountId: string;
+      accountName: string;
+      rawBalances: Awaited<ReturnType<typeof getSnaptradeBalancesByAccount>>;
+    }> = [];
+    const allRawOrdersByAccount: Array<{
+      dbAccountId: string;
+      accountName: string;
+      rawOrders: Awaited<ReturnType<typeof getSnaptradeOrdersByAccount>>;
+    }> = [];
 
     for (const { snaptradeAccountId, dbAccountId, accountName, accountType } of resolvedAccounts) {
       console.log(`Fetching data for: ${accountName}`);
+
+      const startDate = await getTransactionSyncStartDate(
+        db,
+        dbAccountId,
+        fallbackStartDate
+      );
+      console.log(`  Fetching transactions from ${startDate} through ${endDate}`);
 
       const rawTransactions = await getSnaptradeTransactionsByAccountId(
         snaptradeAccountId,
@@ -111,6 +138,14 @@ async function main() {
         });
         console.log(`  Fetched ${rawPositions.length} positions`);
       }
+
+      const rawBalances = await getSnaptradeBalancesByAccount(snaptradeAccountId);
+      allRawBalancesByAccount.push({ dbAccountId, accountName, rawBalances });
+      console.log(`  Fetched ${rawBalances.length} balances`);
+
+      const rawOrders = await getSnaptradeOrdersByAccount(snaptradeAccountId, 90);
+      allRawOrdersByAccount.push({ dbAccountId, accountName, rawOrders });
+      console.log(`  Fetched ${rawOrders.length} recent orders`);
     }
 
     // ------------------------------------------------------------------
@@ -150,17 +185,43 @@ async function main() {
       console.log(`  Mapped ${mappedPositions.length} positions with securities for: ${accountName}`);
     }
 
-    // Positions are per-account snapshots so replace is still per-account,
-    // but batched in a single transaction rather than scattered in the loop
-    await db.transaction(async (tx) => {
-      for (const { dbAccountId, accountName } of resolvedAccounts) {
-        const accountPositions = allMappedPositions.filter(
-          (p) => p.accountId === dbAccountId
-        );
-        await replaceAccountPositions(tx, dbAccountId, accountPositions);
-        console.log(`  Replaced ${accountPositions.length} positions for: ${accountName}`);
-      }
-    });
+    const allMappedBalances: NewAccountBalance[] = allRawBalancesByAccount.flatMap(
+      ({ dbAccountId, rawBalances }) =>
+        rawBalances
+          .map((balance) => mapSnaptradeBalance(balance, dbAccountId))
+          .filter((balance): balance is NewAccountBalance => balance !== null)
+    );
+
+    const allMappedOrders: NewOrder[] = [];
+    for (const { dbAccountId, accountName, rawOrders } of allRawOrdersByAccount) {
+      const mappedOrders = await mapSnaptradeOrdersWithSecurities(
+        db,
+        rawOrders,
+        dbAccountId
+      );
+      allMappedOrders.push(...mappedOrders);
+      console.log(`  Mapped ${mappedOrders.length} recent orders for: ${accountName}`);
+    }
+
+    for (const { dbAccountId, accountName } of resolvedAccounts) {
+      const accountPositions = allMappedPositions.filter(
+        (position) => position.accountId === dbAccountId
+      );
+      await reconcileAccountPositions(db, dbAccountId, accountPositions);
+      console.log(`  Reconciled ${accountPositions.length} positions for: ${accountName}`);
+
+      const accountBalances = allMappedBalances.filter(
+        (balance) => balance.accountId === dbAccountId
+      );
+      await reconcileAccountBalances(db, dbAccountId, accountBalances);
+      console.log(`  Reconciled ${accountBalances.length} balances for: ${accountName}`);
+
+      const accountOrders = allMappedOrders.filter(
+        (order) => order.accountId === dbAccountId
+      );
+      await upsertAccountOrders(db, dbAccountId, accountOrders);
+      console.log(`  Upserted ${accountOrders.length} recent orders for: ${accountName}`);
+    }
 
     // ------------------------------------------------------------------
     // Step 5: Mark all accounts synced

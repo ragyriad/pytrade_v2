@@ -1,4 +1,5 @@
 import { Snaptrade } from "snaptrade-typescript-sdk";
+import type { UniversalActivity } from "snaptrade-typescript-sdk";
 import * as dotenv from "dotenv";
 import { getWorkspaceParentEnvPath } from "./env.js";
 
@@ -42,11 +43,27 @@ export async function getSnaptradeUserAccounts() {
   return res.data;
 }
 
-export async function getSnaptradeBalance(accountId: string) {
+export async function getSnaptradeBalancesByAccount(accountId: string) {
   const res = await snaptrade.accountInformation.getUserAccountBalance({
     accountId,
     userId: SNAPTRADE_USER_ID,
     userSecret: USER_SECRET,
+  });
+  return res.data;
+}
+
+export const getSnaptradeBalance = getSnaptradeBalancesByAccount;
+
+export async function getSnaptradeOrdersByAccount(
+  accountId: string,
+  days = 90
+) {
+  const res = await snaptrade.accountInformation.getUserAccountOrders({
+    accountId,
+    userId: SNAPTRADE_USER_ID,
+    userSecret: USER_SECRET,
+    state: "all",
+    days,
   });
   return res.data;
 }
@@ -57,13 +74,25 @@ export async function getSnaptradeTransactionsByAccountId(
   endDate: string,
   type?: string
 ) {
-  const res = await snaptrade.accountInformation.getAccountActivities({
-    accountId,
-    userId: SNAPTRADE_USER_ID,
-    userSecret: USER_SECRET,
-    startDate,
-    endDate,
-    ...(type && { type }),
-  });
-  return res.data?.data ?? [];
+  const pageSize = 1000;
+  const activities: UniversalActivity[] = [];
+
+  for (let offset = 0; ; offset += pageSize) {
+    const res = await snaptrade.accountInformation.getAccountActivities({
+      accountId,
+      userId: SNAPTRADE_USER_ID,
+      userSecret: USER_SECRET,
+      startDate,
+      endDate,
+      offset,
+      limit: pageSize,
+      ...(type && { type }),
+    });
+    const page = res.data?.data ?? [];
+    activities.push(...page);
+
+    if (page.length < pageSize) break;
+  }
+
+  return activities;
 }

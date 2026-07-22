@@ -7,42 +7,56 @@ import { accounts, Account, NewAccount, AccountSummary } from "../schemas/accoun
 // ---------------------------------------------------------------------------
 
 /**
- * Upserts an account row, keyed on brokerageAccountNumber.
- * Safe to call repeatedly during sync — idempotent.
+ * Upserts an account using SnapTrade's account UUID first, then the brokerage
+ * account number as a migration fallback. This preserves the internal account
+ * id referenced by child rows.
  */
 export async function upsertAccount(
   db: DB,
   data: NewAccount
 ): Promise<void> {
+  let existing: Account | null = null;
+  if (data.snaptradeAccountId) {
+    existing = await getAccountBySnaptradeId(db, data.snaptradeAccountId);
+  }
+  if (!existing && data.brokerageAccountNumber) {
+    existing = await getAccountByBrokerageNumber(
+      db,
+      data.brokerageAccountNumber
+    );
+  }
+
+  if (!existing) {
+    await db.insert(accounts).values(data);
+    return;
+  }
+
   await db
-    .insert(accounts)
-    .values(data)
-    .onConflictDoUpdate({
-      target: [accounts.brokerageAccountNumber],
-      set: {
-        snaptradeAccountId: data.snaptradeAccountId,
-        brokerageAuthorization: data.brokerageAuthorization,
-        brokerageAccountNumber: data.brokerageAccountNumber,
-        brokerageName: data.brokerageName,
-        accountCurrency: data.accountCurrency,
-        type: data.type,
-        rawType: data.rawType,
-        snaptradeMetaType: data.snaptradeMetaType,
-        snaptradeUnifiedAccountType: data.snaptradeUnifiedAccountType,
-        name: data.name,
-        balanceAmount: data.balanceAmount,
-        balanceCurrency: data.balanceCurrency,
-        rawData: data.rawData,
-        linkedAccountId: data.linkedAccountId,
-        status: data.status,
-        openingDate: data.openingDate,
-        fundingDate: data.fundingDate,
-        lastTransactionsSyncAt: data.lastTransactionsSyncAt,
-        firstTransactionDate: data.firstTransactionDate,
-        lastHoldingsSyncAt: data.lastHoldingsSyncAt,
-        updatedAt: sql`now()`,
-      },
-    });
+    .update(accounts)
+    .set({
+      snaptradeAccountId: data.snaptradeAccountId,
+      brokerageAuthorization: data.brokerageAuthorization,
+      brokerageAccountNumber: data.brokerageAccountNumber,
+      brokerageName: data.brokerageName,
+      accountCurrency: data.accountCurrency,
+      type: data.type,
+      rawType: data.rawType,
+      snaptradeMetaType: data.snaptradeMetaType,
+      snaptradeUnifiedAccountType: data.snaptradeUnifiedAccountType,
+      name: data.name,
+      balanceAmount: data.balanceAmount,
+      balanceCurrency: data.balanceCurrency,
+      rawData: data.rawData,
+      linkedAccountId: data.linkedAccountId,
+      status: data.status,
+      openingDate: data.openingDate,
+      fundingDate: data.fundingDate,
+      lastTransactionsSyncAt: data.lastTransactionsSyncAt,
+      firstTransactionDate: data.firstTransactionDate,
+      lastHoldingsSyncAt: data.lastHoldingsSyncAt,
+      updatedAt: sql`now()`,
+    })
+    .where(eq(accounts.id, existing.id));
 }
 
 /**
@@ -161,7 +175,7 @@ export async function getAccountBySnaptradeId(
 
 /**
  * Fetch a single account by brokerage account number (e.g. "TFSA-12345").
- * This is the stable natural key used as the upsert target.
+ * Used as a fallback when linking a pre-SnapTrade row to its external UUID.
  *
  * @example
  * const account = await getAccountByBrokerageNumber(db, "TFSA-12345");

@@ -17,8 +17,8 @@ const reportDir = path.resolve(
   process.cwd(),
   "..",
   "..",
-  "reports",
-  "tfsa-merge-review"
+  "generated files",
+  "TFSA Merge Review"
 );
 
 const client = postgres(connectionString);

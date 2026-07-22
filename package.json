@@ -32,7 +32,10 @@
     "transactions:normalize:apply": "pnpm --filter @repo/db transactions:normalize:apply",
     "transactions:normalize-credit-card:dry-run": "pnpm --filter @repo/db transactions:normalize-credit-card:dry-run",
     "transactions:normalize-credit-card:apply": "pnpm --filter @repo/db transactions:normalize-credit-card:apply",
-    "legacy:import-sqlite-data": "pnpm --filter @repo/db legacy:import-sqlite-data"
+    "legacy:import-sqlite-data": "pnpm --filter @repo/db legacy:import-sqlite-data",
+    "statements:extract": "pnpm --filter @repo/questrade-statement-import extract",
+    "statements:import": "pnpm --filter @repo/questrade-statement-import run import",
+    "statements:import-dr": "pnpm --filter @repo/questrade-statement-import run import-dr"
   },
   "devDependencies": {
     "dotenv-cli": "7.4.4",

@@ -1,7 +1,10 @@
 import { defineRelations } from "drizzle-orm";
 import { accounts } from "./accounts_schema.js";
+import { accountBalances } from "./account_balances_schema.js";
 import { dividendEvents } from "./dividend_events_schema.js";
+import { holdings } from "./holdings_schema.js";
 import { options } from "./options_schema.js";
+import { orders } from "./orders_schema.js";
 import { positions } from "./positions_schema.js";
 import { securityAliases } from "./security_aliases_schema.js";
 import { securityPriceSnapshots } from "./security_price_snapshots_schema.js";
@@ -22,7 +25,7 @@ export const usersRelations = defineRelations(
 );
 
 export const accountsRelations = defineRelations(
-  { accounts, transactions, users, positions },
+  { accounts, transactions, users, positions, holdings, accountBalances, orders },
   (r) => ({
     accounts: {
       transactions: r.many.transactions({
@@ -32,6 +35,18 @@ export const accountsRelations = defineRelations(
       positions: r.many.positions({
         from: r.accounts.id,
         to: r.positions.accountId,
+      }),
+      holdings: r.many.holdings({
+        from: r.accounts.id,
+        to: r.holdings.accountId,
+      }),
+      balances: r.many.accountBalances({
+        from: r.accounts.id,
+        to: r.accountBalances.accountId,
+      }),
+      orders: r.many.orders({
+        from: r.accounts.id,
+        to: r.orders.accountId,
       }),
       user: r.one.users({
         from: r.accounts.userId,
@@ -74,7 +89,7 @@ export const transactionsRelations = defineRelations(
 );
 
 export const securitiesRelations = defineRelations(
-  { securities, transactions, securityAliases, options, dividendEvents, positions, securityPriceSnapshots },
+  { securities, transactions, securityAliases, options, dividendEvents, positions, holdings, orders, securityPriceSnapshots },
   (r) => ({
     securities: {
       transactions: r.many.transactions({
@@ -102,6 +117,18 @@ export const securitiesRelations = defineRelations(
         from: r.securities.id,
         to: r.positions.securityId,
       }),
+      holdings: r.many.holdings({
+        from: r.securities.id,
+        to: r.holdings.securityId,
+      }),
+      underlyingHoldings: r.many.holdings({
+        from: r.securities.id,
+        to: r.holdings.underlyingSecurityId,
+      }),
+      orders: r.many.orders({
+        from: r.securities.id,
+        to: r.orders.securityId,
+      }),
       dividendEvents: r.many.dividendEvents({
         from: r.securities.id,
         to: r.dividendEvents.securityId,
@@ -124,6 +151,57 @@ export const positionsRelations = defineRelations(
       }),
       security: r.one.securities({
         from: r.positions.securityId,
+        to: r.securities.id,
+        optional: true,
+      }),
+    },
+  })
+);
+
+export const holdingsRelations = defineRelations(
+  { holdings, accounts, securities },
+  (r) => ({
+    holdings: {
+      account: r.one.accounts({
+        from: r.holdings.accountId,
+        to: r.accounts.id,
+      }),
+      security: r.one.securities({
+        from: r.holdings.securityId,
+        to: r.securities.id,
+        optional: true,
+      }),
+      underlyingSecurity: r.one.securities({
+        from: r.holdings.underlyingSecurityId,
+        to: r.securities.id,
+        optional: true,
+      }),
+    },
+  })
+);
+
+export const accountBalancesRelations = defineRelations(
+  { accountBalances, accounts },
+  (r) => ({
+    accountBalances: {
+      account: r.one.accounts({
+        from: r.accountBalances.accountId,
+        to: r.accounts.id,
+      }),
+    },
+  })
+);
+
+export const ordersRelations = defineRelations(
+  { orders, accounts, securities },
+  (r) => ({
+    orders: {
+      account: r.one.accounts({
+        from: r.orders.accountId,
+        to: r.accounts.id,
+      }),
+      security: r.one.securities({
+        from: r.orders.securityId,
         to: r.securities.id,
         optional: true,
       }),
