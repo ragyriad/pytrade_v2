@@ -61,7 +61,12 @@ function toNumber(value: string | number | null | undefined): number | null {
 
 function isCashAccount(accountType: string | null | undefined): boolean {
   const normalized = normalizeText(accountType);
-  return normalized === "CASH" || normalized === "CASH_USD" || normalized === "CASH_CAD";
+  return (
+    normalized === "CASH" ||
+    normalized === "CASH_USD" ||
+    normalized === "CASH_CAD" ||
+    normalized === "CREDIT_CARD"
+  );
 }
 
 function isOptionSymbol(value: string): boolean {
@@ -104,6 +109,9 @@ export function normalizeTransaction(
   let action = sourceType || "OTHER";
   if (sourceActionText === "BUY" || sourceActionText === "BOUGHT") action = "BUY";
   else if (sourceActionText === "SELL" || sourceActionText === "SOLD") action = "SELL";
+  else if (sourceActionText === "CREDIT CARD") action = "SPEND";
+  else if (sourceActionText === "CREDIT CARD PAYMENT") action = "CREDIT_CARD_PAYMENT";
+  else if (sourceActionText === "P2P PAYMENT") action = "P2P_PAYMENT";
   else if (
     sourceActionText === "FXT" ||
     sourceActionText === "CONVERSION" ||

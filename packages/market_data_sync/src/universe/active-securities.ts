@@ -1,4 +1,4 @@
-import { db, eq, positions, securities, sql } from "@repo/db";
+import { and, db, eq, positions, securities, sql } from "@repo/db";
 import type { DB, Security } from "@repo/db";
 import type { MarketDataSecurity } from "../shared/provider-types.js";
 
@@ -24,14 +24,20 @@ export async function getSecurityUniverse(
   options: SecurityUniverseOptions = {}
 ): Promise<MarketDataSecurity[]> {
   const rows = options.includeInactive
-    ? await database.select().from(securities)
+    ? await database
+        .select()
+        .from(securities)
+        .where(eq(securities.isArchived, false))
     : (
         await database
           .select({ security: securities })
           .from(positions)
           .innerJoin(securities, eq(positions.securityId, securities.id))
           .where(
-            sql`${positions.securityId} is not null and ${positions.units}::numeric <> 0`
+            and(
+              sql`${positions.securityId} is not null and ${positions.units}::numeric <> 0`,
+              eq(securities.isArchived, false)
+            )
           )
       ).map((row) => row.security);
 

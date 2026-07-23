@@ -1,5 +1,6 @@
 import {
   accounts,
+  and,
   db,
   desc,
   eq,
@@ -190,6 +191,13 @@ function isInterestTransaction(transaction: CashTransactionDto): boolean {
   return normalizedText(transaction.action, transaction.type).includes("INTEREST");
 }
 
+function isCashTransaction(transaction: CashTransactionDto): boolean {
+  return (
+    normalizedText(transaction.type) === "CASH" ||
+    normalizedText(transaction.assetType) === "CASH"
+  );
+}
+
 function isCreditCardExpense(transaction: CashTransactionDto): boolean {
   const action = normalizedText(transaction.action, transaction.type);
   const excluded =
@@ -288,7 +296,10 @@ export async function getCashDashboard(
   const user = await resolveUserId(requestedUserId);
   if (!user) return null;
 
-  const accountRows = await db.select().from(accounts).where(eq(accounts.userId, user.id));
+  const accountRows = await db
+    .select()
+    .from(accounts)
+    .where(and(eq(accounts.userId, user.id), eq(accounts.isArchived, false)));
   const scopedAccountRows = accountRows.filter(
     (account) => isCashAccount(account) || isCreditAccount(account)
   );
@@ -299,7 +310,12 @@ export async function getCashDashboard(
       : await db
           .select()
           .from(transactions)
-          .where(inArray(transactions.accountId, accountIds))
+          .where(
+            and(
+              inArray(transactions.accountId, accountIds),
+              eq(transactions.isArchived, false)
+            )
+          )
           .orderBy(desc(transactions.tradeDate));
 
   const accountDtos = scopedAccountRows.map(toCashAccountDto);
@@ -308,8 +324,11 @@ export async function getCashDashboard(
   const transactionDtos = transactionRows.map(toCashTransactionDto);
   const cashAccountIds = new Set(cashAccounts.map((account) => account.id));
   const creditAccountIds = new Set(creditAccounts.map((account) => account.id));
-  const cashTransactions = transactionDtos.filter(
+  const cashAccountTransactions = transactionDtos.filter(
     (transaction) => cashAccountIds.has(transaction.accountId) && !transaction.isArchived
+  );
+  const cashTransactions = transactionDtos.filter(
+    (transaction) => isCashTransaction(transaction) && !transaction.isArchived
   );
   const creditCardExpenses = dedupeCreditCardExpenses(
     transactionDtos.filter(
@@ -325,6 +344,9 @@ export async function getCashDashboard(
     cashTransactions,
     creditCardExpenses,
     totalCash: groupMoney(cashAccounts.map((account) => account.balance)),
-    currentInterestRates: getCurrentInterestRates(cashTransactions, cashAccounts),
+    currentInterestRates: getCurrentInterestRates(
+      cashAccountTransactions,
+      cashAccounts
+    ),
   };
 }

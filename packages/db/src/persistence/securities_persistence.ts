@@ -49,6 +49,7 @@ export async function upsertSecurities(
         figiCode: sql`excluded.figi_code`,
         figiInstrumentCode: sql`excluded.figi_instrument_code`,
         logoUrl: sql`excluded.logo_url`,
+        isArchived: sql`${securities.isArchived} and excluded.is_archived`,
         firstSeenAt: sql`least(${securities.firstSeenAt}, excluded.first_seen_at)`,
         lastSeenAt: sql`greatest(${securities.lastSeenAt}, excluded.last_seen_at)`,
         updatedAt: sql`now()`,
@@ -61,7 +62,11 @@ export async function getSecurityById(
   db: DB,
   id: string
 ): Promise<Security | null> {
-  const rows = await db.select().from(securities).where(eq(securities.id, id)).limit(1);
+  const rows = await db
+    .select()
+    .from(securities)
+    .where(and(eq(securities.id, id), eq(securities.isArchived, false)))
+    .limit(1);
   return rows[0] ?? null;
 }
 
@@ -72,7 +77,12 @@ export async function getSecurityByKey(
   const rows = await db
     .select()
     .from(securities)
-    .where(eq(securities.securityKey, securityKey))
+    .where(
+      and(
+        eq(securities.securityKey, securityKey),
+        eq(securities.isArchived, false)
+      )
+    )
     .limit(1);
   return rows[0] ?? null;
 }
@@ -137,7 +147,8 @@ export async function getHistoricSecuritiesByAccounts(
     .where(
       and(
         inArray(transactions.accountId, accountIds),
-        eq(transactions.isArchived, false)
+        eq(transactions.isArchived, false),
+        eq(securities.isArchived, false)
       )
     )
     .groupBy(securities.id)

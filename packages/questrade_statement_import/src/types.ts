@@ -1,4 +1,4 @@
-export const STATEMENT_SOURCE = "questrade_statement" as const;
+export const STATEMENT_SOURCE = "questrade_statements" as const;
 
 export type AssetCategory = "CASH" | "STOCK" | "ETF" | "ADR" | "OPTION";
 export type CurrencyCode = "CAD" | "USD";

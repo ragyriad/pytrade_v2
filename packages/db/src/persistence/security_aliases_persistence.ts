@@ -24,6 +24,7 @@ export async function upsertSecurityAliases(
         currencyCode: sql`excluded.currency_code`,
         exchangeCode: sql`excluded.exchange_code`,
         exchangeMicCode: sql`excluded.exchange_mic_code`,
+        isArchived: sql`${securityAliases.isArchived} and excluded.is_archived`,
         updatedAt: sql`now()`,
       },
     })

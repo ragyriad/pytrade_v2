@@ -34,6 +34,7 @@ export const options = pgTable(
       .default("100"),
     status: varchar("status", { length: 20 }).notNull().default("open"),
     isMiniOption: boolean("is_mini_option").notNull().default(false),
+    isArchived: boolean("is_archived").notNull().default(false),
 
     rawData: jsonb("raw_data").$type<Record<string, unknown> | null>(),
 
@@ -56,6 +57,7 @@ export const options = pgTable(
     index("options_underlying_idx").on(table.underlyingSecurityId),
     index("options_status_idx").on(table.status),
     index("options_expiration_idx").on(table.expirationDate),
+    index("options_is_archived_idx").on(table.isArchived),
   ]
 );
 

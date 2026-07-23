@@ -1,5 +1,6 @@
 import {
   accounts,
+  and,
   db,
   eq,
   inArray,
@@ -157,14 +158,22 @@ export async function getAnnualAccountGains(
   const user = await resolveUser(requestedUserId);
   if (!user) return null;
 
-  const accountRows = await db.select().from(accounts).where(eq(accounts.userId, user.id));
+  const accountRows = await db
+    .select()
+    .from(accounts)
+    .where(and(eq(accounts.userId, user.id), eq(accounts.isArchived, false)));
   const accountIds = accountRows.map((account) => account.id);
   if (accountIds.length === 0) return { rows: [] };
 
   const transactionRows = await db
     .select()
     .from(transactions)
-    .where(inArray(transactions.accountId, accountIds))
+    .where(
+      and(
+        inArray(transactions.accountId, accountIds),
+        eq(transactions.isArchived, false)
+      )
+    )
     .orderBy(transactions.tradeDate);
 
   const accountById = new Map(accountRows.map((account) => [account.id, account]));

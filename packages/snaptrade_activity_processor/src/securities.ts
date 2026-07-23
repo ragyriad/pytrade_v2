@@ -43,6 +43,11 @@ export type SnapTradeActivityLike = {
   } | null;
   type?: string | null;
   description?: string | null;
+  institution?: string | null;
+  external_reference_id?: string | null;
+  amount?: string | number | null;
+  price?: string | number | null;
+  fee?: string | number | null;
   units?: string | number | null;
   trade_date?: string | Date | null;
   settlement_date?: string | Date | null;

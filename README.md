@@ -41,6 +41,7 @@ pnpm db:migrate
 
 ```powershell
 pnpm sync
+pnpm sync -- --replace-snaptrade-data
 pnpm transaction_tofile
 pnpm position_tofile
 ```
@@ -49,6 +50,10 @@ The sync is incremental and idempotent: account/transaction/order rows use
 their external identifiers, activities resume from the newest stored trade
 date with a seven-day correction overlap, and current positions/balances are
 reconciled without recreating unchanged rows.
+
+`--replace-snaptrade-data` fetches full activity history before deleting and
+replacing transactions owned by SnapTrade. Statement and legacy-imported
+transactions are preserved. `--replace` is accepted as a shorter alias.
 
 ## Market Data Sync
 

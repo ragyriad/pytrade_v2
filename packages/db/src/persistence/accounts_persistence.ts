@@ -17,12 +17,15 @@ export async function upsertAccount(
 ): Promise<void> {
   let existing: Account | null = null;
   if (data.snaptradeAccountId) {
-    existing = await getAccountBySnaptradeId(db, data.snaptradeAccountId);
+    existing = await getAccountBySnaptradeId(db, data.snaptradeAccountId, {
+      includeArchived: true,
+    });
   }
   if (!existing && data.brokerageAccountNumber) {
     existing = await getAccountByBrokerageNumber(
       db,
-      data.brokerageAccountNumber
+      data.brokerageAccountNumber,
+      { includeArchived: true }
     );
   }
 
@@ -49,6 +52,7 @@ export async function upsertAccount(
       rawData: data.rawData,
       linkedAccountId: data.linkedAccountId,
       status: data.status,
+      isArchived: data.isArchived ?? false,
       openingDate: data.openingDate,
       fundingDate: data.fundingDate,
       lastTransactionsSyncAt: data.lastTransactionsSyncAt,
@@ -127,7 +131,7 @@ export async function markAccountSynced(
 export async function deactivateAccount(db: DB, id: string): Promise<void> {
   await db
     .update(accounts)
-    .set({ status: "inactive", updatedAt: sql`now()` })
+    .set({ status: "inactive", isArchived: true, updatedAt: sql`now()` })
     .where(eq(accounts.id, id));
 }
 
@@ -144,12 +148,17 @@ export async function deactivateAccount(db: DB, id: string): Promise<void> {
  */
 export async function getAccountById(
   db: DB,
-  id: string
+  id: string,
+  options: { includeArchived?: boolean } = {}
 ): Promise<Account | null> {
   const rows = await db
     .select()
     .from(accounts)
-    .where(eq(accounts.id, id))
+    .where(
+      options.includeArchived
+        ? eq(accounts.id, id)
+        : and(eq(accounts.id, id), eq(accounts.isArchived, false))
+    )
     .limit(1);
   return rows[0] ?? null;
 }
@@ -163,12 +172,20 @@ export async function getAccountById(
  */
 export async function getAccountBySnaptradeId(
   db: DB,
-  snaptradeAccountId: string
+  snaptradeAccountId: string,
+  options: { includeArchived?: boolean } = {}
 ): Promise<Account | null> {
   const rows = await db
     .select()
     .from(accounts)
-    .where(eq(accounts.snaptradeAccountId, snaptradeAccountId))
+    .where(
+      options.includeArchived
+        ? eq(accounts.snaptradeAccountId, snaptradeAccountId)
+        : and(
+            eq(accounts.snaptradeAccountId, snaptradeAccountId),
+            eq(accounts.isArchived, false)
+          )
+    )
     .limit(1);
   return rows[0] ?? null;
 }
@@ -182,12 +199,20 @@ export async function getAccountBySnaptradeId(
  */
 export async function getAccountByBrokerageNumber(
   db: DB,
-  brokerageAccountNumber: string
+  brokerageAccountNumber: string,
+  options: { includeArchived?: boolean } = {}
 ): Promise<Account | null> {
   const rows = await db
     .select()
     .from(accounts)
-    .where(eq(accounts.brokerageAccountNumber, brokerageAccountNumber))
+    .where(
+      options.includeArchived
+        ? eq(accounts.brokerageAccountNumber, brokerageAccountNumber)
+        : and(
+            eq(accounts.brokerageAccountNumber, brokerageAccountNumber),
+            eq(accounts.isArchived, false)
+          )
+    )
     .limit(1);
   return rows[0] ?? null;
 }
@@ -210,7 +235,7 @@ export async function getAccountsByUserId(
   return db
     .select()
     .from(accounts)
-    .where(eq(accounts.userId, userId));
+    .where(and(eq(accounts.userId, userId), eq(accounts.isArchived, false)));
 }
 
 /**
@@ -237,7 +262,7 @@ export async function getAccountSummariesByUserId(
       firstTransactionDate: accounts.firstTransactionDate,
     })
     .from(accounts)
-    .where(eq(accounts.userId, userId));
+    .where(and(eq(accounts.userId, userId), eq(accounts.isArchived, false)));
 }
 
 /**
@@ -257,7 +282,8 @@ export async function getActiveAccountsByUserId(
     .where(
       and(
         eq(accounts.userId, userId),
-        eq(accounts.status, "active")
+        eq(accounts.status, "active"),
+        eq(accounts.isArchived, false)
       )
     );
 }
@@ -280,7 +306,8 @@ export async function getAccountsByBrokerage(
     .where(
       and(
         eq(accounts.userId, userId),
-        eq(accounts.brokerageName, brokerageName)
+        eq(accounts.brokerageName, brokerageName),
+        eq(accounts.isArchived, false)
       )
     );
 }
@@ -300,7 +327,7 @@ export async function getAccountsByIds(
   return db
     .select()
     .from(accounts)
-    .where(inArray(accounts.id, ids));
+    .where(and(inArray(accounts.id, ids), eq(accounts.isArchived, false)));
 }
 
 /**
@@ -320,7 +347,8 @@ export async function getUnsyncedAccounts(
     .where(
       and(
         eq(accounts.userId, userId),
-        sql`${accounts.lastTransactionsSyncAt} IS NULL`
+        sql`${accounts.lastTransactionsSyncAt} IS NULL`,
+        eq(accounts.isArchived, false)
       )
     );
 }

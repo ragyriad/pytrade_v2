@@ -1,5 +1,6 @@
 import {
   accounts,
+  and,
   db,
   eq,
   getDividendEventsBySecurity,
@@ -172,7 +173,10 @@ export async function getDividendIncomeSummary(
   const user = await resolveUser(requestedUserId);
   if (!user) return null;
 
-  const accountRows = await db.select().from(accounts).where(eq(accounts.userId, user.id));
+  const accountRows = await db
+    .select()
+    .from(accounts)
+    .where(and(eq(accounts.userId, user.id), eq(accounts.isArchived, false)));
   const accountIds = accountRows.map((account) => account.id);
   if (accountIds.length === 0) {
     return {
@@ -198,7 +202,15 @@ export async function getDividendIncomeSummary(
   const securityRows =
     positionSecurityIds.length === 0
       ? []
-      : await db.select().from(securities).where(inArray(securities.id, positionSecurityIds));
+      : await db
+          .select()
+          .from(securities)
+          .where(
+            and(
+              inArray(securities.id, positionSecurityIds),
+              eq(securities.isArchived, false)
+            )
+          );
   const securityById = new Map(securityRows.map((security) => [security.id, security]));
   const dividendRows = await getDividendEventsBySecurities(
     db,

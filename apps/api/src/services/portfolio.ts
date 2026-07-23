@@ -1,5 +1,6 @@
 import {
   accounts,
+  and,
   db,
   desc,
   eq,
@@ -355,13 +356,19 @@ export async function getPortfolioDashboard(
   const user = await resolveUserId(requestedUserId);
   if (!user) return null;
 
-  const accountRows = await db.select().from(accounts).where(eq(accounts.userId, user.id));
+  const accountRows = await db
+    .select()
+    .from(accounts)
+    .where(and(eq(accounts.userId, user.id), eq(accounts.isArchived, false)));
   const accountIds = accountRows.map((account) => account.id);
 
   const positionRows =
     accountIds.length === 0
       ? []
-      : await db.select().from(positions).where(inArray(positions.accountId, accountIds));
+      : await db
+          .select()
+          .from(positions)
+          .where(inArray(positions.accountId, accountIds));
 
   const transactionRows =
     accountIds.length === 0
@@ -369,15 +376,19 @@ export async function getPortfolioDashboard(
       : await db
           .select()
           .from(transactions)
-          .where(inArray(transactions.accountId, accountIds))
+          .where(
+            and(
+              inArray(transactions.accountId, accountIds),
+              eq(transactions.isArchived, false)
+            )
+          )
           .orderBy(desc(transactions.tradeDate));
 
   const accountDtos = accountRows.map(toAccountDto);
   const positionDtos = positionRows.map(toPositionDto);
   const transactionDtos = transactionRows.map(toTransactionDto);
-  const enabledTransactionDtos = transactionDtos.filter((transaction) => !transaction.isArchived);
-  const recentTransactionDtos = enabledTransactionDtos.slice(0, 25);
-  const dividendTransactions = enabledTransactionDtos.filter(isDividendTransaction);
+  const recentTransactionDtos = transactionDtos.slice(0, 25);
+  const dividendTransactions = transactionDtos.filter(isDividendTransaction);
   const accountNameById = new Map(accountDtos.map((account) => [account.id, account.name]));
 
   const totalValue = positionDtos.reduce(
@@ -425,7 +436,7 @@ export async function getPortfolioDashboard(
       totalUnrealizedGainLossByCurrency,
       accountCount: accountDtos.length,
       positionCount: positionDtos.length,
-      transactionCount: enabledTransactionDtos.length,
+      transactionCount: transactionDtos.length,
       lastSyncedAt: syncDates.at(-1) ?? null,
     },
     accounts: accountDtos,
@@ -441,6 +452,6 @@ export async function getPortfolioDashboard(
       (position) => accountNameById.get(position.accountId) ?? "Account"
     ),
     dividends: buildDividendSummary(dividendTransactions, accountDtos),
-    fees: buildFeeSummary(enabledTransactionDtos),
+    fees: buildFeeSummary(transactionDtos),
   };
 }

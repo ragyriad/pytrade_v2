@@ -69,7 +69,8 @@ export function mapSnaptradeTransaction(
   const isCashAccount =
     normalizedAccountType === "CASH" ||
     normalizedAccountType === "CASH_USD" ||
-    normalizedAccountType === "CASH_CAD";
+    normalizedAccountType === "CASH_CAD" ||
+    normalizedAccountType === "CREDIT_CARD";
   const externalReferenceId =
     typeof (rawData as { external_reference_id?: unknown }).external_reference_id === "string"
       ? ((rawData as { external_reference_id?: string }).external_reference_id ?? null)

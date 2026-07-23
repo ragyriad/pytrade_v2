@@ -1,4 +1,5 @@
 import {
+  boolean,
   pgTable,
   uuid,
   varchar,
@@ -18,6 +19,7 @@ export const securityAliases = pgTable(
       .references(() => securities.id, { onDelete: "cascade" }),
 
     source: varchar("source", { length: 100 }).notNull(),
+    isArchived: boolean("is_archived").notNull().default(false),
     externalId: varchar("external_id", { length: 255 }),
     symbol: varchar("symbol", { length: 50 }).notNull(),
     rawSymbol: varchar("raw_symbol", { length: 50 }),
@@ -45,6 +47,7 @@ export const securityAliases = pgTable(
     ),
     index("security_aliases_security_idx").on(table.securityId),
     index("security_aliases_symbol_idx").on(table.symbol),
+    index("security_aliases_is_archived_idx").on(table.isArchived),
   ]
 );
 

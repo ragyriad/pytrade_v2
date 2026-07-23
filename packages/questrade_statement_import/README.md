@@ -49,7 +49,8 @@ pnpm statements:import
 Database imports write directly to the application's canonical tables:
 
 - historical statement positions go to `holdings`;
-- statement activity is idempotently upserted into `transactions`;
+- statement activity is inserted into `transactions` with source
+  `questrade_statements`; existing matches are skipped rather than updated;
 - the latest statement cash can populate `account_balances`, but it never
   overwrites a live SnapTrade balance.
 
@@ -57,6 +58,10 @@ No statement-specific application tables are created. Holdings are replaced
 atomically for the same account, effective date, and source when reimported.
 Imports with extraction errors are rejected by default; `--allow-errors` is
 available for an explicitly reviewed exception.
+
+A transaction is considered an existing match within the same account when
+its symbol, type, two-decimal amount, and either transaction or settlement
+date match. The same check also removes duplicates within one import batch.
 
 The statement's asset-category balance summary is parsed only as an in-memory
 cross-check against the statement total. It is not exported or stored because

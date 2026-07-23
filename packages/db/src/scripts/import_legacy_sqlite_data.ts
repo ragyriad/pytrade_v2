@@ -1360,7 +1360,7 @@ async function main() {
 
   const renamedLegacyTransactions = await db
     .update(transactions)
-    .set({ source: legacyImportSource })
+    .set({ source: legacyImportSource, isArchived: true })
     .where(eq(transactions.source, previousLegacyImportSource))
     .returning({ id: transactions.id });
   const normalizedLegacyMetadata = await normalizeExistingLegacyTransactionMetadata();
@@ -1382,6 +1382,7 @@ async function main() {
       balanceAmount: money(account.currentBalance),
       balanceCurrency: account.currency,
       status: "closed",
+      isArchived: true,
       type: normalizeAccountType(account.type),
       name: `${account.brokerName ?? "Legacy"} ${normalizeAccountType(account.type)} ${account.currency}`,
       linkedAccountId: account.linkedAccountId,
@@ -1442,6 +1443,7 @@ async function main() {
     missingSecurities.push({
       securityKey: legacyKey,
       source: legacyImportSource,
+      isArchived: true,
       snaptradeSymbolId: null,
       symbol: legacySecurityDisplaySymbol(legacySecurity),
       rawSymbol: legacySecurityRawSymbol(legacySecurity),
@@ -1489,6 +1491,7 @@ async function main() {
     aliasInputs.push({
       securityId: security.id,
       source: legacyImportSource,
+      isArchived: true,
       externalId: legacySecurity.id,
       symbol: legacySecurityDisplaySymbol(legacySecurity),
       rawSymbol: legacySecurityRawSymbol(legacySecurity),
@@ -1596,6 +1599,7 @@ async function main() {
           {
             securityKey: `legacy-underlying:${input.parsed.underlyingSymbol}:${input.currency}`,
             source: legacyImportSource,
+            isArchived: true,
             snaptradeSymbolId: null,
             symbol: input.parsed.underlyingSymbol,
             rawSymbol: input.parsed.underlyingSymbol,
@@ -1619,6 +1623,7 @@ async function main() {
       {
         securityKey: `option:${input.parsed.ticker}`,
         source: legacyImportSource,
+        isArchived: true,
         snaptradeSymbolId: null,
         symbol: input.parsed.ticker,
         rawSymbol: input.parsed.rawSymbol ?? input.parsed.ticker,
@@ -1648,6 +1653,7 @@ async function main() {
       multiplier: "100",
       status: "closed",
       isMiniOption: false,
+      isArchived: true,
       rawData: {
         source: legacyImportSource,
         legacyActivityId: input.activity.id,
@@ -1770,6 +1776,7 @@ async function main() {
     transactionInputs.push({
       snaptradeTransactionId: null,
       source: legacyImportSource,
+      isArchived: true,
       externalTransactionId: activity.id,
       legacyImportKey: key,
       accountId: account.id,
@@ -1838,6 +1845,7 @@ async function main() {
     transactionInputs.push({
       snaptradeTransactionId: null,
       source: legacyImportSource,
+      isArchived: true,
       externalTransactionId: deposit.id,
       legacyImportKey: key,
       accountId: account.id,

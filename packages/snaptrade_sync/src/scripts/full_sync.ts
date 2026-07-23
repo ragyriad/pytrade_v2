@@ -6,6 +6,7 @@ import {
 import { processAccountActivities } from "@repo/snaptrade-activity-processor";
 import {
   getAccountBySnaptradeId,
+  deleteSnaptradeTransactionsByAccount,
   mapSnaptradeBalance,
   markAccountSynced,
   reconcileAccountBalances,
@@ -30,6 +31,17 @@ async function closeDatabase() {
 
 async function main() {
   try {
+    const replaceSnaptradeData =
+      process.argv.includes("--replace-snaptrade-data") ||
+      process.argv.includes("--replace");
+    if (replaceSnaptradeData) {
+      console.warn(
+        "\nReplace mode enabled: existing SnapTrade transactions will be deleted " +
+        "only after all account data has been fetched successfully. Statement and " +
+        "legacy transactions will be preserved."
+      );
+    }
+
     const adminUser = await createSeed(db);
 
     const fallbackStartDate = DEFAULT_SNAPTRADE_ACTIVITY_START_DATE;
@@ -66,6 +78,7 @@ async function main() {
             dbAccountId: dbAccount.id,
             accountName,
             accountType: dbAccount.type,
+            providerName: dbAccount.brokerageName,
           };
         })
       )
@@ -80,6 +93,7 @@ async function main() {
       dbAccountId: string;
       accountName: string;
       accountType: string | null;
+      providerName: string | null;
       rawTransactions: Awaited<ReturnType<typeof getSnaptradeTransactionsByAccountId>>;
     }> = [];
     const allRawPositionsByAccount: Array<{
@@ -98,14 +112,22 @@ async function main() {
       rawOrders: Awaited<ReturnType<typeof getSnaptradeOrdersByAccount>>;
     }> = [];
 
-    for (const { snaptradeAccountId, dbAccountId, accountName, accountType } of resolvedAccounts) {
+    for (const {
+      snaptradeAccountId,
+      dbAccountId,
+      accountName,
+      accountType,
+      providerName,
+    } of resolvedAccounts) {
       console.log(`Fetching data for: ${accountName}`);
 
-      const startDate = await getTransactionSyncStartDate(
-        db,
-        dbAccountId,
-        fallbackStartDate
-      );
+      const startDate = replaceSnaptradeData
+        ? fallbackStartDate
+        : await getTransactionSyncStartDate(
+            db,
+            dbAccountId,
+            fallbackStartDate
+          );
       console.log(`  Fetching transactions from ${startDate} through ${endDate}`);
 
       const rawTransactions = await getSnaptradeTransactionsByAccountId(
@@ -114,17 +136,18 @@ async function main() {
         endDate
       );
 
-      if (!rawTransactions || rawTransactions.length === 0) {
+      if (rawTransactions.length === 0) {
         console.log(`  No transactions found`);
       } else {
-        allRawTransactionsByAccount.push({
-          dbAccountId,
-          accountName,
-          accountType,
-          rawTransactions,
-        });
         console.log(`  Fetched ${rawTransactions.length} transactions`);
       }
+      allRawTransactionsByAccount.push({
+        dbAccountId,
+        accountName,
+        accountType,
+        providerName,
+        rawTransactions,
+      });
 
       const rawPositions = await getSnaptradePositionsByAccount(snaptradeAccountId);
 
@@ -155,24 +178,84 @@ async function main() {
 
     let persistedTransactionCount = 0;
     let persistedSecurityCount = 0;
+    let skippedDuplicateActivityCount = 0;
+    let normalizedCashTransactionCount = 0;
+    let archivedDuplicateTransactionCount = 0;
+    let deletedSnaptradeTransactionCount = 0;
 
-    for (const { dbAccountId, accountName, accountType, rawTransactions } of allRawTransactionsByAccount) {
-      const result = await processAccountActivities({
-        db,
-        accountId: dbAccountId,
-        accountType,
-        activities: rawTransactions,
-      });
+    for (const {
+      dbAccountId,
+      accountName,
+      accountType,
+      providerName,
+      rawTransactions,
+    } of allRawTransactionsByAccount) {
+      let result: Awaited<ReturnType<typeof processAccountActivities>>;
+      if (replaceSnaptradeData) {
+        const replacement = await db.transaction(async (tx) => {
+          const deleted = await deleteSnaptradeTransactionsByAccount(
+            tx,
+            dbAccountId
+          );
+          const processed = await processAccountActivities({
+            db: tx,
+            accountId: dbAccountId,
+            accountType,
+            providerName,
+            activities: rawTransactions,
+          });
+          return { deleted, processed };
+        });
+        deletedSnaptradeTransactionCount += replacement.deleted;
+        result = replacement.processed;
+      } else {
+        result = await processAccountActivities({
+          db,
+          accountId: dbAccountId,
+          accountType,
+          providerName,
+          activities: rawTransactions,
+        });
+      }
       persistedTransactionCount += result.transactionsProcessed;
       persistedSecurityCount += result.securitiesProcessed;
+      skippedDuplicateActivityCount += result.duplicateActivitiesSkipped;
+      normalizedCashTransactionCount += result.cashTransactionsNormalized;
+      archivedDuplicateTransactionCount += result.duplicateTransactionsArchived;
       console.log(
-        `  Persisted ${result.transactionsProcessed} transactions and ${result.securitiesProcessed} securities for: ${accountName}`
+        `  Persisted ${result.transactionsProcessed} transactions and ` +
+        `${result.securitiesProcessed} securities for: ${accountName}` +
+        (result.duplicateActivitiesSkipped > 0
+          ? ` (${result.duplicateActivitiesSkipped} provider duplicates skipped)`
+          : "") +
+        (result.cashTransactionsNormalized > 0
+          ? ` (${result.cashTransactionsNormalized} cash rows normalized)`
+          : "") +
+        (result.duplicateTransactionsArchived > 0
+          ? ` (${result.duplicateTransactionsArchived} stored duplicates archived)`
+          : "")
       );
     }
 
     console.log(
       `  Persisted ${persistedTransactionCount} transactions and ${persistedSecurityCount} securities total`
     );
+    if (replaceSnaptradeData) {
+      console.log(
+        `  Deleted ${deletedSnaptradeTransactionCount} existing SnapTrade transactions before replacement`
+      );
+    }
+    if (
+      skippedDuplicateActivityCount > 0 ||
+      normalizedCashTransactionCount > 0 ||
+      archivedDuplicateTransactionCount > 0
+    ) {
+      console.log(
+        `  Removed ${skippedDuplicateActivityCount} duplicate fetched activities and ` +
+        `normalized ${normalizedCashTransactionCount} cash transactions; ` +
+        `archived ${archivedDuplicateTransactionCount} duplicate stored transactions`
+      );
+    }
 
     const allMappedPositions: NewPosition[] = [];
     for (const { dbAccountId, accountName, rawPositions } of allRawPositionsByAccount) {

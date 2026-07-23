@@ -5,11 +5,13 @@ import {
   and,
   eq,
   holdings as holdingsTable,
+  inArray,
   securities,
   securityAliases,
   sql,
   transactions as transactionsTable,
   type DB,
+  type NewTransaction,
 } from "@repo/db";
 import type {
   ExtractedStatementData,
@@ -29,6 +31,7 @@ export interface DatabaseImportSummary {
   cashBalances: number;
   holdings: number;
   transactions: number;
+  transactionsSkipped: number;
   warnings: number;
 }
 
@@ -111,6 +114,57 @@ function statementCurrency(row: StatementTransaction): string | null {
   return null;
 }
 
+function normalizedCompositeText(value: string | null | undefined): string {
+  return value?.trim().toUpperCase() ?? "";
+}
+
+function normalizedCompositeAmount(value: number | string): string {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) {
+    throw new Error(`Invalid transaction amount: ${value}`);
+  }
+  return Object.is(amount, -0) || amount === 0 ? "0.00" : amount.toFixed(2);
+}
+
+function dateOnly(value: Date | string): string {
+  return value instanceof Date
+    ? value.toISOString().slice(0, 10)
+    : value.slice(0, 10);
+}
+
+function transactionCompositeKey(
+  accountId: string,
+  symbol: string | null | undefined,
+  date: Date | string,
+  type: string,
+  amount: number | string
+): string {
+  return [
+    accountId,
+    normalizedCompositeText(symbol),
+    dateOnly(date),
+    normalizedCompositeText(type),
+    normalizedCompositeAmount(amount),
+  ].join("|");
+}
+
+function incomingTransactionKeys(
+  accountId: string,
+  row: StatementTransaction
+): string[] {
+  return [...new Set([row.transaction_date, row.settlement_date])]
+    .filter((date) => date.trim().length > 0)
+    .map((date) =>
+      transactionCompositeKey(
+        accountId,
+        row.symbol,
+        date,
+        row.normalized_type,
+        statementAmount(row)
+      )
+    );
+}
+
 function statementRawData(row: StatementTransaction): Record<string, unknown> {
   return {
     statementDate: row.statement_date,
@@ -156,17 +210,6 @@ function assertImportable(
     );
   }
 
-  const duplicateTransactionKeys = data.transactions
-    .map((transaction) => transaction.import_key)
-    .filter((key, index, keys) => keys.indexOf(key) !== index);
-  if (duplicateTransactionKeys.length > 0) {
-    throw new Error(
-      `Duplicate transaction keys cannot be imported: ${[
-        ...new Set(duplicateTransactionKeys),
-      ].join(", ")}`
-    );
-  }
-
   const orphanStatementKeys = [
     ...data.cashBalances,
     ...data.holdings,
@@ -205,25 +248,42 @@ export async function saveExtractedStatements(
     db.select({
       id: accounts.id,
       brokerageAccountNumber: accounts.brokerageAccountNumber,
+      isArchived: accounts.isArchived,
     }).from(accounts),
     db.select({
       id: securities.id,
       symbol: securities.symbol,
       rawSymbol: securities.rawSymbol,
       currencyCode: securities.currencyCode,
-    }).from(securities),
+    }).from(securities).where(eq(securities.isArchived, false)),
     db.select({
       securityId: securityAliases.securityId,
       symbol: securityAliases.symbol,
       rawSymbol: securityAliases.rawSymbol,
       currencyCode: securityAliases.currencyCode,
-    }).from(securityAliases),
+    }).from(securityAliases).where(eq(securityAliases.isArchived, false)),
   ]);
 
+  const accountMatchesByNumber = new Map<
+    string,
+    { id: string; isArchived: boolean }
+  >();
+  for (const account of accountRows) {
+    if (!account.brokerageAccountNumber) continue;
+
+    const current = accountMatchesByNumber.get(account.brokerageAccountNumber);
+    if (!current || (current.isArchived && !account.isArchived)) {
+      accountMatchesByNumber.set(account.brokerageAccountNumber, {
+        id: account.id,
+        isArchived: account.isArchived,
+      });
+    }
+  }
   const accountsByNumber = new Map(
-    accountRows
-      .filter((account) => account.brokerageAccountNumber)
-      .map((account) => [account.brokerageAccountNumber as string, account.id])
+    [...accountMatchesByNumber].map(([accountNumber, account]) => [
+      accountNumber,
+      account.id,
+    ])
   );
   const missingAccounts = [
     ...new Set(
@@ -248,16 +308,129 @@ export async function saveExtractedStatements(
     addIdentity(securityLookup, alias.rawSymbol, alias.currencyCode, alias.securityId);
   }
 
+  const relevantAccountIds = [...new Set(data.statements.map((statement) =>
+    accountsByNumber.get(statement.account_number)!
+  ))];
+  const existingTransactionRows = relevantAccountIds.length === 0
+    ? []
+    : await db
+      .select({
+        accountId: transactionsTable.accountId,
+        symbol: transactionsTable.symbol,
+        type: transactionsTable.type,
+        amount: transactionsTable.amount,
+        tradeDate: transactionsTable.tradeDate,
+        legacyImportKey: transactionsTable.legacyImportKey,
+        rawData: transactionsTable.rawData,
+      })
+      .from(transactionsTable)
+      .where(
+        and(
+          inArray(transactionsTable.accountId, relevantAccountIds),
+          eq(transactionsTable.isArchived, false)
+        )
+      );
+
+  const seenCompositeKeys = new Set<string>();
+  const seenImportKeys = new Set<string>();
+  for (const row of existingTransactionRows) {
+    seenCompositeKeys.add(transactionCompositeKey(
+      row.accountId,
+      row.symbol,
+      row.tradeDate,
+      row.type,
+      row.amount
+    ));
+    if (row.legacyImportKey) seenImportKeys.add(row.legacyImportKey);
+
+    const settlementDate = row.rawData?.settlementDate;
+    if (typeof settlementDate === "string" && settlementDate) {
+      seenCompositeKeys.add(transactionCompositeKey(
+        row.accountId,
+        row.symbol,
+        settlementDate,
+        row.type,
+        row.amount
+      ));
+    }
+  }
+
+  const preparedTransactions: Array<{
+    statementKey: string;
+    value: NewTransaction;
+  }> = [];
+  let transactionsSkipped = 0;
+  for (const row of data.transactions) {
+    const accountId = accountsByNumber.get(row.account_number)!;
+    const legacyImportKey = `${STATEMENT_SOURCE}:${row.import_key}`;
+    const compositeKeys = incomingTransactionKeys(accountId, row);
+    if (
+      seenImportKeys.has(legacyImportKey)
+      || compositeKeys.some((key) => seenCompositeKeys.has(key))
+    ) {
+      transactionsSkipped += 1;
+      continue;
+    }
+
+    seenImportKeys.add(legacyImportKey);
+    for (const key of compositeKeys) seenCompositeKeys.add(key);
+
+    const currencyCode = statementCurrency(row);
+    const resolvedSecurityId = row.symbol
+      ? resolveSecurityId(securityLookup, row.symbol, currencyCode)
+      : null;
+    const isOption = row.asset_type === "OPTION";
+    preparedTransactions.push({
+      statementKey: row.statement_key,
+      value: {
+        snaptradeTransactionId: null,
+        source: STATEMENT_SOURCE,
+        externalTransactionId: row.import_key,
+        legacyImportKey,
+        accountId,
+        securityId: isOption ? null : resolvedSecurityId,
+        underlyingSecurityId: isOption ? resolvedSecurityId : null,
+        optionId: null,
+        type: row.normalized_type,
+        action: row.normalized_type === "BUY" || row.normalized_type === "SELL"
+          ? row.normalized_type
+          : null,
+        optionAction: null,
+        assetType: row.asset_type,
+        description: row.description,
+        amount: requiredDecimal(statementAmount(row)),
+        price: decimal(row.price),
+        units: decimal(row.quantity),
+        fee: decimal(row.commission) ?? "0.00",
+        currencyCode,
+        symbol: row.symbol || null,
+        tradeDate: utcDate(row.transaction_date),
+        rawData: statementRawData(row),
+      },
+    });
+  }
+
   const summary: DatabaseImportSummary = {
     dryRun: options.dryRun ?? false,
     statements: data.statements.length,
     cashBalances: data.cashBalances.length,
     holdings: data.holdings.length,
-    transactions: data.transactions.length,
+    transactions: preparedTransactions.length,
+    transactionsSkipped,
     warnings: data.issues.filter((issue) => issue.severity === "WARNING").length,
   };
   if (options.dryRun) return summary;
 
+  const archivedAccountIdsToReactivate = [
+    ...new Set(
+      data.statements
+        .map((statement) =>
+          accountMatchesByNumber.get(statement.account_number)
+        )
+        .filter((account) => account?.isArchived)
+        .map((account) => account!.id)
+    ),
+  ];
   const latestStatementByAccount = new Map<string, (typeof data.statements)[number]>();
   for (const statement of data.statements) {
     const current = latestStatementByAccount.get(statement.account_number);
@@ -267,6 +440,13 @@ export async function saveExtractedStatements(
   }
 
   await db.transaction(async (tx) => {
+    if (archivedAccountIdsToReactivate.length > 0) {
+      await tx
+        .update(accounts)
+        .set({ isArchived: false })
+        .where(inArray(accounts.id, archivedAccountIdsToReactivate));
+    }
+
     for (const statement of data.statements) {
       const accountId = accountsByNumber.get(statement.account_number)!;
       await tx.delete(holdingsTable).where(and(
@@ -309,66 +489,15 @@ export async function saveExtractedStatements(
         await tx.insert(holdingsTable).values(holdingRows);
       }
 
-      const transactionRows = rowsForStatement(data.transactions, statement.statement_key)
-        .map((row) => {
-          const currencyCode = statementCurrency(row);
-          const resolvedSecurityId = row.symbol
-            ? resolveSecurityId(securityLookup, row.symbol, currencyCode)
-            : null;
-          const isOption = row.asset_type === "OPTION";
-          return {
-            snaptradeTransactionId: null,
-            source: STATEMENT_SOURCE,
-            externalTransactionId: row.import_key,
-            legacyImportKey: `${STATEMENT_SOURCE}:${row.import_key}`,
-            accountId,
-            securityId: isOption ? null : resolvedSecurityId,
-            underlyingSecurityId: isOption ? resolvedSecurityId : null,
-            optionId: null,
-            type: row.normalized_type,
-            action: row.normalized_type === "BUY" || row.normalized_type === "SELL"
-              ? row.normalized_type
-              : null,
-            optionAction: null,
-            assetType: row.asset_type,
-            description: row.description,
-            amount: requiredDecimal(statementAmount(row)),
-            price: decimal(row.price),
-            units: decimal(row.quantity),
-            fee: decimal(row.commission) ?? "0.00",
-            currencyCode,
-            symbol: row.symbol || null,
-            tradeDate: utcDate(row.transaction_date),
-            rawData: statementRawData(row),
-          };
-        });
+      const transactionRows = preparedTransactions
+        .filter((row) => row.statementKey === statement.statement_key)
+        .map((row) => row.value);
       if (transactionRows.length > 0) {
         await tx
           .insert(transactionsTable)
           .values(transactionRows)
-          .onConflictDoUpdate({
+          .onConflictDoNothing({
             target: [transactionsTable.legacyImportKey],
-            set: {
-              source: sql`excluded.source`,
-              externalTransactionId: sql`excluded.external_transaction_id`,
-              accountId: sql`excluded.account_id`,
-              securityId: sql`excluded.security_id`,
-              underlyingSecurityId: sql`excluded.underlying_security_id`,
-              optionId: sql`excluded.option_id`,
-              type: sql`excluded.type`,
-              action: sql`excluded.action`,
-              optionAction: sql`excluded.option_action`,
-              assetType: sql`excluded.asset_type`,
-              description: sql`excluded.description`,
-              amount: sql`excluded.amount`,
-              price: sql`excluded.price`,
-              units: sql`excluded.units`,
-              fee: sql`excluded.fee`,
-              currencyCode: sql`excluded.currency_code`,
-              symbol: sql`excluded.symbol`,
-              tradeDate: sql`excluded.trade_date`,
-              rawData: sql`excluded.raw_data`,
-            },
           });
       }
     }

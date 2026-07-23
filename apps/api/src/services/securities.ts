@@ -1,5 +1,6 @@
 import {
   accounts,
+  and,
   db,
   desc,
   eq,
@@ -171,7 +172,7 @@ async function getUserAccounts(database: DB, requestedUserId?: string) {
   return database
     .select()
     .from(accounts)
-    .where(eq(accounts.userId, user.id))
+    .where(and(eq(accounts.userId, user.id), eq(accounts.isArchived, false)))
     .orderBy(desc(accounts.createdAt));
 }
 

@@ -85,6 +85,7 @@ export async function syncTransactionsByAccount(
       db,
       accountId: dbAccountId,
       accountType,
+      providerName: accountName,
       activities: rawTransactions,
     });
     await markAccountSynced(db, dbAccountId, { transactions: true });

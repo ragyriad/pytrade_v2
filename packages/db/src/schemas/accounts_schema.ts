@@ -42,6 +42,7 @@ export const accounts = pgTable(
     }),
     name: varchar("name", { length: 255 }),
     isPaper: boolean("is_paper").default(false),
+    isArchived: boolean("is_archived").notNull().default(false),
     linkedAccountId: varchar("linked_account_id", { length: 255 }),
     balanceAmount: numeric("balance_amount", { precision: 18, scale: 2 }),
     balanceCurrency: varchar("balance_currency", { length: 10 }),
@@ -85,7 +86,8 @@ export const accounts = pgTable(
     index("accounts_user_idx").on(table.userId),
     uniqueIndex("brokerage_account_number_idx").on(table.brokerageAccountNumber),
     index("linked_account_idx").on(table.linkedAccountId),
-    index("account_type_idx").on(table.type)
+    index("account_type_idx").on(table.type),
+    index("accounts_is_archived_idx").on(table.isArchived),
   ]
 );
 

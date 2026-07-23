@@ -375,7 +375,8 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
   const filteredCashAccountIds = new Set(filteredCashAccounts.map((account) => account.id));
   const filteredCreditAccountIds = new Set(filteredCreditAccounts.map((account) => account.id));
   const accountFilteredCashTransactions = dashboard.cashTransactions.filter((transaction) =>
-    filteredCashAccountIds.has(transaction.accountId)
+    filteredCashAccountIds.has(transaction.accountId) ||
+    filteredCreditAccountIds.has(transaction.accountId)
   );
   const accountFilteredCreditCardExpenses = dashboard.creditCardExpenses.filter((transaction) =>
     filteredCreditAccountIds.has(transaction.accountId)

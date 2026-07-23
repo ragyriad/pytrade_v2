@@ -26,6 +26,7 @@ export async function upsertOptions(
         multiplier: sql`excluded.multiplier`,
         status: sql`excluded.status`,
         isMiniOption: sql`excluded.is_mini_option`,
+        isArchived: sql`${options.isArchived} and excluded.is_archived`,
         rawData: sql`excluded.raw_data`,
         firstSeenAt: sql`least(${options.firstSeenAt}, excluded.first_seen_at)`,
         lastSeenAt: sql`greatest(${options.lastSeenAt}, excluded.last_seen_at)`,
