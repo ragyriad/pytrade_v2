@@ -1,2 +1,2 @@
-export * from "./account_mapper";
-export * from "./transaction_mapper";
+export * from "./account_mapper.js";
+export * from "./transaction_mapper.js";

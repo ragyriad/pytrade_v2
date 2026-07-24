@@ -37,7 +37,7 @@ performs validation, and confirms that statement account numbers match existing
 application accounts without writing rows:
 
 ```powershell
-pnpm statements:import-dr
+pnpm statements:import -- --dry-run
 ```
 
 Import after reviewing the result:

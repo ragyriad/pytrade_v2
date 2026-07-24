@@ -42,8 +42,6 @@ pnpm db:migrate
 ```powershell
 pnpm sync
 pnpm sync -- --replace-snaptrade-data
-pnpm transaction_tofile
-pnpm position_tofile
 ```
 
 The sync is incremental and idempotent: account/transaction/order rows use
@@ -58,22 +56,46 @@ transactions are preserved. `--replace` is accepted as a shorter alias.
 ## Market Data Sync
 
 ```powershell
-pnpm market-data:sync
-pnpm market-data:sync:eodhd
-pnpm market-data:sync:tiingo
-pnpm market-data:test:eodhd
-pnpm market-data:test:tiingo
+pnpm market-data:sync -- --provider=eodhd
+pnpm market-data:sync -- --provider=tiingo
+pnpm market-data:test -- --provider=eodhd
+pnpm market-data:test -- --provider=tiingo
 ```
 
-`market-data:sync` defaults to EODHD. EODHD sync stores dividends, latest prices, and USD/CAD FX snapshots.
+There is one market-data sync entry point. The provider is explicit because
+EODHD stores dividends, prices, and FX snapshots while Tiingo currently stores
+dividends only. The separate `market-data:test` command checks provider
+credentials and responses without running a database sync.
 
 Common options:
 
 ```powershell
-pnpm market-data:sync:eodhd --force
-pnpm market-data:sync:eodhd --fxPairs=USD/CAD,EUR/USD
-pnpm market-data:sync:tiingo --force
+pnpm market-data:sync -- --provider=eodhd --force
+pnpm market-data:sync -- --provider=eodhd --fxPairs=USD/CAD,EUR/USD
+pnpm market-data:sync -- --provider=tiingo --force
 ```
+
+## Data Import and Maintenance
+
+```powershell
+pnpm statements:extract
+pnpm statements:import -- --dry-run
+pnpm statements:import
+pnpm sqlite:import
+pnpm data:normalize
+pnpm data:normalize -- --apply
+```
+
+`data:normalize` is the only retained general data-fixing command. It is a
+dry run unless `--apply` is supplied and remains useful when canonical
+transaction-normalization rules change. Duplicate prevention, security
+matching, option normalization, and Wealthsimple cash/card cleanup now happen
+inside the SnapTrade and statement import paths, so there are no standalone
+dedupe or provider-specific repair commands.
+
+The Questrade PDF and legacy SQLite importers remain because they are
+repeatable source-data ingestion workflows, not repairs against already
+imported rows.
 
 ## API Checks
 

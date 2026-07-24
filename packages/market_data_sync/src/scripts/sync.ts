@@ -14,10 +14,14 @@ type MarketDataProvider = "eodhd" | "tiingo";
 
 function readProvider(argv: string[]): MarketDataProvider {
   const providerArg = argv.find((arg) => arg.startsWith("--provider="));
-  const provider = providerArg?.split("=")[1]?.toLowerCase() ?? "eodhd";
+  const provider = providerArg?.split("=")[1]?.toLowerCase();
 
   if (provider === "eodhd" || provider === "tiingo") return provider;
-  throw new Error(`Unsupported market data provider: ${provider}`);
+  throw new Error(
+    provider
+      ? `Unsupported market data provider: ${provider}`
+      : "Missing --provider=eodhd or --provider=tiingo."
+  );
 }
 
 function printEodhdResult(result: EodhdSyncResult) {
