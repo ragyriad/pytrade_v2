@@ -251,6 +251,7 @@ export type CashAccountDto = {
   status: string | null;
   category: "cash" | "credit";
   balance: MoneyDto;
+  balances: MoneyDto[];
   lastSyncedAt: string | null;
 };
 
@@ -274,8 +275,10 @@ export type CashDashboardDto = {
   cashAccounts: CashAccountDto[];
   creditAccounts: CashAccountDto[];
   cashTransactions: CashTransactionDto[];
+  debitAccountExpenses: CashTransactionDto[];
   creditCardExpenses: CashTransactionDto[];
   totalCash: MoneyBreakdownDto[];
+  totalCreditBalance: MoneyBreakdownDto[];
   currentInterestRates: Array<{
     currency: string;
     percent: number | null;

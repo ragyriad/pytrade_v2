@@ -40,6 +40,17 @@ type CashDashboardProps = {
   dashboard: CashDashboardDto;
 };
 
+type CashBalanceRow = {
+  id: string;
+  accountId: string;
+  accountName: string;
+  institutionName: string;
+  category: "cash" | "credit";
+  status: string;
+  balance: MoneyDto;
+  lastSyncedAt: string | null;
+};
+
 type CashFilterState = {
   brokerages: string[];
   accountIds: string[];
@@ -104,57 +115,206 @@ function isInterestTransaction(transaction: CashTransactionDto): boolean {
   return label.includes("INTEREST");
 }
 
+function isExpenseTransaction(transaction: CashTransactionDto): boolean {
+  const label = `${transaction.action ?? ""} ${transaction.type} ${
+    transaction.description ?? ""
+  }`.toUpperCase();
+
+  return ["SPEND", "PURCHASE", "CHARGE", "DEBIT", "FEE"].some((term) =>
+    label.includes(term)
+  );
+}
+
 function isOutflowTransaction(transaction: CashTransactionDto): boolean {
-  if (transaction.amount.amount < 0) return true;
+  if (isExpenseTransaction(transaction)) return transaction.amount.amount > 0;
 
   const label = `${transaction.action ?? ""} ${transaction.type} ${
     transaction.description ?? ""
   }`.toUpperCase();
-  const inflowLabels = ["DEPOSIT", "CONTRIBUTION", "INTEREST", "REFUND", "REIMBURSEMENT"];
+  const inflowLabels = [
+    "DEPOSIT",
+    "CONTRIBUTION",
+    "INTEREST",
+    "REFUND",
+    "REIMBURSEMENT",
+    "PROMOTION",
+    "REWARD",
+    "CASHBACK",
+  ];
   if (inflowLabels.some((term) => label.includes(term))) return false;
+  if (
+    ["WITHDRAW", "CREDIT_CARD_PAYMENT"].some((term) => label.includes(term))
+  ) {
+    return true;
+  }
 
-  return ["WITHDRAW", "SPEND", "PURCHASE", "CHARGE", "DEBIT", "FEE"].some((term) =>
-    label.includes(term)
-  );
+  return transaction.amount.amount < 0;
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const INTEREST_WINDOW_DAYS = 30;
+
+function signedCashFlow(transaction: CashTransactionDto): number {
+  const label = `${transaction.action ?? ""} ${transaction.type}`.toUpperCase();
+  const amount = Math.abs(transaction.amount.amount);
+  const inflowActions = [
+    "DEPOSIT",
+    "CONTRIBUTION",
+    "INTEREST",
+    "REIMBURSEMENT",
+    "REFUND",
+    "PROMOTION",
+    "REWARD",
+    "CASHBACK",
+  ];
+  const outflowActions = [
+    "WITHDRAW",
+    "SPEND",
+    "PURCHASE",
+    "CHARGE",
+    "DEBIT",
+    "FEE",
+    "CREDIT_CARD_PAYMENT",
+  ];
+
+  if (inflowActions.some((term) => label.includes(term))) return amount;
+  if (outflowActions.some((term) => label.includes(term))) return -amount;
+  return transaction.amount.amount;
+}
+
+function timeWeightedAverageBalance(
+  endingBalance: number,
+  transactions: CashTransactionDto[],
+  windowStart: number,
+  windowEnd: number
+): number {
+  const rows = transactions
+    .filter((transaction) => {
+      const tradeTime = new Date(transaction.tradeDate).getTime();
+      return tradeTime >= windowStart && tradeTime <= windowEnd;
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime()
+    );
+  let balance = endingBalance;
+  let cursor = windowEnd;
+  let weightedBalanceMs = 0;
+
+  for (const transaction of rows) {
+    const tradeTime = new Date(transaction.tradeDate).getTime();
+    weightedBalanceMs += balance * (cursor - tradeTime);
+    balance -= signedCashFlow(transaction);
+    cursor = tradeTime;
+  }
+
+  weightedBalanceMs += balance * (cursor - windowStart);
+  return weightedBalanceMs / (windowEnd - windowStart);
 }
 
 function getCurrentInterestRates(
   transactions: CashTransactionDto[],
   cashAccounts: CashAccountDto[]
 ): Array<{ currency: string; percent: number | null }> {
-  const balances = groupMoney(cashAccounts.map((account) => account.balance));
-  const latestTransactionTime = Math.max(
-    0,
-    ...transactions.map((transaction) => new Date(transaction.tradeDate).getTime())
-  );
+  const currencyMetrics = new Map<
+    string,
+    { interest: number; averageBalance: number }
+  >();
 
-  if (latestTransactionTime === 0) {
-    return balances.map((balance) => ({ currency: balance.currency, percent: null }));
+  for (const account of cashAccounts) {
+    if (
+      ["CLOSED", "INACTIVE", "DEACTIVATED"].includes(
+        (account.status ?? "").toUpperCase()
+      )
+    ) {
+      continue;
+    }
+
+    const accountTransactions = transactions.filter(
+      (transaction) => transaction.accountId === account.id
+    );
+    const latestTransactionTime = Math.max(
+      0,
+      ...accountTransactions.map((transaction) =>
+        new Date(transaction.tradeDate).getTime()
+      )
+    );
+    const syncedTime = account.lastSyncedAt
+      ? new Date(account.lastSyncedAt).getTime()
+      : 0;
+    const snapshotTime = syncedTime || latestTransactionTime;
+
+    for (const balance of account.balances) {
+      const current = currencyMetrics.get(balance.currency) ?? {
+        interest: 0,
+        averageBalance: 0,
+      };
+      const currencyTransactions = accountTransactions.filter(
+        (transaction) => transaction.amount.currency === balance.currency
+      );
+      const latestInterestTransaction = currencyTransactions
+        .filter(
+          (transaction) =>
+            isInterestTransaction(transaction) &&
+            new Date(transaction.tradeDate).getTime() <= snapshotTime
+        )
+        .sort(
+          (a, b) =>
+            new Date(b.tradeDate).getTime() -
+            new Date(a.tradeDate).getTime()
+        )[0];
+
+      if (!latestInterestTransaction || snapshotTime === 0) {
+        currencyMetrics.set(balance.currency, {
+          interest: current.interest,
+          averageBalance: current.averageBalance,
+        });
+        continue;
+      }
+
+      const windowEnd = new Date(
+        latestInterestTransaction.tradeDate
+      ).getTime();
+      const windowStart = windowEnd - INTEREST_WINDOW_DAYS * DAY_MS;
+      const balanceAtWindowEnd =
+        balance.amount -
+        currencyTransactions
+          .filter((transaction) => {
+            const tradeTime = new Date(transaction.tradeDate).getTime();
+            return tradeTime > windowEnd && tradeTime <= snapshotTime;
+          })
+          .reduce(
+            (total, transaction) => total + signedCashFlow(transaction),
+            0
+          );
+      const interest = Math.abs(
+        latestInterestTransaction.amount.amount
+      );
+      const averageBalance = timeWeightedAverageBalance(
+        balanceAtWindowEnd,
+        currencyTransactions,
+        windowStart,
+        windowEnd
+      );
+
+      currencyMetrics.set(balance.currency, {
+        interest: current.interest + interest,
+        averageBalance: current.averageBalance + averageBalance,
+      });
+    }
   }
 
-  const latest = new Date(latestTransactionTime);
-  const windowStart = new Date(latest);
-  windowStart.setDate(windowStart.getDate() - 30);
-  const interestByCurrency = groupMoney(
-    transactions
-      .filter((transaction) => {
-        const tradeDate = new Date(transaction.tradeDate);
-        return isInterestTransaction(transaction) && tradeDate >= windowStart && tradeDate <= latest;
-      })
-      .map((transaction) => ({
-        amount: Math.abs(transaction.amount.amount),
-        currency: transaction.amount.currency,
-      }))
-  );
-  const interestMap = new Map(interestByCurrency.map((row) => [row.currency, row.amount]));
-
-  return balances.map((balance) => ({
-    currency: balance.currency,
-    percent:
-      balance.amount > 0 && (interestMap.get(balance.currency) ?? 0) > 0
-        ? ((interestMap.get(balance.currency) ?? 0) / balance.amount) * (365 / 30) * 100
-        : null,
-  }));
+  return Array.from(currencyMetrics.entries())
+    .map(([currency, metrics]) => ({
+      currency,
+      percent:
+        metrics.averageBalance > 0 && metrics.interest > 0
+          ? (metrics.interest / metrics.averageBalance) *
+            (365 / INTEREST_WINDOW_DAYS) *
+            100
+          : null,
+    }))
+    .sort((a, b) => a.currency.localeCompare(b.currency));
 }
 
 function formatMoneyRows(values: MoneyDto[]) {
@@ -378,6 +538,9 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
     filteredCashAccountIds.has(transaction.accountId) ||
     filteredCreditAccountIds.has(transaction.accountId)
   );
+  const accountFilteredDebitExpenses = dashboard.debitAccountExpenses.filter(
+    (transaction) => filteredCashAccountIds.has(transaction.accountId)
+  );
   const accountFilteredCreditCardExpenses = dashboard.creditCardExpenses.filter((transaction) =>
     filteredCreditAccountIds.has(transaction.accountId)
   );
@@ -385,11 +548,33 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
     accountFilteredCashTransactions,
     filters.timeline
   );
+  const debitAccountExpenses = filterTransactionsByTimeline(
+    accountFilteredDebitExpenses,
+    filters.timeline
+  );
   const creditCardExpenses = filterTransactionsByTimeline(
     accountFilteredCreditCardExpenses,
     filters.timeline
   );
-  const interestRates = getCurrentInterestRates(cashTransactions, filteredCashAccounts);
+  const interestRates = getCurrentInterestRates(
+    accountFilteredCashTransactions,
+    filteredCashAccounts
+  );
+  const balanceRows: CashBalanceRow[] = [
+    ...filteredCashAccounts,
+    ...filteredCreditAccounts,
+  ].flatMap((account) =>
+    account.balances.map((balance) => ({
+      id: `${account.id}:${balance.currency}`,
+      accountId: account.id,
+      accountName: account.name,
+      institutionName: account.institutionName ?? "Unknown",
+      category: account.category,
+      status: account.status ?? "Unknown",
+      balance,
+      lastSyncedAt: account.lastSyncedAt,
+    }))
+  );
 
   const transactionColumns: TableColumn<CashTransactionDto>[] = [
     {
@@ -434,6 +619,47 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
       ),
     },
   ];
+  const balanceColumns: TableColumn<CashBalanceRow>[] = [
+    {
+      key: "account",
+      header: "Account",
+      value: (row) => row.accountName,
+      render: (row) => row.accountName,
+    },
+    {
+      key: "institution",
+      header: "Institution",
+      value: (row) => row.institutionName,
+      render: (row) => row.institutionName,
+    },
+    {
+      key: "category",
+      header: "Account category",
+      value: (row) => (row.category === "credit" ? "Credit card" : "Debit / cash"),
+      render: (row) => (row.category === "credit" ? "Credit card" : "Debit / cash"),
+    },
+    {
+      key: "status",
+      header: "Status",
+      value: (row) => row.status,
+      render: (row) => row.status,
+    },
+    {
+      key: "synced",
+      header: "Balance as of",
+      value: (row) => row.lastSyncedAt ?? "",
+      render: (row) => (row.lastSyncedAt ? formatDate(row.lastSyncedAt) : "-"),
+    },
+    {
+      key: "balance",
+      header: "Balance",
+      align: "right",
+      value: (row) => row.balance.amount,
+      render: (row) => (
+        <span className="font-medium">{formatMoney(row.balance)}</span>
+      ),
+    },
+  ];
 
   return (
     <main className="app-main">
@@ -442,27 +668,70 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
           <CashFilterBar accounts={dashboard.accounts} value={filters} onChange={setFilters} />
         </section>
 
-        <section className="mt-6 grid gap-4 md:grid-cols-3">
+        <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <StatCard
             label="Total cash"
             icon={faMoneyBillWave}
-            value={<MetricValueList rows={formatMoneyRows(filteredCashAccounts.map((account) => account.balance))} />}
+            value={
+              <MetricValueList
+                rows={formatMoneyRows(
+                  filteredCashAccounts.flatMap((account) => account.balances)
+                )}
+              />
+            }
             align="center"
           />
           <StatCard
-            label="Current interest rate"
+            label="Credit card balance"
+            icon={faCreditCard}
+            value={
+              <MetricValueList
+                rows={formatMoneyRows(
+                  filteredCreditAccounts.flatMap((account) => account.balances)
+                )}
+              />
+            }
+            align="center"
+          />
+          <StatCard
+            label="Current interest rate (30 days)"
             value={<MetricValueList rows={formatInterestRows(interestRates)} />}
+            align="center"
+          />
+          <StatCard
+            label="Debit account expenses"
+            value={
+              <MetricValueList
+                rows={formatMoneyRows(
+                  debitAccountExpenses.map((transaction) => transaction.amount)
+                )}
+              />
+            }
+            tone="negative"
             align="center"
           />
           <StatCard
             label="Credit card expenses"
             icon={faCreditCard}
-            value={<MetricValueList rows={formatMoneyRows(creditCardExpenses.map((transaction) => ({
-              amount: Math.abs(transaction.amount.amount),
-              currency: transaction.amount.currency,
-            })))} />}
+            value={
+              <MetricValueList
+                rows={formatMoneyRows(
+                  creditCardExpenses.map((transaction) => transaction.amount)
+                )}
+              />
+            }
             tone="negative"
             align="center"
+          />
+        </section>
+
+        <section className="mt-6">
+          <DataTable
+            title="Cash and credit card balances"
+            rows={balanceRows}
+            columns={balanceColumns}
+            getRowKey={(row) => row.id}
+            emptyMessage="No cash or credit card balances match this view."
           />
         </section>
 

@@ -1,4 +1,5 @@
 import {
+  accountBalances,
   accounts,
   and,
   db,
@@ -8,6 +9,7 @@ import {
   transactions,
   users,
   type Account,
+  type AccountBalance,
   type Transaction,
 } from "@repo/db";
 import type { MoneyBreakdownDto, MoneyDto } from "../shared/money.js";
@@ -21,6 +23,7 @@ export type CashAccountDto = {
   status: string | null;
   category: "cash" | "credit";
   balance: MoneyDto;
+  balances: MoneyDto[];
   lastSyncedAt: string | null;
 };
 
@@ -44,8 +47,10 @@ export type CashDashboardDto = {
   cashAccounts: CashAccountDto[];
   creditAccounts: CashAccountDto[];
   cashTransactions: CashTransactionDto[];
+  debitAccountExpenses: CashTransactionDto[];
   creditCardExpenses: CashTransactionDto[];
   totalCash: MoneyBreakdownDto[];
+  totalCreditBalance: MoneyBreakdownDto[];
   currentInterestRates: Array<{
     currency: string;
     percent: number | null;
@@ -61,6 +66,18 @@ function toNumber(value: string | number | null | undefined): number {
 function toIso(value: Date | string | null | undefined): string | null {
   if (!value) return null;
   return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
+}
+
+function latestIso(
+  ...values: Array<Date | string | null | undefined>
+): string | null {
+  const timestamps = values
+    .map((value) => (value ? new Date(value).getTime() : Number.NaN))
+    .filter(Number.isFinite);
+
+  return timestamps.length > 0
+    ? new Date(Math.max(...timestamps)).toISOString()
+    : null;
 }
 
 function normalizedText(...values: Array<string | null | undefined>): string {
@@ -143,8 +160,28 @@ function getTransactionDescription(transaction: Transaction): string | null {
   return description ?? null;
 }
 
-function toCashAccountDto(account: Account): CashAccountDto {
+function toCashAccountDto(
+  account: Account,
+  accountBalanceRows: AccountBalance[]
+): CashAccountDto {
   const category = isCreditAccount(account) ? "credit" : "cash";
+  const balances =
+    accountBalanceRows.length > 0
+      ? accountBalanceRows.map((balance) => ({
+          amount: toNumber(balance.cash ?? balance.buyingPower),
+          currency: balance.currencyCode,
+        }))
+      : [
+          {
+            amount: toNumber(account.balanceAmount),
+            currency: account.balanceCurrency ?? account.accountCurrency ?? "USD",
+          },
+        ];
+  const primaryBalance =
+    balances.find(
+      (balance) =>
+        balance.currency === (account.balanceCurrency ?? account.accountCurrency)
+    ) ?? balances[0];
 
   return {
     id: account.id,
@@ -154,11 +191,13 @@ function toCashAccountDto(account: Account): CashAccountDto {
     type: account.type,
     status: account.status,
     category,
-    balance: {
-      amount: toNumber(account.balanceAmount),
-      currency: account.balanceCurrency ?? account.accountCurrency ?? "USD",
-    },
-    lastSyncedAt: toIso(account.lastHoldingsSyncAt ?? account.lastTransactionsSyncAt),
+    balance: primaryBalance,
+    balances,
+    lastSyncedAt: latestIso(
+      account.lastHoldingsSyncAt,
+      account.lastTransactionsSyncAt,
+      ...accountBalanceRows.map((balance) => balance.syncedAt)
+    ),
   };
 }
 
@@ -198,20 +237,18 @@ function isCashTransaction(transaction: CashTransactionDto): boolean {
   );
 }
 
-function isCreditCardExpense(transaction: CashTransactionDto): boolean {
+function isExpenseTransaction(transaction: CashTransactionDto): boolean {
   const action = normalizedText(transaction.action, transaction.type);
-  const excluded =
-    action.includes("PAYMENT") ||
-    action.includes("TRANSFER") ||
-    action.includes("DEPOSIT") ||
-    action.includes("CONTRIBUTION") ||
-    action.includes("REIMBURSEMENT") ||
-    action.includes("INTEREST");
+  const expenseActions = ["SPEND", "PURCHASE", "CHARGE", "DEBIT", "FEE"];
 
-  return !transaction.isArchived && !excluded && Math.abs(transaction.amount.amount) > 0;
+  return (
+    !transaction.isArchived &&
+    Math.abs(transaction.amount.amount) > 0 &&
+    expenseActions.some((term) => action.includes(term))
+  );
 }
 
-function creditCardExpenseDedupeKey(transaction: CashTransactionDto): string {
+function expenseDedupeKey(transaction: CashTransactionDto): string {
   return [
     transaction.accountId,
     new Date(transaction.tradeDate).toISOString(),
@@ -222,13 +259,13 @@ function creditCardExpenseDedupeKey(transaction: CashTransactionDto): string {
   ].join("|");
 }
 
-function dedupeCreditCardExpenses(
+function dedupeExpenses(
   transactions: CashTransactionDto[]
 ): CashTransactionDto[] {
   const rowsByKey = new Map<string, CashTransactionDto>();
 
   for (const transaction of transactions) {
-    const key = creditCardExpenseDedupeKey(transaction);
+    const key = expenseDedupeKey(transaction);
     const existing = rowsByKey.get(key);
 
     if (!existing || transaction.id.localeCompare(existing.id) < 0) {
@@ -241,43 +278,170 @@ function dedupeCreditCardExpenses(
   );
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const INTEREST_WINDOW_DAYS = 30;
+
+function signedCashFlow(transaction: CashTransactionDto): number {
+  const action = normalizedText(transaction.action, transaction.type);
+  const amount = Math.abs(transaction.amount.amount);
+  const inflowActions = [
+    "DEPOSIT",
+    "CONTRIBUTION",
+    "INTEREST",
+    "REIMBURSEMENT",
+    "REFUND",
+    "PROMOTION",
+    "REWARD",
+    "CASHBACK",
+  ];
+  const outflowActions = [
+    "WITHDRAW",
+    "SPEND",
+    "PURCHASE",
+    "CHARGE",
+    "DEBIT",
+    "FEE",
+    "CREDIT_CARD_PAYMENT",
+  ];
+
+  if (inflowActions.some((term) => action.includes(term))) return amount;
+  if (outflowActions.some((term) => action.includes(term))) return -amount;
+  return transaction.amount.amount;
+}
+
+function timeWeightedAverageBalance(
+  endingBalance: number,
+  transactions: CashTransactionDto[],
+  windowStart: number,
+  windowEnd: number
+): number {
+  const rows = transactions
+    .filter((transaction) => {
+      const tradeTime = new Date(transaction.tradeDate).getTime();
+      return tradeTime >= windowStart && tradeTime <= windowEnd;
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime()
+    );
+  let balance = endingBalance;
+  let cursor = windowEnd;
+  let weightedBalanceMs = 0;
+
+  for (const transaction of rows) {
+    const tradeTime = new Date(transaction.tradeDate).getTime();
+    weightedBalanceMs += balance * (cursor - tradeTime);
+    balance -= signedCashFlow(transaction);
+    cursor = tradeTime;
+  }
+
+  weightedBalanceMs += balance * (cursor - windowStart);
+  return weightedBalanceMs / (windowEnd - windowStart);
+}
+
 function getCurrentInterestRates(
   cashTransactions: CashTransactionDto[],
   cashAccounts: CashAccountDto[]
 ): Array<{ currency: string; percent: number | null }> {
-  const balances = groupMoney(cashAccounts.map((account) => account.balance));
-  const latestTransactionTime = Math.max(
-    0,
-    ...cashTransactions.map((transaction) => new Date(transaction.tradeDate).getTime())
-  );
+  const currencyMetrics = new Map<
+    string,
+    { interest: number; averageBalance: number }
+  >();
 
-  if (latestTransactionTime === 0) {
-    return balances.map((balance) => ({ currency: balance.currency, percent: null }));
+  for (const account of cashAccounts) {
+    if (
+      ["CLOSED", "INACTIVE", "DEACTIVATED"].includes(
+        normalizedText(account.status)
+      )
+    ) {
+      continue;
+    }
+
+    const accountTransactions = cashTransactions.filter(
+      (transaction) => transaction.accountId === account.id
+    );
+    const latestTransactionTime = Math.max(
+      0,
+      ...accountTransactions.map((transaction) =>
+        new Date(transaction.tradeDate).getTime()
+      )
+    );
+    const syncedTime = account.lastSyncedAt
+      ? new Date(account.lastSyncedAt).getTime()
+      : 0;
+    const snapshotTime = syncedTime || latestTransactionTime;
+
+    for (const balance of account.balances) {
+      const current = currencyMetrics.get(balance.currency) ?? {
+        interest: 0,
+        averageBalance: 0,
+      };
+      const currencyTransactions = accountTransactions.filter(
+        (transaction) => transaction.amount.currency === balance.currency
+      );
+      const latestInterestTransaction = currencyTransactions
+        .filter(
+          (transaction) =>
+            isInterestTransaction(transaction) &&
+            new Date(transaction.tradeDate).getTime() <= snapshotTime
+        )
+        .sort(
+          (a, b) =>
+            new Date(b.tradeDate).getTime() -
+            new Date(a.tradeDate).getTime()
+        )[0];
+
+      if (!latestInterestTransaction || snapshotTime === 0) {
+        currencyMetrics.set(balance.currency, {
+          interest: current.interest,
+          averageBalance: current.averageBalance,
+        });
+        continue;
+      }
+
+      const windowEnd = new Date(
+        latestInterestTransaction.tradeDate
+      ).getTime();
+      const windowStart = windowEnd - INTEREST_WINDOW_DAYS * DAY_MS;
+      const balanceAtWindowEnd =
+        balance.amount -
+        currencyTransactions
+          .filter((transaction) => {
+            const tradeTime = new Date(transaction.tradeDate).getTime();
+            return tradeTime > windowEnd && tradeTime <= snapshotTime;
+          })
+          .reduce(
+            (total, transaction) => total + signedCashFlow(transaction),
+            0
+          );
+      const interest = Math.abs(
+        latestInterestTransaction.amount.amount
+      );
+      const averageBalance = timeWeightedAverageBalance(
+        balanceAtWindowEnd,
+        currencyTransactions,
+        windowStart,
+        windowEnd
+      );
+
+      currencyMetrics.set(balance.currency, {
+        interest: current.interest + interest,
+        averageBalance: current.averageBalance + averageBalance,
+      });
+    }
   }
 
-  const latest = new Date(latestTransactionTime);
-  const windowStart = new Date(latest);
-  windowStart.setDate(windowStart.getDate() - 30);
-  const interestByCurrency = groupMoney(
-    cashTransactions
-      .filter((transaction) => {
-        const tradeDate = new Date(transaction.tradeDate);
-        return isInterestTransaction(transaction) && tradeDate >= windowStart && tradeDate <= latest;
-      })
-      .map((transaction) => ({
-        amount: Math.abs(transaction.amount.amount),
-        currency: transaction.amount.currency,
-      }))
-  );
-  const interestMap = new Map(interestByCurrency.map((row) => [row.currency, row.amount]));
-
-  return balances.map((balance) => ({
-    currency: balance.currency,
-    percent:
-      balance.amount > 0 && (interestMap.get(balance.currency) ?? 0) > 0
-        ? ((interestMap.get(balance.currency) ?? 0) / balance.amount) * (365 / 30) * 100
-        : null,
-  }));
+  return Array.from(currencyMetrics.entries())
+    .map(([currency, metrics]) => ({
+      currency,
+      percent:
+        metrics.averageBalance > 0 && metrics.interest > 0
+          ? (metrics.interest / metrics.averageBalance) *
+            (365 / INTEREST_WINDOW_DAYS) *
+            100
+          : null,
+    }))
+    .sort((a, b) => a.currency.localeCompare(b.currency));
 }
 
 async function resolveUserId(requestedUserId?: string) {
@@ -304,6 +468,13 @@ export async function getCashDashboard(
     (account) => isCashAccount(account) || isCreditAccount(account)
   );
   const accountIds = scopedAccountRows.map((account) => account.id);
+  const balanceRows =
+    accountIds.length === 0
+      ? []
+      : await db
+          .select()
+          .from(accountBalances)
+          .where(inArray(accountBalances.accountId, accountIds));
   const transactionRows =
     accountIds.length === 0
       ? []
@@ -318,7 +489,15 @@ export async function getCashDashboard(
           )
           .orderBy(desc(transactions.tradeDate));
 
-  const accountDtos = scopedAccountRows.map(toCashAccountDto);
+  const balanceRowsByAccount = new Map<string, AccountBalance[]>();
+  for (const balance of balanceRows) {
+    const rows = balanceRowsByAccount.get(balance.accountId) ?? [];
+    rows.push(balance);
+    balanceRowsByAccount.set(balance.accountId, rows);
+  }
+  const accountDtos = scopedAccountRows.map((account) =>
+    toCashAccountDto(account, balanceRowsByAccount.get(account.id) ?? [])
+  );
   const cashAccounts = accountDtos.filter((account) => account.category === "cash");
   const creditAccounts = accountDtos.filter((account) => account.category === "credit");
   const transactionDtos = transactionRows.map(toCashTransactionDto);
@@ -330,10 +509,18 @@ export async function getCashDashboard(
   const cashTransactions = transactionDtos.filter(
     (transaction) => isCashTransaction(transaction) && !transaction.isArchived
   );
-  const creditCardExpenses = dedupeCreditCardExpenses(
+  const debitAccountExpenses = dedupeExpenses(
     transactionDtos.filter(
       (transaction) =>
-        creditAccountIds.has(transaction.accountId) && isCreditCardExpense(transaction)
+        cashAccountIds.has(transaction.accountId) &&
+        isExpenseTransaction(transaction)
+    )
+  );
+  const creditCardExpenses = dedupeExpenses(
+    transactionDtos.filter(
+      (transaction) =>
+        creditAccountIds.has(transaction.accountId) &&
+        isExpenseTransaction(transaction)
     )
   );
 
@@ -342,8 +529,12 @@ export async function getCashDashboard(
     cashAccounts,
     creditAccounts,
     cashTransactions,
+    debitAccountExpenses,
     creditCardExpenses,
-    totalCash: groupMoney(cashAccounts.map((account) => account.balance)),
+    totalCash: groupMoney(cashAccounts.flatMap((account) => account.balances)),
+    totalCreditBalance: groupMoney(
+      creditAccounts.flatMap((account) => account.balances)
+    ),
     currentInterestRates: getCurrentInterestRates(
       cashAccountTransactions,
       cashAccounts
