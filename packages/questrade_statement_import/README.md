@@ -48,9 +48,14 @@ pnpm statements:import
 
 Database imports write directly to the application's canonical tables:
 
+- statement symbols are matched through active securities and aliases, with
+  canonical SnapTrade identities preferred over symbol-only placeholders;
+- missing statement securities and `questrade_statements` aliases are created
+  deterministically, then linked to transactions and historical holdings;
 - historical statement positions go to `holdings`;
-- statement activity is inserted into `transactions` with source
-  `questrade_statements`; existing matches are skipped rather than updated;
+- statement activity is inserted or updated in `transactions` with source
+  `questrade_statements`; matches from another active source are treated as
+  duplicates and the statement copy is not inserted;
 - the latest statement cash can populate `account_balances`, but it never
   overwrites a live SnapTrade balance.
 
@@ -61,7 +66,10 @@ available for an explicitly reviewed exception.
 
 A transaction is considered an existing match within the same account when
 its symbol, type, two-decimal amount, and either transaction or settlement
-date match. The same check also removes duplicates within one import batch.
+date match. The same check removes duplicates within one import batch.
+Reimporting the same `questrade_statements` activity updates its normalized
+values and security links. If the same activity already exists from another
+active source, any matching statement copy is archived.
 
 The statement's asset-category balance summary is parsed only as an in-memory
 cross-check against the statement total. It is not exported or stored because
