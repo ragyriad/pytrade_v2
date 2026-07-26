@@ -30,6 +30,7 @@ import {
   type TimelineRange,
 } from "../../services/filter_timeline";
 import type {
+  CalculatedCreditCardBalanceDto,
   CashAccountDto,
   CashDashboardDto,
   CashTransactionDto,
@@ -48,6 +49,7 @@ type CashBalanceRow = {
   category: "cash" | "credit";
   status: string;
   balance: MoneyDto;
+  balanceStatus: "available" | "owing" | "credit" | "paid";
   lastSyncedAt: string | null;
 };
 
@@ -325,6 +327,30 @@ function formatMoneyRows(values: MoneyDto[]) {
   }));
 }
 
+function formatCreditBalanceRows(values: CalculatedCreditCardBalanceDto[]) {
+  return groupMoney(
+    values.map((value) => ({
+      amount: value.netAmount,
+      currency: value.currency,
+    }))
+  ).map((value) => {
+    const status =
+      value.amount > 0 ? "owing" : value.amount < 0 ? "credit" : "paid";
+
+    return {
+      id: value.currency,
+      value: formatNumber(value.amount),
+      suffix: `${value.currency} ${status}`,
+      className:
+        status === "owing"
+          ? "text-negative"
+          : status === "credit"
+            ? "text-positive"
+            : "text-foreground",
+    };
+  });
+}
+
 function formatInterestRows(values: Array<{ currency: string; percent: number | null }>) {
   return values.map((value) => ({
     id: value.currency,
@@ -560,10 +586,11 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
     accountFilteredCashTransactions,
     filteredCashAccounts
   );
+  const filteredCreditCardBalances = dashboard.creditCardBalances.filter(
+    (balance) => filteredCreditAccountIds.has(balance.accountId)
+  );
   const balanceRows: CashBalanceRow[] = [
-    ...filteredCashAccounts,
-    ...filteredCreditAccounts,
-  ].flatMap((account) =>
+    ...filteredCashAccounts.flatMap((account) =>
     account.balances.map((balance) => ({
       id: `${account.id}:${balance.currency}`,
       accountId: account.id,
@@ -572,9 +599,29 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
       category: account.category,
       status: account.status ?? "Unknown",
       balance,
+      balanceStatus: "available" as const,
       lastSyncedAt: account.lastSyncedAt,
     }))
-  );
+    ),
+    ...filteredCreditCardBalances.map((balance) => {
+      const account = accountsById.get(balance.accountId);
+
+      return {
+        id: `${balance.accountId}:${balance.currency}`,
+        accountId: balance.accountId,
+        accountName: account?.name ?? "Credit card",
+        institutionName: account?.institutionName ?? "Unknown",
+        category: "credit" as const,
+        status: account?.status ?? "Unknown",
+        balance: {
+          amount: balance.netAmount,
+          currency: balance.currency,
+        },
+        balanceStatus: balance.status,
+        lastSyncedAt: balance.calculatedThrough ?? account?.lastSyncedAt ?? null,
+      };
+    }),
+  ];
 
   const transactionColumns: TableColumn<CashTransactionDto>[] = [
     {
@@ -640,9 +687,29 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
     },
     {
       key: "status",
-      header: "Status",
+      header: "Account status",
       value: (row) => row.status,
       render: (row) => row.status,
+    },
+    {
+      key: "balanceStatus",
+      header: "Balance status",
+      value: (row) =>
+        row.balanceStatus === "credit"
+          ? "In credit"
+          : row.balanceStatus === "owing"
+            ? "Owing"
+            : row.balanceStatus === "paid"
+              ? "Paid"
+              : "Available",
+      render: (row) =>
+        row.balanceStatus === "credit"
+          ? "In credit"
+          : row.balanceStatus === "owing"
+            ? "Owing"
+            : row.balanceStatus === "paid"
+              ? "Paid"
+              : "Available",
     },
     {
       key: "synced",
@@ -656,7 +723,17 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
       align: "right",
       value: (row) => row.balance.amount,
       render: (row) => (
-        <span className="font-medium">{formatMoney(row.balance)}</span>
+        <span
+          className={`font-medium ${
+            row.balanceStatus === "owing"
+              ? "text-negative"
+              : row.balanceStatus === "credit"
+                ? "text-positive"
+                : ""
+          }`}
+        >
+          {formatMoney(row.balance)}
+        </span>
       ),
     },
   ];
@@ -682,13 +759,11 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
             align="center"
           />
           <StatCard
-            label="Credit card balance"
+            label="Credit card amount"
             icon={faCreditCard}
             value={
               <MetricValueList
-                rows={formatMoneyRows(
-                  filteredCreditAccounts.flatMap((account) => account.balances)
-                )}
+                rows={formatCreditBalanceRows(filteredCreditCardBalances)}
               />
             }
             align="center"
@@ -724,6 +799,16 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
             align="center"
           />
         </section>
+
+        {dashboard.unallocatedCreditCardPayments.length > 0 ? (
+          <section className="app-panel mt-6 border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+            Some credit-card payments could not be assigned because more than
+            one card shares the same institution and currency. Unallocated:{" "}
+            {dashboard.unallocatedCreditCardPayments
+              .map((payment) => formatMoney(payment))
+              .join(", ")}.
+          </section>
+        ) : null}
 
         <section className="mt-6">
           <DataTable

@@ -270,6 +270,20 @@ export type CashTransactionDto = {
   isArchived: boolean;
 };
 
+export type CalculatedCreditCardBalanceDto = {
+  accountId: string;
+  currency: string;
+  netAmount: number;
+  amountOwing: number;
+  creditAmount: number;
+  charges: number;
+  returns: number;
+  payments: number;
+  status: "owing" | "credit" | "paid";
+  calculatedThrough: string | null;
+  firstActivityDate: string | null;
+};
+
 export type CashDashboardDto = {
   accounts: CashAccountDto[];
   cashAccounts: CashAccountDto[];
@@ -277,6 +291,8 @@ export type CashDashboardDto = {
   cashTransactions: CashTransactionDto[];
   debitAccountExpenses: CashTransactionDto[];
   creditCardExpenses: CashTransactionDto[];
+  creditCardBalances: CalculatedCreditCardBalanceDto[];
+  unallocatedCreditCardPayments: MoneyBreakdownDto[];
   totalCash: MoneyBreakdownDto[];
   totalCreditBalance: MoneyBreakdownDto[];
   currentInterestRates: Array<{

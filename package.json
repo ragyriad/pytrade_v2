@@ -14,7 +14,7 @@
     "market-data:build": "pnpm --filter @repo/market-data-sync build",
     "market-data:sync": "pnpm --filter @repo/market-data-sync sync",
     "market-data:test": "pnpm --filter @repo/market-data-sync test",
-    "sync": "pnpm --filter @repo/snaptrade-sync sync",
+    "sync:snaptrade": "pnpm --filter @repo/snaptrade-sync sync",
     "db:generate": "turbo run db:generate --filter=@repo/db",
     "db:migrate": "turbo run db:migrate --filter=@repo/db",
     "data:normalize": "pnpm --filter @repo/db data:normalize",

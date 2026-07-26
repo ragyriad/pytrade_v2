@@ -13,6 +13,10 @@ import {
   type Transaction,
 } from "@repo/db";
 import type { MoneyBreakdownDto, MoneyDto } from "../shared/money.js";
+import {
+  calculateCreditCardBalances,
+  type CalculatedCreditCardBalance,
+} from "./credit-card-balances.js";
 
 export type CashAccountDto = {
   id: string;
@@ -49,6 +53,8 @@ export type CashDashboardDto = {
   cashTransactions: CashTransactionDto[];
   debitAccountExpenses: CashTransactionDto[];
   creditCardExpenses: CashTransactionDto[];
+  creditCardBalances: CalculatedCreditCardBalance[];
+  unallocatedCreditCardPayments: MoneyBreakdownDto[];
   totalCash: MoneyBreakdownDto[];
   totalCreditBalance: MoneyBreakdownDto[];
   currentInterestRates: Array<{
@@ -523,6 +529,10 @@ export async function getCashDashboard(
         isExpenseTransaction(transaction)
     )
   );
+  const creditCardBalanceCalculation = calculateCreditCardBalances(
+    accountDtos,
+    transactionDtos
+  );
 
   return {
     accounts: accountDtos,
@@ -531,9 +541,15 @@ export async function getCashDashboard(
     cashTransactions,
     debitAccountExpenses,
     creditCardExpenses,
+    creditCardBalances: creditCardBalanceCalculation.balances,
+    unallocatedCreditCardPayments:
+      creditCardBalanceCalculation.unallocatedPayments,
     totalCash: groupMoney(cashAccounts.flatMap((account) => account.balances)),
     totalCreditBalance: groupMoney(
-      creditAccounts.flatMap((account) => account.balances)
+      creditCardBalanceCalculation.balances.map((balance) => ({
+        amount: balance.netAmount,
+        currency: balance.currency,
+      }))
     ),
     currentInterestRates: getCurrentInterestRates(
       cashAccountTransactions,
