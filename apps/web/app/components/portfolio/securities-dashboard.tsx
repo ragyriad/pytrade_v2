@@ -9,6 +9,7 @@ import {
   formatMoney,
   formatNumber,
   formatPercent,
+  formatSource,
   signedValueClassName,
 } from "../../lib/formatters";
 import type {
@@ -135,11 +136,21 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
           .join(" "),
       render: (security) => (
         <div>
-          <p className="font-medium text-foreground">
-            {security.description ?? security.rawSymbol ?? security.symbol}
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-medium text-foreground">
+              {security.description ?? security.rawSymbol ?? security.symbol}
+            </p>
+            {security.listingStatus === "DELISTED" ? (
+              <span className="rounded bg-zinc-200 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-700">
+                Delisted
+              </span>
+            ) : null}
+          </div>
           <p className="text-xs text-zinc-500">
             {security.exchangeCode ?? security.exchangeMicCode ?? "Exchange unknown"}
+            {security.delistedAt
+              ? ` · Delisted ${formatDate(security.delistedAt)}`
+              : ""}
           </p>
         </div>
       ),
@@ -294,7 +305,7 @@ function SecurityTransactionsSubTable({
             <tr>
               <th className="px-4 py-3 text-center font-medium">Date</th>
               <th className="px-4 py-3 text-center font-medium">Action</th>
-              <th className="px-4 py-3 text-center font-medium">Type</th>
+              <th className="px-4 py-3 text-center font-medium">Source</th>
               <th className="px-4 py-3 text-left font-medium">Account</th>
               <th className="px-4 py-3 text-center font-medium">Units</th>
               <th className="px-4 py-3 text-center font-medium">Price</th>
@@ -313,7 +324,9 @@ function SecurityTransactionsSubTable({
                 <td className="px-4 py-3 text-center">
                   {transaction.action ?? transaction.type}
                 </td>
-                <td className="px-4 py-3 text-center">{transaction.assetType ?? "Other"}</td>
+                <td className="px-4 py-3 text-center">
+                  {formatSource(transaction.source)}
+                </td>
                 <td className="px-4 py-3 text-left">
                   <p className="font-medium text-foreground">
                     {transaction.accountName ?? transaction.accountId}

@@ -1,23 +1,40 @@
 import {
-  mapSnaptradePosition,
+  securities as securitiesTable,
   upsertSecurities,
   type DB,
   type NewPosition,
   type NewSecurity,
   type Security,
 } from "@repo/db";
+import { mapSnaptradePosition } from "./mappers/positions_mapper.js";
 import {
   buildSecurityKey,
   mergeSecurityInputs,
+  prepareSecurityInputs,
   type SnapTradeActivitySymbol,
-} from "@repo/snaptrade-activity-processor";
+} from "./ingestion/index.js";
 import type { Position, PositionSymbol, UniversalSymbol } from "snaptrade-typescript-sdk";
+import {
+  canonicalizeSymbol,
+  normalizeSecurityProfile,
+  normalizeSecurityType,
+} from "@repo/data-normalizer";
 
 type RawPosition = Position;
 
 function clean(value: string | null | undefined): string | null {
   const trimmed = value?.trim();
   return trimmed ? trimmed : null;
+}
+
+function isOptionInstrument(symbol: SnapTradeActivitySymbol): boolean {
+  const code = clean(symbol.type?.code)?.toUpperCase();
+  const description = clean(symbol.type?.description)?.toUpperCase();
+  return (
+    code === "OPT" ||
+    code === "OPTION" ||
+    Boolean(description?.includes("OPTION"))
+  );
 }
 
 function positionInstrument(position: RawPosition): UniversalSymbol | undefined {
@@ -65,25 +82,41 @@ function mapSecurityFromPosition(position: RawPosition): NewSecurity | null {
   const instrument = positionInstrument(position);
   const symbol = toActivitySymbol(instrument);
   if (!symbol) return null;
+  if (isOptionInstrument(symbol)) return null;
 
   const securityKey = buildSecurityKey(symbol);
-  const displaySymbol = clean(symbol.symbol);
+  const displaySymbol = canonicalizeSymbol(symbol.symbol);
   if (!securityKey || !displaySymbol) return null;
 
   const seenAt = new Date();
-
+  const profile = normalizeSecurityProfile({
+    symbol: displaySymbol,
+    description: symbol.description,
+    currencyCode: position.currency?.code,
+    observedAt: seenAt,
+  });
+  const securityType = normalizeSecurityType({
+    code: symbol.type?.code,
+    description: [symbol.type?.description, symbol.description]
+      .filter(Boolean)
+      .join(" "),
+    symbol: profile?.symbol ?? displaySymbol,
+  });
   return {
     securityKey,
     snaptradeSymbolId: clean(symbol.id),
     symbol: displaySymbol,
-    rawSymbol: clean(symbol.raw_symbol),
-    description: clean(symbol.description),
-    currencyCode: clean(position.currency?.code),
-    exchangeCode: clean(symbol.exchange?.code),
-    exchangeMicCode: clean(symbol.exchange?.mic_code),
-    exchangeName: clean(symbol.exchange?.name),
-    instrumentTypeCode: clean(symbol.type?.code),
-    instrumentTypeDescription: clean(symbol.type?.description),
+    rawSymbol: clean(symbol.raw_symbol) ?? clean(symbol.symbol),
+    description: profile?.description ?? clean(symbol.description),
+    currencyCode: profile?.currencyCode ?? clean(position.currency?.code),
+    exchangeCode: profile?.exchangeCode ?? clean(symbol.exchange?.code),
+    exchangeMicCode:
+      profile?.exchangeMicCode ?? clean(symbol.exchange?.mic_code),
+    exchangeName: profile?.exchangeName ?? clean(symbol.exchange?.name),
+    listingStatus: profile?.listingStatus ?? "ACTIVE",
+    delistedAt: profile?.delistedAt ?? null,
+    instrumentTypeCode: securityType,
+    instrumentTypeDescription: securityType,
     figiCode: clean(symbol.figi_code),
     figiInstrumentCode: clean(symbol.figi_instrument?.figi_code),
     logoUrl: clean(symbol.logo_url),
@@ -104,13 +137,30 @@ export async function mapSnaptradePositionsWithSecurities(
   const securityInputs = rawPositions
     .map(mapSecurityFromPosition)
     .filter((security): security is NewSecurity => Boolean(security));
-  const securities = await upsertSecurities(db, mergeSecurityInputs(securityInputs));
+  const existingSecurities = await db
+    .select()
+    .from(securitiesTable);
+  const prepared = prepareSecurityInputs(
+    mergeSecurityInputs(securityInputs),
+    existingSecurities
+  );
+  const securities = await upsertSecurities(db, prepared.inputs);
   const securitiesByKey = securityByKey(securities);
+  for (const [inputKey, storageKey] of prepared.storageKeyByInputKey) {
+    const security = securitiesByKey.get(storageKey);
+    if (security) securitiesByKey.set(inputKey, security);
+  }
 
   return rawPositions.map((position) => {
+    const instrument = positionInstrument(position);
     const symbol = toActivitySymbol(positionInstrument(position));
     const key = symbol ? buildSecurityKey(symbol) : null;
-    const securityId = key ? securitiesByKey.get(key)?.id ?? null : null;
+    const securityId =
+      symbol && isOptionInstrument(symbol)
+        ? null
+        : key
+          ? securitiesByKey.get(key)?.id ?? null
+          : null;
 
     return mapSnaptradePosition(position, accountId, securityId);
   });

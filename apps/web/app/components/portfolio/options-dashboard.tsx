@@ -52,8 +52,8 @@ export function OptionsDashboard({ dashboard }: OptionsDashboardProps) {
     return new Map(dashboard.accounts.map((account) => [account.id, account]));
   }, [dashboard.accounts]);
 
-  const filteredOptionTransactions = useMemo(() => {
-    const scoped = dashboard.transactions.filter((transaction) => {
+  const scopedOptionTransactions = useMemo(() => {
+    return dashboard.transactions.filter((transaction) => {
       const account = accountsById.get(transaction.accountId);
       return (
         isOptionTransaction(transaction) &&
@@ -61,17 +61,28 @@ export function OptionsDashboard({ dashboard }: OptionsDashboardProps) {
         accountMatchesFilters(account, filters)
       );
     });
-
-    return filterTransactionsByTimeline(scoped, filters.timeline);
   }, [accountsById, dashboard.transactions, filters]);
 
+  const filteredOptionTransactions = useMemo(
+    () =>
+      filterTransactionsByTimeline(
+        scopedOptionTransactions,
+        filters.timeline
+      ),
+    [filters.timeline, scopedOptionTransactions]
+  );
+
   const optionSecurityRows = useMemo(
-    () => buildOptionSecurityRows(filteredOptionTransactions),
-    [filteredOptionTransactions]
+    () =>
+      buildOptionSecurityRows(
+        filteredOptionTransactions,
+        scopedOptionTransactions
+      ),
+    [filteredOptionTransactions, scopedOptionTransactions]
   );
   const activeOptionCount = useMemo(
-    () => getActiveOptionCount(filteredOptionTransactions),
-    [filteredOptionTransactions]
+    () => getActiveOptionCount(scopedOptionTransactions),
+    [scopedOptionTransactions]
   );
   const totalFees = useMemo(
     () => getOptionFees(filteredOptionTransactions),
@@ -192,12 +203,6 @@ export function OptionsDashboard({ dashboard }: OptionsDashboardProps) {
           </Button>
         );
       },
-    },
-    {
-      key: "type",
-      header: "Type",
-      value: () => "Options",
-      render: () => "Options",
     },
     {
       key: "transactions",
@@ -340,13 +345,14 @@ function OptionTransactionsSubTable({
   return (
     <div className="border-t border-primary-100 bg-primary-50 p-4">
       <div className="overflow-x-auto rounded-md border border-border bg-surface shadow-sm">
-        <table className="w-full min-w-[980px] text-sm">
+        <table className="w-full min-w-[1080px] text-sm">
           <thead className="bg-surface-muted text-xs uppercase text-muted">
             <tr>
               <th className="px-4 py-3 text-center font-medium">Date</th>
               <th className="px-4 py-3 text-center font-medium">Action</th>
               <th className="px-4 py-3 text-center font-medium">Option action</th>
               <th className="px-4 py-3 text-left font-medium">Account</th>
+              <th className="px-4 py-3 text-left font-medium">Source</th>
               <th className="px-4 py-3 text-center font-medium">Units</th>
               <th className="px-4 py-3 text-center font-medium">Price</th>
               <th className="px-4 py-3 text-center font-medium">Amount</th>
@@ -368,6 +374,7 @@ function OptionTransactionsSubTable({
                 <td className="px-4 py-3 text-left">
                   {accountsById.get(transaction.accountId)?.name ?? "Unknown"}
                 </td>
+                <td className="px-4 py-3 text-left">{transaction.source}</td>
                 <td className="px-4 py-3 text-center">
                   {transaction.units == null ? (
                     "-"

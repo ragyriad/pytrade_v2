@@ -82,16 +82,29 @@ pnpm statements:extract
 pnpm statements:import -- --dry-run
 pnpm statements:import
 pnpm sqlite:import
-pnpm data:normalize
-pnpm data:normalize -- --apply
+pnpm data:normalize-existing
+pnpm data:normalize-existing -- --apply
+pnpm data:deduplicate-existing
+pnpm data:deduplicate-existing -- --apply
+pnpm data:reset-imports
+pnpm data:reset-imports -- --apply --confirm=RESET-IMPORTS
 ```
 
-`data:normalize` is the only retained general data-fixing command. It is a
-dry run unless `--apply` is supplied and remains useful when canonical
-transaction-normalization rules change. Duplicate prevention, security
-matching, option normalization, and Wealthsimple cash/card cleanup now happen
-inside the SnapTrade and statement import paths, so there are no standalone
-dedupe or provider-specific repair commands.
+Both existing-data commands are dry runs unless `--apply` is supplied.
+Normalization and duplicate planning are deliberately separate: normalization
+repairs identity/link/type fields, while deduplication archives rows selected
+by the shared `@repo/data-deduplicator` rules.
+
+`data:reset-imports` is also preview-only by default. Its confirmed apply mode
+deletes data owned by the Questrade statement/legacy importers and archives
+SnapTrade-owned rows so the ingestion paths can be tested from a clean state.
+It does not delete unrelated market-data sources.
+
+Provider importers invoke the same normalizer and deduplicator packages during
+ingestion. SnapTrade API fetching, sync orchestration, activity mapping, and
+persistence live in `@repo/snaptrade-sync`; its ingestion pipeline is kept as
+an internal module. The Questrade legacy importer has its own package;
+`@repo/db` contains only schema, client, migrations, and generic persistence.
 
 The Questrade PDF and legacy SQLite importers remain because they are
 repeatable source-data ingestion workflows, not repairs against already

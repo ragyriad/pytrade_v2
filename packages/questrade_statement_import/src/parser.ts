@@ -1,6 +1,10 @@
 import { createHash } from "node:crypto";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
+import {
+  canonicalizeSymbol,
+  parseOptionContract,
+} from "@repo/data-normalizer";
 import { extractPdfPages, type ExtractedPdfPage, type PdfLine, type PdfToken } from "./pdf.js";
 import {
   STATEMENT_SOURCE,
@@ -14,7 +18,8 @@ import {
   type StatementTransaction,
 } from "./types.js";
 
-const DATE_FORMAT = /^(\d{2})-(\d{2})-(\d{4})$/;
+const DATE_FORMAT = /^(\d{2})[-/](\d{2})[-/](\d{4})$/;
+const DATE_TOKEN = /\b\d{2}[-/]\d{2}[-/]\d{4}\b/g;
 const MONEY_TOKEN = /^(?:[-—]|\(?-?\$?[\d,]+(?:\.\d+)?\)?[A-Za-z]?)$/;
 const COST_BASES = new Set(["BK", "HMV", "HMVD", "ND"]);
 const BALANCE_CATEGORIES: Array<{ label: RegExp; category: AssetCategory }> = [
@@ -25,7 +30,7 @@ const BALANCE_CATEGORIES: Array<{ label: RegExp; category: AssetCategory }> = [
   { label: /^Options\b/i, category: "OPTION" },
 ];
 
-interface StatementContext {
+export interface StatementParsingContext {
   sourceFile: string;
   accountNumber: string;
   accountType: string;
@@ -53,7 +58,7 @@ function emptyData(): ExtractedStatementData {
 
 function addIssue(
   issues: ImportIssue[],
-  context: Partial<StatementContext>,
+  context: Partial<StatementParsingContext>,
   severity: "ERROR" | "WARNING",
   entity: string,
   message: string,
@@ -92,7 +97,18 @@ function round2(value: number): number {
 function isoDate(value: string): string {
   const match = value.match(DATE_FORMAT);
   if (!match) return "";
-  return `${match[3]}-${match[1]}-${match[2]}`;
+  const month = Number(match[1]);
+  const day = Number(match[2]);
+  const year = Number(match[3]);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return "";
+  }
+  return date.toISOString().slice(0, 10);
 }
 
 function parseLongDate(month: string, day: string, year: string): string {
@@ -175,12 +191,14 @@ function taggedDescriptionDate(description: string, tag: "REC" | "PAY"): string 
   return date.toISOString().slice(0, 10);
 }
 
-function optionIdentity(description: string): { optionType: "PUT" | "CALL"; symbol: string } | null {
-  const match = description.trim().match(/^(PUT|CALL)\s+([A-Z][A-Z0-9.-]*)\b/i);
-  if (!match) return null;
+function optionIdentity(
+  ...values: Array<string | null | undefined>
+): { optionType: "PUT" | "CALL"; symbol: string } | null {
+  const parsed = parseOptionContract(...values);
+  if (!parsed) return null;
   return {
-    optionType: match[1].toUpperCase() as "PUT" | "CALL",
-    symbol: match[2].replace(/^\./, "").toUpperCase(),
+    optionType: parsed.contractType,
+    symbol: parsed.underlyingSymbol,
   };
 }
 
@@ -209,7 +227,7 @@ function makeImportKey(row: Omit<StatementTransaction, "import_key">): string {
   return createHash("sha256").update(identity).digest("hex");
 }
 
-function contextFromPages(pdfPath: string, pages: ExtractedPdfPage[], issues: ImportIssue[]): StatementContext | null {
+function contextFromPages(pdfPath: string, pages: ExtractedPdfPage[], issues: ImportIssue[]): StatementParsingContext | null {
   const sourceFile = path.basename(pdfPath);
   const allText = pages.map((page) => page.text).join("\n");
   const accountMatch = allText.match(/Account\s*(?:#\s*)?:\s*(\d+)/i);
@@ -227,7 +245,7 @@ function contextFromPages(pdfPath: string, pages: ExtractedPdfPage[], issues: Im
   if (!accountNumber || !statementDate || !accountType) return null;
 
   const statementKey = `${accountNumber}:${statementDate}`;
-  const context: StatementContext = {
+  const context: StatementParsingContext = {
     sourceFile,
     accountNumber,
     accountType,
@@ -239,7 +257,7 @@ function contextFromPages(pdfPath: string, pages: ExtractedPdfPage[], issues: Im
   return context;
 }
 
-function baseRow(context: StatementContext) {
+function baseRow(context: StatementParsingContext) {
   return {
     statement_key: context.statementKey,
     source: STATEMENT_SOURCE,
@@ -299,7 +317,7 @@ function parseBookCost(page: ExtractedPdfPage): Pick<
   };
 }
 
-function parseCash(context: StatementContext, page: ExtractedPdfPage): CashBalanceSnapshot[] {
+function parseCash(context: StatementParsingContext, page: ExtractedPdfPage): CashBalanceSnapshot[] {
   const ownedLine = page.lines.find((line) => /^Owned\b/i.test(line.text));
   if (!ownedLine) return [];
   const borrowedLine = page.lines.find((line) => /^Borrowed\b/i.test(line.text));
@@ -365,7 +383,91 @@ function nearestAnchorIndex(page: ExtractedPdfPage, anchors: number[], lineIndex
   )[0];
 }
 
-function parseHoldings(context: StatementContext, page: ExtractedPdfPage): HoldingSnapshot[] {
+interface TransactionLayout {
+  activityRange: [number, number];
+  symbolRange: [number, number];
+  descriptionRange: [number, number];
+  numericTargets: [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+  ];
+}
+
+const DEFAULT_TRANSACTION_LAYOUT: TransactionLayout = {
+  activityRange: [130, 185],
+  symbolRange: [185, 230],
+  descriptionRange: [230, 395],
+  numericTargets: [407, 449, 480, 515, 555, 603, 640, 682, 722],
+};
+
+function transactionLayout(page: ExtractedPdfPage): TransactionLayout {
+  const header = page.lines.find((line) =>
+    line.tokens.some((token) => /^Symbol$/i.test(token.text))
+    && line.tokens.some((token) => /^Description$/i.test(token.text))
+    && line.tokens.some((token) => /^Qty$/i.test(token.text))
+  );
+  if (!header) return DEFAULT_TRANSACTION_LAYOUT;
+
+  const symbol = header.tokens.find((token) => /^Symbol$/i.test(token.text));
+  const description = header.tokens.find((token) => /^Description$/i.test(token.text));
+  const quantity = header.tokens.find((token) => /^Qty$/i.test(token.text));
+  const activityTokens = header.tokens.filter((token) => /^(?:Activity|type)$/i.test(token.text));
+  const numericHeaders = header.tokens.filter(
+    (token) =>
+      center(token) > (quantity ? center(quantity) : 0)
+      && /^(?:Price|Gross(?:Â?¹)?|Com\.(?:Â?¹)?|Net(?:Â?¹)?)$/i.test(token.text)
+  );
+  if (
+    !symbol
+    || !description
+    || !quantity
+    || activityTokens.length === 0
+    || numericHeaders.length < 8
+  ) {
+    return DEFAULT_TRANSACTION_LAYOUT;
+  }
+
+  const activityCenter =
+    activityTokens.reduce((sum, token) => sum + center(token), 0)
+    / activityTokens.length;
+  const symbolCenter = center(symbol);
+  const descriptionCenter = center(description);
+  const quantityCenter = center(quantity);
+  const numericTargets = [
+    quantityCenter,
+    ...numericHeaders.slice(0, 8).map(center),
+  ] as TransactionLayout["numericTargets"];
+
+  return {
+    activityRange: [
+      Math.max(0, activityCenter - (symbolCenter - activityCenter)),
+      (activityCenter + symbolCenter) / 2,
+    ],
+    symbolRange: [
+      (activityCenter + symbolCenter) / 2,
+      (symbolCenter + descriptionCenter) / 2,
+    ],
+    descriptionRange: [
+      (symbolCenter + descriptionCenter) / 2,
+      quantityCenter - 10,
+    ],
+    numericTargets,
+  };
+}
+
+function datesFromTransactionLine(line: PdfLine): [string, string] | null {
+  const dates = line.text.match(DATE_TOKEN) ?? [];
+  return dates.length >= 2 ? [dates[0]!, dates[1]!] : null;
+}
+
+function parseHoldings(context: StatementParsingContext, page: ExtractedPdfPage): HoldingSnapshot[] {
   const category = holdingCategory(page.text);
   if (!category) return [];
   const anchors = page.lines
@@ -383,7 +485,10 @@ function parseHoldings(context: StatementContext, page: ExtractedPdfPage): Holdi
     const basis = line.tokens.find((token) => COST_BASES.has(token.text.toUpperCase()))?.text.toUpperCase() ?? null;
     const rawSymbol = textBetween(line, 0, 60);
     const description = nearbyDescription.join(" ").replace(/\|/g, " ").replace(/\s+/g, " ").trim();
-    const option = category === "OPTION" ? optionIdentity(description) : null;
+    const option =
+      category === "OPTION" ? optionIdentity(description, rawSymbol) : null;
+    const symbol =
+      option?.symbol ?? canonicalizeSymbol(rawSymbol) ?? rawSymbol.replace(/^\./, "");
     const performanceValues = line.tokens
       .filter((token) => center(token) > 500 && MONEY_TOKEN.test(token.text))
       .sort((a, b) => center(a) - center(b))
@@ -398,7 +503,7 @@ function parseHoldings(context: StatementContext, page: ExtractedPdfPage): Holdi
       asset_type: category === "OPTION" ? "OPTION" : "SECURITY",
       option_type: option?.optionType ?? null,
       raw_symbol: rawSymbol,
-      symbol: option?.symbol ?? rawSymbol.replace(/^\./, ""),
+      symbol,
       description,
       cost_basis: basis,
       quantity: valueNearX(line, 260, 28),
@@ -414,54 +519,70 @@ function parseHoldings(context: StatementContext, page: ExtractedPdfPage): Holdi
   });
 }
 
-function parseTransactions(context: StatementContext, page: ExtractedPdfPage): StatementTransaction[] {
+export function parseStatementTransactions(
+  context: StatementParsingContext,
+  page: ExtractedPdfPage
+): StatementTransaction[] {
   if (!/\bTransactions\b/i.test(page.text)) return [];
+  const layout = transactionLayout(page);
   const anchors = page.lines
     .map((line, index) => ({ line, index }))
-    .filter(({ line }) => {
-      const transactionDate = textBetween(line, 0, 82).match(/\d{2}-\d{2}-\d{4}/)?.[0];
-      const settlementDate = textBetween(line, 82, 135).match(/\d{2}-\d{2}-\d{4}/)?.[0];
-      return Boolean(transactionDate && settlementDate);
-    })
+    .filter(({ line }) => datesFromTransactionLine(line) !== null)
     .map(({ index }) => index);
 
   return anchors.map((anchorIndex, statementRowIndex) => {
     const line = page.lines[anchorIndex];
+    const statementDates = datesFromTransactionLine(line)!;
     const bandLines = page.lines
       .map((candidate, index) => ({ candidate, index }))
       .filter(({ candidate, index }) =>
         nearestAnchorIndex(page, anchors, index) === anchorIndex
         && Math.abs(candidate.y - line.y) <= 22
-        && !/^(?:Opening|Closing) balance\b/i.test(textBetween(candidate, 230, 395))
+        && !/^(?:Opening|Closing) balance\b/i.test(
+          textBetween(candidate, ...layout.descriptionRange)
+        )
         && !/Current month FX rate|Previous month FX rate|Questrade|All rights reserved/i.test(candidate.text)
       );
     const rawActivityType = bandLines
-      .map(({ candidate }) => textBetween(candidate, 130, 185))
+      .map(({ candidate }) => textBetween(candidate, ...layout.activityRange))
       .filter((value) => value && !/^Activity(?: type)?$/i.test(value))
       .join(" ")
       .trim();
     const rawSymbol = bandLines
-      .map(({ candidate }) => textBetween(candidate, 185, 230))
+      .map(({ candidate }) => textBetween(candidate, ...layout.symbolRange))
       .filter((value) => value && !/^Symbol$/i.test(value))
       .join(" ")
       .trim();
     const description = bandLines
-      .map(({ candidate }) => textBetween(candidate, 230, 395))
+      .map(({ candidate }) => textBetween(candidate, ...layout.descriptionRange))
       .filter((value) => value && !/^Description$/i.test(value))
       .join(" ")
       .replace(/\s+/g, " ")
       .trim();
     const cleanDescription = description.replace(/\|/g, " ").replace(/\s+/g, " ").trim();
     const activityType = inferActivityType(rawActivityType, cleanDescription);
-    const option = optionIdentity(cleanDescription);
-    const cadPrice = valueNearX(line, 449, 21);
-    const cadGross = valueNearX(line, 480, 22);
-    const cadCommission = valueNearX(line, 515, 21);
-    const cadNet = valueNearX(line, 555, 27);
-    const usdPrice = valueNearX(line, 603, 22);
-    const usdGross = valueNearX(line, 640, 25);
-    const usdCommission = valueNearX(line, 682, 23);
-    const usdNet = valueNearX(line, 722, 25);
+    const option = optionIdentity(cleanDescription, rawSymbol);
+    const symbol =
+      option?.symbol ?? canonicalizeSymbol(rawSymbol) ?? rawSymbol.replace(/^\./, "");
+    const [
+      quantityX,
+      cadPriceX,
+      cadGrossX,
+      cadCommissionX,
+      cadNetX,
+      usdPriceX,
+      usdGrossX,
+      usdCommissionX,
+      usdNetX,
+    ] = layout.numericTargets;
+    const cadPrice = valueNearX(line, cadPriceX, 18);
+    const cadGross = valueNearX(line, cadGrossX, 18);
+    const cadCommission = valueNearX(line, cadCommissionX, 18);
+    const cadNet = valueNearX(line, cadNetX, 18);
+    const usdPrice = valueNearX(line, usdPriceX, 18);
+    const usdGross = valueNearX(line, usdGrossX, 18);
+    const usdCommission = valueNearX(line, usdCommissionX, 18);
+    const usdNet = valueNearX(line, usdNetX, 18);
     const hasUsd = [usdPrice, usdGross, usdCommission, usdNet].some((value) => value != null && value !== 0);
     const hasCad = [cadPrice, cadGross, cadCommission, cadNet].some((value) => value != null && value !== 0);
     const normalizedType = normalizeType(activityType, cleanDescription);
@@ -470,26 +591,24 @@ function parseTransactions(context: StatementContext, page: ExtractedPdfPage): S
     const fxRate = isFxConversion && cadNet != null && usdNet != null && cadNet !== 0 && usdNet !== 0
       ? round2(Math.abs(cadNet / usdNet))
       : null;
-    const transactionDateText = textBetween(line, 0, 82).match(/\d{2}-\d{2}-\d{4}/)?.[0] ?? "";
-    const settlementDateText = textBetween(line, 82, 135).match(/\d{2}-\d{2}-\d{4}/)?.[0] ?? "";
     const withoutKey: Omit<StatementTransaction, "import_key"> = {
       ...baseRow(context),
       source_page: page.pageNumber,
       statement_row_index: statementRowIndex + 1,
-      transaction_date: isoDate(transactionDateText),
-      settlement_date: isoDate(settlementDateText),
+      transaction_date: isoDate(statementDates[0]),
+      settlement_date: isoDate(statementDates[1]),
       raw_activity_type: rawActivityType,
       activity_type: activityType,
       normalized_type: normalizedType,
       asset_type: option ? "OPTION" : rawSymbol ? "SECURITY" : isFxConversion ? "CURRENCY" : "CASH",
       option_type: option?.optionType ?? null,
       raw_symbol: rawSymbol,
-      symbol: option?.symbol ?? rawSymbol.replace(/^\./, ""),
+      symbol,
       description: cleanDescription,
       record_date: taggedDescriptionDate(cleanDescription, "REC"),
       payment_date: taggedDescriptionDate(cleanDescription, "PAY"),
       currency_code: currency,
-      quantity: valueNearX(line, 407, 22),
+      quantity: valueNearX(line, quantityX, 18),
       price: isFxConversion ? null : currency === "USD" ? usdPrice : cadPrice,
       gross_amount: isFxConversion ? null : currency === "USD" ? usdGross : cadGross,
       commission: isFxConversion ? null : currency === "USD" ? usdCommission : cadCommission,
@@ -510,7 +629,7 @@ function parseTransactions(context: StatementContext, page: ExtractedPdfPage): S
 }
 
 function validateStatement(
-  context: StatementContext,
+  context: StatementParsingContext,
   snapshot: StatementSnapshot,
   categories: ParsedBalanceCategory[],
   cash: CashBalanceSnapshot[],
@@ -584,7 +703,9 @@ export async function extractStatement(pdfPath: string): Promise<ExtractedStatem
     : { total_market_value_cad: null, total_position_cost_cad: null, total_cash_cad: null, total_book_value_cad: null };
   const cash = cashPage ? parseCash(context, cashPage) : [];
   const holdings = pages.flatMap((page) => parseHoldings(context, page));
-  const transactions = pages.flatMap((page) => parseTransactions(context, page));
+  const transactions = pages.flatMap((page) =>
+    parseStatementTransactions(context, page)
+  );
   const snapshot: StatementSnapshot = {
     ...baseRow(context),
     current_fx_usd_cad: context.fxRate,
@@ -614,12 +735,12 @@ export async function extractStatement(pdfPath: string): Promise<ExtractedStatem
   return data;
 }
 
-async function findPdfs(root: string): Promise<string[]> {
+export async function findStatementPdfs(root: string): Promise<string[]> {
   const entries = await readdir(root, { withFileTypes: true });
   const results: string[] = [];
   for (const entry of entries) {
     const fullPath = path.join(root, entry.name);
-    if (entry.isDirectory()) results.push(...(await findPdfs(fullPath)));
+    if (entry.isDirectory()) results.push(...(await findStatementPdfs(fullPath)));
     else if (entry.isFile() && entry.name.toLowerCase().endsWith(".pdf")) results.push(fullPath);
   }
   return results.sort((a, b) => a.localeCompare(b));
@@ -627,13 +748,10 @@ async function findPdfs(root: string): Promise<string[]> {
 
 export async function extractStatements(inputRoot: string): Promise<ExtractedStatementData> {
   const combined = emptyData();
-  const rootEntries = await readdir(inputRoot, { withFileTypes: true });
-  const accountFolders = rootEntries
-    .filter((entry) => entry.isDirectory() && /^(TFSA|RRSP)$/i.test(entry.name))
-    .map((entry) => path.join(inputRoot, entry.name));
-  const pdfs = accountFolders.length > 0
-    ? (await Promise.all(accountFolders.map(findPdfs))).flat().sort((a, b) => a.localeCompare(b))
-    : await findPdfs(inputRoot);
+  const pdfs = await findStatementPdfs(inputRoot);
+  if (pdfs.length === 0) {
+    throw new Error(`No PDF statements were found under ${inputRoot}.`);
+  }
   for (const [index, pdf] of pdfs.entries()) {
     process.stdout.write(`[${index + 1}/${pdfs.length}] ${path.relative(inputRoot, pdf)}\n`);
     const extracted = await extractStatement(pdf);

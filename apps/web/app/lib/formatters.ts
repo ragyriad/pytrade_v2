@@ -65,6 +65,20 @@ export function formatDate(value: string | null): string {
   }).format(date);
 }
 
+export function formatSource(source: string | null | undefined): string {
+  const normalized = source?.trim();
+  if (!normalized) return "Unknown";
+
+  const sourceKey = normalized.toUpperCase().replace(/[\s-]+/g, "_");
+  if (sourceKey === "SNAPTRADE") return "SnapTrade";
+  if (sourceKey === "QUESTRADE_STATEMENTS") return "Questrade Statements";
+  if (sourceKey === "QUESTRADE_LEGACY") return "Questrade Legacy";
+
+  return normalized
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
 export function normalizeAccountType(type: string | null): string {
   const normalized = type?.toLowerCase().replace(/[_-]/g, " ") ?? "";
 

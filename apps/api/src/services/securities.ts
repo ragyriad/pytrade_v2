@@ -27,6 +27,8 @@ export type HistoricSecurityDto = {
   exchangeMicCode: string | null;
   exchangeName: string | null;
   instrumentType: string | null;
+  listingStatus: "ACTIVE" | "DELISTED";
+  delistedAt: string | null;
   figiCode: string | null;
   logoUrl: string | null;
   transactionCount: number;
@@ -91,7 +93,15 @@ function toHistoricSecurityDto(row: HistoricSecurityRow): HistoricSecurityDto {
     exchangeCode: row.exchangeCode,
     exchangeMicCode: row.exchangeMicCode,
     exchangeName: row.exchangeName,
-    instrumentType: row.instrumentTypeDescription ?? row.instrumentTypeCode,
+    instrumentType:
+      (row.instrumentTypeDescription ?? row.instrumentTypeCode)
+        ?.trim()
+        .toUpperCase() === "OPTION"
+        ? null
+        : row.instrumentTypeDescription ?? row.instrumentTypeCode,
+    listingStatus:
+      row.listingStatus === "DELISTED" ? "DELISTED" : "ACTIVE",
+    delistedAt: row.delistedAt,
     figiCode: row.figiCode,
     logoUrl: row.logoUrl,
     transactionCount: row.transactionCount,

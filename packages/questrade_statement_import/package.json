@@ -8,10 +8,13 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --import tsx --test src/*.test.ts",
     "extract": "dotenv -e ../../.env_v2 -- tsx src/cli.ts",
     "import": "dotenv -e ../../.env_v2 -- tsx src/db_cli.ts"
   },
   "dependencies": {
+    "@repo/data-deduplicator": "workspace:*",
+    "@repo/data-normalizer": "workspace:*",
     "@repo/db": "workspace:*",
     "exceljs": "^4.4.0",
     "pdfjs-dist": "^5.4.296"

@@ -1,4 +1,4 @@
-import { and, eq, isNotNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { DB } from "../db_type.js";
 import { transactions, Transaction, NewTransaction } from "../schemas/transactions_schema.js";
 
@@ -212,134 +212,16 @@ export async function deleteSnaptradeTransactionsByAccount(
   return deleted.length;
 }
 
-/**
- * Archives exact provider duplicates for a cash-like account. SnapTrade can
- * occasionally return the same Wealthsimple activity under multiple UUIDs.
- * The signed amount is part of the partition, so reversals remain separate.
- */
-export async function archiveDuplicateSnaptradeCashTransactions(
+export async function archiveTransactionsByIds(
   db: DB,
-  accountId: string
+  ids: string[]
 ): Promise<number> {
-  const archived = await db.execute(sql`
-    with ranked as (
-      select
-        ${transactions.id} as id,
-        row_number() over (
-          partition by
-            ${transactions.accountId},
-            ${transactions.tradeDate},
-            ${transactions.amount},
-            coalesce(${transactions.currencyCode}, ''),
-            coalesce(${transactions.rawData} ->> 'type', ${transactions.action}, ${transactions.type}),
-            coalesce(${transactions.rawData} ->> 'settlement_date', ''),
-            coalesce(
-              ${transactions.externalTransactionId},
-              ${transactions.rawData} ->> 'external_reference_id',
-              ''
-            ),
-            coalesce(${transactions.description}, ''),
-            coalesce(${transactions.symbol}, ''),
-            coalesce(${transactions.units}, 0),
-            coalesce(${transactions.price}, 0),
-            ${transactions.fee}
-          order by ${transactions.createdAt}, ${transactions.id}
-        ) as duplicate_rank
-      from ${transactions}
-      where ${transactions.accountId} = ${accountId}
-        and ${transactions.isArchived} = false
-        and ${transactions.snaptradeTransactionId} is not null
-    )
-    update ${transactions} as duplicate
-    set "is_archived" = true
-    from ranked
-    where duplicate.id = ranked.id
-      and ranked.duplicate_rank > 1
-    returning duplicate.id
-  `);
+  if (ids.length === 0) return 0;
+  const archived = await db
+    .update(transactions)
+    .set({ isArchived: true })
+    .where(inArray(transactions.id, ids))
+    .returning({ id: transactions.id });
 
   return archived.length;
-}
-
-/**
- * Normalizes existing SnapTrade rows when an account is known to be cash-like.
- * This repairs historical Wealthsimple rows without requiring replacement mode.
- */
-export async function normalizeSnaptradeCashTransactions(
-  db: DB,
-  accountId: string
-): Promise<number> {
-  const normalized = await db.execute(sql`
-    with classified as (
-      select
-        ${transactions.id} as id,
-        case
-          when upper(replace(
-            coalesce(
-              ${transactions.rawData} ->> 'type',
-              ${transactions.action},
-              ${transactions.type}
-            ),
-            '_',
-            ' '
-          )) = 'CREDIT CARD'
-            then 'SPEND'
-          when upper(replace(
-            coalesce(
-              ${transactions.rawData} ->> 'type',
-              ${transactions.action},
-              ${transactions.type}
-            ),
-            '_',
-            ' '
-          )) = 'CREDIT CARD PAYMENT'
-            then 'CREDIT_CARD_PAYMENT'
-          when upper(replace(
-            coalesce(
-              ${transactions.rawData} ->> 'type',
-              ${transactions.action},
-              ${transactions.type}
-            ),
-            '_',
-            ' '
-          )) = 'P2P PAYMENT'
-            then 'P2P_PAYMENT'
-          when upper(coalesce(
-            ${transactions.rawData} ->> 'type',
-            ${transactions.action},
-            ${transactions.type}
-          )) = 'CONTRIBUTION'
-            then 'DEPOSIT'
-          when upper(coalesce(
-            ${transactions.rawData} ->> 'type',
-            ${transactions.action},
-            ${transactions.type}
-          )) = 'REFUND'
-            then 'REIMBURSEMENT'
-          else coalesce(
-            ${transactions.action},
-            ${transactions.rawData} ->> 'type',
-            ${transactions.type}
-          )
-        end as normalized_action
-      from ${transactions}
-      where ${transactions.accountId} = ${accountId}
-        and ${transactions.snaptradeTransactionId} is not null
-    )
-    update ${transactions} as target
-    set
-      "type" = 'CASH',
-      "action" = classified.normalized_action,
-      "asset_type" = 'CASH'
-    from classified
-    where target.id = classified.id
-      and (
-        target.type is distinct from 'CASH'
-        or target.action is distinct from classified.normalized_action
-        or target.asset_type is distinct from 'CASH'
-      )
-    returning target.id
-  `);
-
-  return normalized.length;
 }

@@ -1,5 +1,9 @@
 import type { MoneyBreakdownDto, TransactionDto } from "../lib/portfolio-types";
 import { groupMoney } from "./value_helpers";
+import {
+  canonicalizeSymbol,
+  parseOptionContract,
+} from "@repo/data-normalizer";
 
 export type OptionSecurityRow = {
   id: string;
@@ -14,26 +18,44 @@ export type OptionSecurityRow = {
 };
 
 function optionKey(transaction: TransactionDto): string {
+  const contract = parseOptionContract(
+    transaction.description,
+    transaction.symbol
+  );
   return (
     transaction.optionId ??
+    contract?.ticker ??
     `${transaction.symbol ?? "UNKNOWN"}:${transaction.description ?? "UNKNOWN"}`
   );
+}
+
+function optionAction(transaction: TransactionDto): string {
+  return (
+    transaction.optionAction?.trim() ||
+    transaction.action?.trim() ||
+    transaction.type.trim()
+  ).toUpperCase();
 }
 
 function signedUnits(transaction: TransactionDto): number {
   const units = transaction.units ?? 0;
   if (units === 0) return 0;
 
-  const action = (transaction.optionAction ?? transaction.action ?? transaction.type).toUpperCase();
-  if (action.includes("SELL") && units > 0) return -units;
+  const action = optionAction(transaction);
+  const magnitude = Math.abs(units);
+  if (action.includes("SELL")) return -magnitude;
+  if (action.includes("BUY")) return magnitude;
   return units;
 }
 
 function optionExpiration(transaction: TransactionDto): Date | null {
-  const match = transaction.description?.match(/\b(\d{4}-\d{2}-\d{2})\b/);
-  if (!match) return null;
+  const expirationDate = parseOptionContract(
+    transaction.description,
+    transaction.symbol
+  )?.expirationDate;
+  if (!expirationDate) return null;
 
-  const expiration = new Date(`${match[1]}T23:59:59.999`);
+  const expiration = new Date(`${expirationDate}T23:59:59.999`);
   return Number.isNaN(expiration.getTime()) ? null : expiration;
 }
 
@@ -55,11 +77,30 @@ function isActiveOptionGroup(transactions: TransactionDto[]): boolean {
 }
 
 export function isOptionTransaction(transaction: TransactionDto): boolean {
-  return transaction.assetType?.trim().toUpperCase() === "OPTION";
+  if (transaction.assetType?.trim().toUpperCase() !== "OPTION") return false;
+
+  const action = optionAction(transaction);
+  const isOptionAction =
+    action.includes("BUY") ||
+    action.includes("SELL") ||
+    action.includes("OPEN") ||
+    action.includes("CLOSE") ||
+    action.includes("EXERCISE") ||
+    action.includes("ASSIGN") ||
+    action.includes("EXPIR") ||
+    action.includes("CORPORATE_ACTION");
+  const hasContractIdentity =
+    Boolean(transaction.optionId) ||
+    Boolean(transaction.optionAction) ||
+    Boolean(
+      parseOptionContract(transaction.description, transaction.symbol)
+    );
+
+  return isOptionAction && hasContractIdentity;
 }
 
 function isOptionPnlAction(transaction: TransactionDto): boolean {
-  const action = (transaction.action ?? transaction.type).trim().toUpperCase();
+  const action = optionAction(transaction);
   return action.includes("BUY") || action.includes("SELL");
 }
 
@@ -87,23 +128,38 @@ export function getActiveOptionCount(transactions: TransactionDto[]): number {
   const groups = new Map<string, TransactionDto[]>();
 
   for (const transaction of transactions) {
-    const key = optionKey(transaction);
+    const key = `${transaction.accountId}:${optionKey(transaction)}`;
     groups.set(key, [...(groups.get(key) ?? []), transaction]);
   }
 
   return Array.from(groups.values()).filter(isActiveOptionGroup).length;
 }
 
-export function buildOptionSecurityRows(transactions: TransactionDto[]): OptionSecurityRow[] {
+export function buildOptionSecurityRows(
+  transactions: TransactionDto[],
+  positionTransactions: TransactionDto[] = transactions
+): OptionSecurityRow[] {
   const groups = new Map<string, TransactionDto[]>();
+  const positionGroups = new Map<string, TransactionDto[]>();
 
   for (const transaction of transactions) {
     const key =
+      canonicalizeSymbol(transaction.symbol) ??
       transaction.underlyingSecurityId ??
       transaction.securityId ??
-      transaction.symbol ??
       "UNKNOWN";
     groups.set(key, [...(groups.get(key) ?? []), transaction]);
+  }
+  for (const transaction of positionTransactions) {
+    const key =
+      canonicalizeSymbol(transaction.symbol) ??
+      transaction.underlyingSecurityId ??
+      transaction.securityId ??
+      "UNKNOWN";
+    positionGroups.set(key, [
+      ...(positionGroups.get(key) ?? []),
+      transaction,
+    ]);
   }
 
   return Array.from(groups.entries())
@@ -114,10 +170,17 @@ export function buildOptionSecurityRows(transactions: TransactionDto[]): OptionS
       const tradeDates = rows.map((transaction) => new Date(transaction.tradeDate).getTime());
 
       return {
-        id,
-        symbol: rows.find((transaction) => transaction.symbol)?.symbol ?? "Unknown",
+        id:
+          rows.find((transaction) => transaction.underlyingSecurityId)
+            ?.underlyingSecurityId ??
+          rows.find((transaction) => transaction.securityId)?.securityId ??
+          id,
+        symbol:
+          canonicalizeSymbol(
+            rows.find((transaction) => transaction.symbol)?.symbol
+          ) ?? "Unknown",
         transactionCount: rows.length,
-        activeOptionCount: getActiveOptionCount(rows),
+        activeOptionCount: getActiveOptionCount(positionGroups.get(id) ?? rows),
         totalFees: getOptionFees(rows),
         totalPnl: getOptionPnl(rows),
         firstTradeDate:

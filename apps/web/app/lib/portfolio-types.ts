@@ -220,6 +220,8 @@ export type HistoricSecurityDto = {
   exchangeMicCode: string | null;
   exchangeName: string | null;
   instrumentType: string | null;
+  listingStatus: "ACTIVE" | "DELISTED";
+  delistedAt: string | null;
   figiCode: string | null;
   logoUrl: string | null;
   transactionCount: number;

@@ -1,17 +1,24 @@
 import {
-  mapSnaptradeOrder,
+  securities as securitiesTable,
   upsertSecurities,
   type DB,
   type NewOrder,
   type NewSecurity,
   type Security,
 } from "@repo/db";
+import { mapSnaptradeOrder } from "./mappers/order_mapper.js";
 import {
   buildSecurityKey,
   mapSecurityFromActivity,
   mergeSecurityInputs,
-} from "@repo/snaptrade-activity-processor";
+  prepareSecurityInputs,
+} from "./ingestion/index.js";
 import type { AccountOrderRecord } from "snaptrade-typescript-sdk";
+import {
+  canonicalizeSymbol,
+  formatOccTicker,
+  parseOptionContract,
+} from "@repo/data-normalizer";
 
 function clean(value: string | null | undefined): string | null {
   const trimmed = value?.trim();
@@ -27,17 +34,42 @@ function seenAt(order: AccountOrderRecord): Date {
 
 function optionSecurity(order: AccountOrderRecord): NewSecurity | null {
   const option = order.option_symbol;
-  const ticker = clean(option?.ticker);
-  if (!option || !ticker) return null;
+  if (!option) return null;
+  const parsed = parseOptionContract(
+    option.ticker,
+    [
+      option.underlying_symbol?.symbol,
+      option.expiration_date,
+      option.option_type,
+      option.strike_price,
+    ]
+      .filter((value) => value != null)
+      .join(" ")
+  );
+  const underlyingSymbol = canonicalizeSymbol(option.underlying_symbol?.symbol);
+  const expiration = clean(option.expiration_date);
+  const normalizedContractType =
+    clean(option.option_type)?.toUpperCase().startsWith("C") ? "CALL" : "PUT";
+  const ticker =
+    parsed?.ticker ??
+    (underlyingSymbol && expiration && option.strike_price != null
+      ? formatOccTicker({
+          underlyingSymbol,
+          expirationDate: expiration,
+          contractType: normalizedContractType,
+          strikePrice: option.strike_price,
+        })
+      : clean(option.ticker));
+  if (!ticker) return null;
 
   const timestamp = seenAt(order);
   const underlying = option.underlying_symbol;
-  const contractType = clean(option.option_type);
-  const expiration = clean(option.expiration_date);
+  const rawContractType = clean(option.option_type);
+  const normalizedExpiration = parsed?.expirationDate ?? expiration;
   const description = [
     clean(underlying?.symbol),
-    expiration,
-    contractType,
+    normalizedExpiration,
+    rawContractType,
     option.strike_price == null ? null : String(option.strike_price),
   ]
     .filter(Boolean)
@@ -51,8 +83,8 @@ function optionSecurity(order: AccountOrderRecord): NewSecurity | null {
     rawSymbol: ticker,
     description: description || ticker,
     currencyCode: clean(underlying?.currency?.code),
-    instrumentTypeCode: "OPTION",
-    instrumentTypeDescription: "OPTION",
+    instrumentTypeCode: null,
+    instrumentTypeDescription: null,
     firstSeenAt: timestamp,
     lastSeenAt: timestamp,
   };
@@ -69,8 +101,8 @@ function orderSecurity(order: AccountOrderRecord): NewSecurity | null {
 }
 
 function orderSecurityKey(order: AccountOrderRecord): string | null {
-  const optionTicker = clean(order.option_symbol?.ticker);
-  if (optionTicker) return `option:${optionTicker}`;
+  const mappedOption = order.option_symbol ? optionSecurity(order) : null;
+  if (mappedOption) return mappedOption.securityKey;
   return order.universal_symbol ? buildSecurityKey(order.universal_symbol) : null;
 }
 
@@ -88,7 +120,15 @@ export async function mapSnaptradeOrdersWithSecurities(
       .map(orderSecurity)
       .filter((security): security is NewSecurity => security !== null)
   );
-  const securities = byKey(await upsertSecurities(db, securityInputs));
+  const existingSecurities = await db
+    .select()
+    .from(securitiesTable);
+  const prepared = prepareSecurityInputs(securityInputs, existingSecurities);
+  const securities = byKey(await upsertSecurities(db, prepared.inputs));
+  for (const [inputKey, storageKey] of prepared.storageKeyByInputKey) {
+    const security = securities.get(storageKey);
+    if (security) securities.set(inputKey, security);
+  }
   const mappedByBrokerageId = new Map<string, NewOrder>();
 
   for (const order of rawOrders) {

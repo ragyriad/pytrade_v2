@@ -14,13 +14,24 @@
     "market-data:build": "pnpm --filter @repo/market-data-sync build",
     "market-data:sync": "pnpm --filter @repo/market-data-sync sync",
     "market-data:test": "pnpm --filter @repo/market-data-sync test",
-    "sync:snaptrade": "pnpm --filter @repo/snaptrade-sync sync",
+    "snaptrade:sync": "pnpm --filter @repo/snaptrade-sync sync",
     "db:generate": "turbo run db:generate --filter=@repo/db",
     "db:migrate": "turbo run db:migrate --filter=@repo/db",
-    "data:normalize": "pnpm --filter @repo/db data:normalize",
-    "sqlite:import": "pnpm --filter @repo/db legacy:import-sqlite-data",
+    "data:normalizer:test": "pnpm --filter @repo/data-normalizer test",
+    "data:deduplicator:test": "pnpm --filter @repo/data-deduplicator test",
+    "data:normalize-existing": "tsx scripts/data/normalize_existing.ts",
+    "data:deduplicate-existing": "tsx scripts/data/deduplicate_existing.ts",
+    "data:reset-imports": "dotenv -e ../.env -e .env_v2 -- tsx scripts/data/reset_imported_data.ts",
+    "sqlite:import": "pnpm --filter @repo/questrade-legacy-import run import",
     "statements:extract": "pnpm --filter @repo/questrade-statement-import extract",
     "statements:import": "pnpm --filter @repo/questrade-statement-import run import"
+  },
+  "dependencies": {
+    "@repo/data-deduplicator": "workspace:*",
+    "@repo/data-normalizer": "workspace:*",
+    "@repo/db": "workspace:*",
+    "dotenv": "^17.4.2",
+    "postgres": "3.4.5"
   },
   "devDependencies": {
     "dotenv-cli": "7.4.4",

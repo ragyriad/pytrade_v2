@@ -1,5 +1,6 @@
 import {
   boolean,
+  date,
   pgTable,
   uuid,
   varchar,
@@ -19,6 +20,10 @@ export const securities = pgTable(
     securityKey: varchar("security_key", { length: 350 }).notNull(),
     source: varchar("source", { length: 50 }).notNull().default("SNAPTRADE"),
     isArchived: boolean("is_archived").notNull().default(false),
+    listingStatus: varchar("listing_status", { length: 20 })
+      .notNull()
+      .default("ACTIVE"),
+    delistedAt: date("delisted_at"),
 
     // SnapTrade can be missing symbol ids on some activity rows, so this stays nullable.
     snaptradeSymbolId: varchar("snaptrade_symbol_id", { length: 255 }),
@@ -61,6 +66,7 @@ export const securities = pgTable(
     index("securities_source_idx").on(table.source),
     index("securities_figi_idx").on(table.figiCode),
     index("securities_is_archived_idx").on(table.isArchived),
+    index("securities_listing_status_idx").on(table.listingStatus),
   ]
 );
 

@@ -5,17 +5,20 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.snaptrade_sync.json",
-    "sync": "dotenv -e ../../../.env -- tsx src/scripts/full_sync.ts"
+    "test": "node --import tsx --test src/*.test.ts src/ingestion/*.test.ts",
+    "sync": "dotenv -e ../../../.env -- tsx src/scripts/sync_snaptrade.ts"
   },
   "dependencies": {
     "dotenv": "^16.0.0",
-    "@repo/snaptrade-activity-processor": "workspace:*",
+    "@repo/data-deduplicator": "workspace:*",
+    "@repo/data-normalizer": "workspace:*",
     "@repo/db": "workspace:*",
-    "snaptrade-typescript-sdk": "^9.0.160"
+    "snaptrade-typescript-sdk": "^9.0.181"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "ts-node": "^10.9.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.0.0"
   },
   "exports": {

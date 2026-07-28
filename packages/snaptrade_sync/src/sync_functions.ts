@@ -4,10 +4,8 @@ import {
   getSnaptradeTransactionsByAccountId,
   getSnaptradeUserAccounts,
 } from "./snaptrade.js";
-import { processAccountActivities } from "@repo/snaptrade-activity-processor";
+import { processAccountActivities } from "./ingestion/index.js";
 import {
-  mapSnaptradeAccount,
-  mapSnaptradeBalance,
   getLatestSnaptradeTransactionDate,
   markAccountSynced,
   reconcileAccountBalances,
@@ -19,6 +17,8 @@ import type { DB } from "@repo/db";
 import {getSnaptradePositionsByAccount} from "./snaptrade.js"
 import { mapSnaptradePositionsWithSecurities } from "./position_securities.js";
 import { mapSnaptradeOrdersWithSecurities } from "./order_securities.js";
+import { mapSnaptradeAccount } from "./mappers/account_mapper.js";
+import { mapSnaptradeBalance } from "./mappers/account_balance_mapper.js";
 
 export const DEFAULT_SNAPTRADE_ACTIVITY_START_DATE = "2019-01-01";
 export const SNAPTRADE_ACTIVITY_OVERLAP_DAYS = 7;

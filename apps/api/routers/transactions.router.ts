@@ -6,9 +6,9 @@ import {
   getTransactionsByAccount,
   createTransaction,
   deleteTransactionsByAccount,
-  normalizeTransaction,
 } from "@repo/db";
 import type { NewTransaction } from "@repo/db";
+import { normalizeTransaction } from "@repo/data-normalizer";
 
 // ---------------------------------------------------------------------------
 // Input schemas

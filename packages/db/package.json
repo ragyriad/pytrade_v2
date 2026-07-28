@@ -10,9 +10,7 @@
     "db:generate": "dotenv -e ../../../.env -- drizzle-kit generate",
     "db:migrate": "dotenv -e ../../../.env -- drizzle-kit migrate",
     "db:push": "dotenv -e ../../../.env -- drizzle-kit push",
-    "db:studio": "dotenv -e ../../../.env -- drizzle-kit studio",
-    "data:normalize": "tsx src/scripts/normalize_transactions.ts",
-    "legacy:import-sqlite-data": "tsx src/scripts/import_legacy_sqlite_data.ts"
+    "db:studio": "dotenv -e ../../../.env -- drizzle-kit studio"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
@@ -24,7 +22,6 @@
     "dotenv-cli": "7.4.4",
     "drizzle-kit": "1.0.0-beta.22",
     "drizzle-orm": "1.0.0-beta.22",
-    "snaptrade-typescript-sdk": "^9.0.181",
     "tsup": "^8.5.1",
     "typescript": "^5.0.0"
   },

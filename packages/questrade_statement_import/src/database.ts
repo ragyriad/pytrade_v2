@@ -1,5 +1,21 @@
 import { createHash } from "node:crypto";
 import {
+  canonicalizeSymbol,
+  normalizeSecurityProfile,
+  optionUnderlyingDescription,
+  normalizeSecurityType,
+  normalizeTransaction,
+  parseOptionContract,
+  preferSpecificSecurityType,
+  resolveSecurityCandidate,
+  type SecurityResolutionCandidate,
+} from "@repo/data-normalizer";
+import {
+  preferredTransaction,
+  transactionEconomicKey,
+  type StoredTransactionLike,
+} from "@repo/data-deduplicator";
+import {
   accountBalances,
   accounts,
   and,
@@ -86,12 +102,17 @@ type StatementSecurityIdentity = {
   currencyCode: string | null;
   description: string | null;
   instrumentTypeCode: string | null;
+  exchangeCode: string | null;
+  exchangeMicCode: string | null;
+  exchangeName: string | null;
+  listingStatus: "ACTIVE" | "DELISTED";
+  delistedAt: string | null;
   firstSeenAt: Date;
   lastSeenAt: Date;
 };
 
 function identityKey(symbol: string, currencyCode?: string | null): string {
-  return `${symbol.trim().toUpperCase()}|${currencyCode?.trim().toUpperCase() ?? ""}`;
+  return `${canonicalizeSymbol(symbol) ?? symbol.trim().toUpperCase()}|${currencyCode?.trim().toUpperCase() ?? ""}`;
 }
 
 function addIdentity(
@@ -183,7 +204,15 @@ function collectStatementSecurityIdentities(
     instrumentTypeCode: string | null;
     seenAt: Date;
   }) => {
-    const symbol = boundedSymbol(input.symbol);
+    const profile = normalizeSecurityProfile({
+      symbol: input.symbol,
+      description: input.description,
+      currencyCode: input.currencyCode,
+      observedAt: input.seenAt,
+    });
+    const symbol = boundedSymbol(
+      profile?.symbol ?? canonicalizeSymbol(input.symbol)
+    );
     if (!symbol) return;
 
     const key = identityKey(symbol, input.currencyCode);
@@ -193,8 +222,14 @@ function collectStatementSecurityIdentities(
         symbol,
         rawSymbol: boundedSymbol(input.rawSymbol),
         currencyCode: input.currencyCode,
-        description: input.description?.trim() || null,
+        description:
+          profile?.description ?? input.description?.trim() ?? null,
         instrumentTypeCode: input.instrumentTypeCode,
+        exchangeCode: profile?.exchangeCode ?? null,
+        exchangeMicCode: profile?.exchangeMicCode ?? null,
+        exchangeName: profile?.exchangeName ?? null,
+        listingStatus: profile?.listingStatus ?? "ACTIVE",
+        delistedAt: profile?.delistedAt ?? null,
         firstSeenAt: input.seenAt,
         lastSeenAt: input.seenAt,
       });
@@ -215,6 +250,14 @@ function collectStatementSecurityIdentities(
     if (!current.instrumentTypeCode && input.instrumentTypeCode) {
       current.instrumentTypeCode = input.instrumentTypeCode;
     }
+    if (profile) {
+      current.description = profile.description;
+      current.exchangeCode = profile.exchangeCode;
+      current.exchangeMicCode = profile.exchangeMicCode;
+      current.exchangeName = profile.exchangeName;
+      current.listingStatus = profile.listingStatus;
+      current.delistedAt = profile.delistedAt;
+    }
   };
 
   for (const row of data.holdings) {
@@ -222,22 +265,55 @@ function collectStatementSecurityIdentities(
       symbol: row.symbol,
       rawSymbol: row.raw_symbol,
       currencyCode: row.currency_code,
-      description: row.description,
-      instrumentTypeCode: row.category,
+      description:
+        row.asset_type === "OPTION"
+          ? optionUnderlyingDescription(row.description) ?? row.symbol
+          : row.description,
+      instrumentTypeCode:
+        row.asset_type === "OPTION"
+          ? null
+          : normalizeSecurityType({
+              category: row.category,
+              description: row.description,
+              symbol: row.symbol,
+            }),
       seenAt: dateFromStatement(row.statement_date),
     });
   }
 
   for (const row of data.transactions) {
-    if (!row.symbol || row.asset_type === "CASH" || row.asset_type === "CURRENCY") {
+    const normalized = normalizeTransaction({
+      type: row.normalized_type,
+      description: row.description,
+      symbol: row.symbol,
+      amount: statementAmount(row),
+      units: row.quantity,
+    });
+    if (
+      !row.symbol
+      || row.asset_type === "CASH"
+      || row.asset_type === "CURRENCY"
+      || normalized.assetType === "CASH"
+      || normalized.assetType === "INTEREST"
+    ) {
       continue;
     }
     add({
       symbol: row.symbol,
       rawSymbol: row.raw_symbol,
       currencyCode: statementCurrency(row),
-      description: row.description,
-      instrumentTypeCode: row.asset_type === "OPTION" ? null : "SECURITY",
+      description:
+        row.asset_type === "OPTION"
+          ? optionUnderlyingDescription(row.description) ?? row.symbol
+          : row.description,
+      instrumentTypeCode:
+        row.asset_type === "OPTION"
+          ? null
+          : normalizeSecurityType({
+              category: row.asset_type,
+              description: row.description,
+              symbol: row.symbol,
+            }),
       seenAt: utcDate(row.transaction_date),
     });
   }
@@ -248,9 +324,11 @@ function collectStatementSecurityIdentities(
 async function ensureStatementSecurities(
   db: DB,
   lookup: SecurityLookup,
-  identities: StatementSecurityIdentity[]
+  identities: StatementSecurityIdentity[],
+  securityTypesById: Map<string, string | null>,
+  securitySymbolsById?: Map<string, string>
 ): Promise<{ securitiesUpserted: number; aliasesUpserted: number }> {
-  const persisted: Awaited<ReturnType<typeof upsertSecurities>> = [];
+  let securitiesUpserted = 0;
   const orderedIdentities = [...identities].sort((left, right) => {
     const currencyPriority =
       Number(Boolean(right.currencyCode)) - Number(Boolean(left.currencyCode));
@@ -275,20 +353,67 @@ async function ensureStatementSecurities(
         )}; resolve duplicate securities before importing.`
       );
     }
-    if (resolution.status === "resolved") continue;
+    if (resolution.status === "resolved") {
+      const currentType = securityTypesById.get(resolution.securityId) ?? null;
+      const preferredType = preferSpecificSecurityType(
+        currentType,
+        identity.instrumentTypeCode
+      );
+      const invalidOptionType =
+        currentType?.trim().toUpperCase() === "OPTION";
+      if (
+        invalidOptionType ||
+        (preferredType && preferredType !== currentType) ||
+        identity.listingStatus === "DELISTED"
+      ) {
+        await db
+          .update(securities)
+          .set({
+            instrumentTypeCode: invalidOptionType ? null : preferredType,
+            instrumentTypeDescription: invalidOptionType ? null : preferredType,
+            description:
+              identity.listingStatus === "DELISTED"
+                ? identity.description
+                : undefined,
+            exchangeCode:
+              identity.listingStatus === "DELISTED"
+                ? identity.exchangeCode
+                : undefined,
+            exchangeMicCode:
+              identity.listingStatus === "DELISTED"
+                ? identity.exchangeMicCode
+                : undefined,
+            exchangeName:
+              identity.listingStatus === "DELISTED"
+                ? identity.exchangeName
+                : undefined,
+            listingStatus: identity.listingStatus,
+            delistedAt: identity.delistedAt,
+          })
+          .where(eq(securities.id, resolution.securityId));
+        securityTypesById.set(
+          resolution.securityId,
+          invalidOptionType ? null : preferredType
+        );
+        securitiesUpserted += 1;
+      }
+      continue;
+    }
 
     const securityInput: NewSecurity = {
       securityKey: securityKey(identity.symbol, identity.currencyCode),
       source: STATEMENT_SOURCE,
       isArchived: false,
+      listingStatus: identity.listingStatus,
+      delistedAt: identity.delistedAt,
       snaptradeSymbolId: null,
       symbol: identity.symbol,
       rawSymbol: identity.rawSymbol,
       description: identity.description ?? identity.symbol,
       currencyCode: identity.currencyCode,
-      exchangeCode: null,
-      exchangeMicCode: null,
-      exchangeName: null,
+      exchangeCode: identity.exchangeCode,
+      exchangeMicCode: identity.exchangeMicCode,
+      exchangeName: identity.exchangeName,
       instrumentTypeCode: identity.instrumentTypeCode,
       instrumentTypeDescription: identity.instrumentTypeCode,
       figiCode: null,
@@ -298,7 +423,9 @@ async function ensureStatementSecurities(
       lastSeenAt: identity.lastSeenAt,
     };
     const [security] = await upsertSecurities(db, [securityInput]);
-    persisted.push(security);
+    securitiesUpserted += 1;
+    securityTypesById.set(security.id, identity.instrumentTypeCode);
+    securitySymbolsById?.set(security.id, security.symbol);
     addIdentity(
       lookup,
       security.symbol,
@@ -335,10 +462,10 @@ async function ensureStatementSecurities(
       securityId: resolution.securityId,
       source: STATEMENT_SOURCE,
       externalId: securityAliasExternalId(
-        identity.symbol,
+        identity.rawSymbol ?? identity.symbol,
         identity.currencyCode
       ),
-      symbol: identity.symbol,
+      symbol: identity.rawSymbol ?? identity.symbol,
       rawSymbol: identity.rawSymbol,
       currencyCode: identity.currencyCode,
       exchangeCode: null,
@@ -366,7 +493,7 @@ async function ensureStatementSecurities(
   }
 
   return {
-    securitiesUpserted: persisted.length,
+    securitiesUpserted,
     aliasesUpserted: persistedAliases.length,
   };
 }
@@ -383,6 +510,7 @@ type SecurityLookupRow = {
   exchangeMicCode: string | null;
   figiCode: string | null;
   description: string | null;
+  instrumentTypeCode: string | null;
 };
 
 type SecurityAliasLookupRow = {
@@ -401,14 +529,21 @@ function buildSecurityLookup(
   aliasRows: SecurityAliasLookupRow[]
 ): SecurityLookup {
   const lookup: SecurityLookup = new Map();
+  const qualityBySecurityId = new Map<string, number>();
 
   for (const security of securityRows) {
+    const storedSymbol = security.symbol.trim().toUpperCase();
     const qualityScore =
       50 +
       (security.source === "SNAPTRADE" ? 20 : 0) +
       (security.snaptradeSymbolId ? 100 : 0) +
       (security.figiCode ? 80 : 0) +
       (security.exchangeMicCode || security.exchangeCode ? 40 : 0) +
+      (
+        canonicalizeSymbol(storedSymbol) === storedSymbol
+          ? 30
+          : 0
+      ) +
       (!security.securityKey.includes("exchange:unknown") ? 10 : 0) +
       (
         security.description &&
@@ -417,6 +552,7 @@ function buildSecurityLookup(
           ? 5
           : 0
       );
+    qualityBySecurityId.set(security.id, qualityScore);
     addIdentity(
       lookup,
       security.symbol,
@@ -438,7 +574,8 @@ function buildSecurityLookup(
       300 +
       (alias.source === "SNAPTRADE" ? 100 : 0) +
       (alias.externalId ? 20 : 0) +
-      (alias.exchangeMicCode || alias.exchangeCode ? 20 : 0);
+      (alias.exchangeMicCode || alias.exchangeCode ? 20 : 0) +
+      (qualityBySecurityId.get(alias.securityId) ?? 0);
     addIdentity(
       lookup,
       alias.symbol,
@@ -477,50 +614,22 @@ function normalizedCompositeText(value: string | null | undefined): string {
   return value?.trim().toUpperCase() ?? "";
 }
 
-function normalizedCompositeAmount(value: number | string): string {
-  const amount = Number(value);
-  if (!Number.isFinite(amount)) {
-    throw new Error(`Invalid transaction amount: ${value}`);
-  }
-  return Object.is(amount, -0) || amount === 0 ? "0.00" : amount.toFixed(2);
-}
-
-function dateOnly(value: Date | string): string {
-  return value instanceof Date
-    ? value.toISOString().slice(0, 10)
-    : value.slice(0, 10);
-}
-
-function transactionCompositeKey(
-  accountId: string,
-  symbol: string | null | undefined,
-  date: Date | string,
-  type: string,
-  amount: number | string
-): string {
-  return [
-    accountId,
-    normalizedCompositeText(symbol),
-    dateOnly(date),
-    normalizedCompositeText(type),
-    normalizedCompositeAmount(amount),
-  ].join("|");
-}
-
 function incomingTransactionKeys(
   accountId: string,
-  row: StatementTransaction
+  row: StatementTransaction,
+  normalizedSymbol?: string | null
 ): string[] {
   return [...new Set([row.transaction_date, row.settlement_date])]
     .filter((date) => date.trim().length > 0)
     .map((date) =>
-      transactionCompositeKey(
+      transactionEconomicKey({
         accountId,
-        row.symbol,
-        date,
-        row.normalized_type,
-        statementAmount(row)
-      )
+        symbol: normalizedSymbol ?? row.symbol,
+        tradeDate: date,
+        amount: statementAmount(row),
+        units: row.quantity,
+        currencyCode: statementCurrency(row),
+      })
     );
 }
 
@@ -565,6 +674,7 @@ type ExistingTransactionRow = {
   description: string | null;
   type: string;
   amount: string;
+  units: string | null;
   currencyCode: string | null;
   tradeDate: Date;
   legacyImportKey: string | null;
@@ -580,13 +690,64 @@ type PreparedStatementTransaction = {
 function buildStatementTransaction(
   row: StatementTransaction,
   accountId: string,
-  securityLookup: SecurityLookup
+  securityLookup: SecurityLookup,
+  securityTypesById: Map<string, string | null>,
+  securitySymbolsById: Map<string, string>,
+  securityCandidates: SecurityResolutionCandidate[]
 ): NewTransaction {
   const currencyCode = statementCurrency(row);
-  const resolvedSecurityId = row.symbol
+  const directSecurityId = row.symbol
     ? resolveSecurityId(securityLookup, row.symbol, currencyCode)
     : null;
+  const resolvedCandidate = directSecurityId
+    ? null
+    : resolveSecurityCandidate(
+        {
+          symbol: row.symbol,
+          description: row.description,
+          currencyCode,
+          rawData: statementRawData(row),
+        },
+        securityCandidates
+      );
+  const resolvedSecurityId = directSecurityId ?? resolvedCandidate?.id ?? null;
   const isOption = row.asset_type === "OPTION";
+  const resolvedSecurityType = resolvedSecurityId
+    ? securityTypesById.get(resolvedSecurityId) ?? null
+    : null;
+  const canonicalSymbol =
+    (resolvedSecurityId
+      ? securitySymbolsById.get(resolvedSecurityId)
+      : null) ??
+    canonicalizeSymbol(row.symbol) ??
+    (row.symbol?.trim() || null) ??
+    null;
+  const normalizedSecurityType = normalizeSecurityType({
+        category: resolvedSecurityType ?? row.asset_type,
+        description: row.description,
+        symbol: row.symbol,
+      });
+  const normalizedTransaction = normalizeTransaction(
+    {
+      type: row.normalized_type,
+      description: row.description,
+      symbol: canonicalSymbol,
+      amount: statementAmount(row),
+      units: row.quantity,
+    },
+    {
+      symbol: canonicalSymbol,
+      description: row.description,
+      instrumentTypeCode: normalizedSecurityType,
+      instrumentTypeDescription: normalizedSecurityType,
+    }
+  );
+  const assetType = isOption ? "OPTION" : normalizedTransaction.assetType;
+  const isCashLike =
+    row.asset_type === "CASH"
+    || row.asset_type === "CURRENCY"
+    || normalizedTransaction.assetType === "CASH"
+    || normalizedTransaction.assetType === "INTEREST";
 
   return {
     snaptradeTransactionId: null,
@@ -595,23 +756,20 @@ function buildStatementTransaction(
     legacyImportKey: `${STATEMENT_SOURCE}:${row.import_key}`,
     isArchived: false,
     accountId,
-    securityId: isOption ? null : resolvedSecurityId,
-    underlyingSecurityId: isOption ? resolvedSecurityId : null,
+    securityId: isCashLike || isOption ? null : resolvedSecurityId,
+    underlyingSecurityId: isCashLike ? null : isOption ? resolvedSecurityId : null,
     optionId: null,
     type: row.normalized_type,
-    action:
-      row.normalized_type === "BUY" || row.normalized_type === "SELL"
-        ? row.normalized_type
-        : null,
+    action: normalizedTransaction.action,
     optionAction: null,
-    assetType: row.asset_type,
+    assetType: isCashLike ? normalizedTransaction.assetType : assetType,
     description: row.description,
     amount: requiredDecimal(statementAmount(row)),
     price: decimal(row.price),
     units: decimal(row.quantity),
     fee: decimal(row.commission) ?? "0.00",
     currencyCode,
-    symbol: row.symbol || null,
+    symbol: isCashLike ? null : canonicalSymbol,
     tradeDate: utcDate(row.transaction_date),
     rawData: statementRawData(row),
   };
@@ -621,10 +779,13 @@ function prepareStatementTransactions(
   data: ExtractedStatementData,
   accountsByNumber: Map<string, string>,
   securityLookup: SecurityLookup,
+  securityTypesById: Map<string, string | null>,
+  securitySymbolsById: Map<string, string>,
+  securityCandidates: SecurityResolutionCandidate[],
   existingRows: ExistingTransactionRow[]
 ): {
   rows: PreparedStatementTransaction[];
-  duplicateStatementIdsToArchive: string[];
+  duplicateTransactionIdsToArchive: string[];
   inserted: number;
   updated: number;
   skipped: number;
@@ -636,24 +797,26 @@ function prepareStatementTransactions(
     if (row.legacyImportKey) existingByImportKey.set(row.legacyImportKey, row);
 
     const keys = [
-      transactionCompositeKey(
-        row.accountId,
-        row.symbol,
-        row.tradeDate,
-        row.type,
-        row.amount
-      ),
+      transactionEconomicKey({
+        accountId: row.accountId,
+        symbol: row.symbol,
+        tradeDate: row.tradeDate,
+        amount: row.amount,
+        units: row.units,
+        currencyCode: row.currencyCode,
+      }),
     ];
     const settlementDate = row.rawData?.settlementDate;
     if (typeof settlementDate === "string" && settlementDate) {
       keys.push(
-        transactionCompositeKey(
-          row.accountId,
-          row.symbol,
-          settlementDate,
-          row.type,
-          row.amount
-        )
+        transactionEconomicKey({
+          accountId: row.accountId,
+          symbol: row.symbol,
+          tradeDate: settlementDate,
+          amount: row.amount,
+          units: row.units,
+          currencyCode: row.currencyCode,
+        })
       );
     }
     for (const key of keys) {
@@ -666,7 +829,7 @@ function prepareStatementTransactions(
   const claimedExistingIds = new Set<string>();
   const plannedImportKeys = new Set<string>();
   const plannedCompositeKeys = new Set<string>();
-  const duplicateStatementIdsToArchive = new Set<string>();
+  const duplicateTransactionIdsToArchive = new Set<string>();
   const rows: PreparedStatementTransaction[] = [];
   let inserted = 0;
   let updated = 0;
@@ -674,9 +837,16 @@ function prepareStatementTransactions(
 
   for (const row of data.transactions) {
     const accountId = accountsByNumber.get(row.account_number)!;
-    const value = buildStatementTransaction(row, accountId, securityLookup);
+    const value = buildStatementTransaction(
+      row,
+      accountId,
+      securityLookup,
+      securityTypesById,
+      securitySymbolsById,
+      securityCandidates
+    );
     const importKey = value.legacyImportKey!;
-    const compositeKeys = incomingTransactionKeys(accountId, row);
+    const compositeKeys = incomingTransactionKeys(accountId, row, value.symbol);
 
     if (
       plannedImportKeys.has(importKey) ||
@@ -695,34 +865,71 @@ function prepareStatementTransactions(
       ).values(),
     ].filter((match) => !claimedExistingIds.has(match.id));
 
-    const activeOtherSourceMatch = compositeMatches.find(
+    const incomingCandidate: StoredTransactionLike = {
+      id: `incoming:${row.import_key}`,
+      accountId,
+      source: STATEMENT_SOURCE,
+      externalTransactionId: row.import_key,
+      tradeDate: value.tradeDate,
+      description: value.description,
+      amount: value.amount,
+      units: value.units,
+      currencyCode: value.currencyCode,
+      symbol: value.symbol,
+      securityId: value.securityId,
+    };
+    const activeOtherSourceMatches = compositeMatches.filter(
+      (match) => !match.isArchived && match.source !== STATEMENT_SOURCE
+    );
+    const preferredOtherSourceMatch = activeOtherSourceMatches.find(
       (match) =>
-        !match.isArchived &&
-        match.source !== STATEMENT_SOURCE
+        preferredTransaction(
+          {
+            ...match,
+            snaptradeTransactionId: null,
+            externalTransactionId: null,
+          },
+          incomingCandidate
+        ).id === match.id
     );
     let statementMatch =
       exactMatch?.source === STATEMENT_SOURCE ? exactMatch : null;
-    if (!statementMatch && !activeOtherSourceMatch) {
+    if (!statementMatch && !preferredOtherSourceMatch) {
       statementMatch =
         compositeMatches.find((match) => match.source === STATEMENT_SOURCE) ??
         null;
     }
 
-    if (exactMatch && exactMatch.source !== STATEMENT_SOURCE) {
+    if (
+      exactMatch &&
+      exactMatch.source !== STATEMENT_SOURCE &&
+      preferredTransaction(
+        {
+          ...exactMatch,
+          snaptradeTransactionId: null,
+          externalTransactionId: null,
+        },
+        incomingCandidate
+      ).id === exactMatch.id
+    ) {
       skipped += 1;
       continue;
     }
-    if (activeOtherSourceMatch) {
+    if (preferredOtherSourceMatch) {
       if (exactMatch?.source === STATEMENT_SOURCE) {
-        duplicateStatementIdsToArchive.add(exactMatch.id);
+        duplicateTransactionIdsToArchive.add(exactMatch.id);
       }
       for (const match of compositeMatches) {
         if (match.source === STATEMENT_SOURCE) {
-          duplicateStatementIdsToArchive.add(match.id);
+          duplicateTransactionIdsToArchive.add(match.id);
         }
       }
       skipped += 1;
       continue;
+    }
+
+    for (const match of activeOtherSourceMatches) {
+      duplicateTransactionIdsToArchive.add(match.id);
     }
 
     if (statementMatch) {
@@ -731,7 +938,7 @@ function prepareStatementTransactions(
           match.source === STATEMENT_SOURCE &&
           match.id !== statementMatch.id
         ) {
-          duplicateStatementIdsToArchive.add(match.id);
+          duplicateTransactionIdsToArchive.add(match.id);
         }
       }
       claimedExistingIds.add(statementMatch.id);
@@ -757,7 +964,7 @@ function prepareStatementTransactions(
 
   return {
     rows,
-    duplicateStatementIdsToArchive: [...duplicateStatementIdsToArchive],
+    duplicateTransactionIdsToArchive: [...duplicateTransactionIdsToArchive],
     inserted,
     updated,
     skipped,
@@ -767,26 +974,44 @@ function prepareStatementTransactions(
 async function repairStatementSecurityLinks(
   db: DB,
   rows: ExistingTransactionRow[],
-  securityLookup: SecurityLookup
+  securityLookup: SecurityLookup,
+  securityTypesById: Map<string, string | null>
 ): Promise<number> {
   let repaired = 0;
 
   for (const row of rows) {
     if (row.source !== STATEMENT_SOURCE || !row.symbol) continue;
 
+    const parsedOption = parseOptionContract(row.description, row.symbol);
+    const normalizedSymbol =
+      parsedOption?.underlyingSymbol ??
+      canonicalizeSymbol(row.symbol) ??
+      row.symbol;
     const securityId = resolveSecurityId(
       securityLookup,
-      row.symbol,
+      normalizedSymbol,
       row.currencyCode
     );
     if (!securityId) continue;
 
-    const isOption = normalizedCompositeText(row.assetType) === "OPTION";
+    const isOption =
+      parsedOption != null ||
+      normalizedCompositeText(row.assetType) === "OPTION";
     const nextSecurityId = isOption ? null : securityId;
     const nextUnderlyingSecurityId = isOption ? securityId : null;
+    const nextAssetType = isOption
+      ? "OPTION"
+      : normalizeSecurityType({
+          category: securityTypesById.get(securityId),
+          description: row.description,
+          symbol: row.symbol,
+        }) ??
+        (row.type === "BUY" || row.type === "SELL" ? "STOCK" : "SECURITY");
     if (
       row.securityId === nextSecurityId &&
-      row.underlyingSecurityId === nextUnderlyingSecurityId
+      row.underlyingSecurityId === nextUnderlyingSecurityId &&
+      row.assetType === nextAssetType &&
+      row.symbol === normalizedSymbol
     ) {
       continue;
     }
@@ -796,6 +1021,8 @@ async function repairStatementSecurityLinks(
       .set({
         securityId: nextSecurityId,
         underlyingSecurityId: nextUnderlyingSecurityId,
+        assetType: nextAssetType,
+        symbol: normalizedSymbol,
       })
       .where(
         and(
@@ -824,15 +1051,29 @@ function collectExistingStatementSecurityIdentities(
         : null;
     const current = identities.get(key);
     if (!current) {
+      const profile = normalizeSecurityProfile({
+        symbol: row.symbol,
+        description: row.description,
+        currencyCode: row.currencyCode,
+        observedAt: row.tradeDate,
+      });
+      const isOption =
+        normalizedCompositeText(row.assetType) === "OPTION";
       identities.set(key, {
-        symbol: boundedSymbol(row.symbol)!,
+        symbol: boundedSymbol(profile?.symbol ?? row.symbol)!,
         rawSymbol,
         currencyCode: row.currencyCode,
-        description: row.description,
-        instrumentTypeCode:
-          normalizedCompositeText(row.assetType) === "OPTION"
-            ? null
-            : boundedSymbol(row.assetType),
+        description:
+          profile?.description ??
+          (isOption
+            ? optionUnderlyingDescription(row.description) ?? row.symbol
+            : row.description),
+        instrumentTypeCode: isOption ? null : boundedSymbol(row.assetType),
+        exchangeCode: profile?.exchangeCode ?? null,
+        exchangeMicCode: profile?.exchangeMicCode ?? null,
+        exchangeName: profile?.exchangeName ?? null,
+        listingStatus: profile?.listingStatus ?? "ACTIVE",
+        delistedAt: profile?.delistedAt ?? null,
         firstSeenAt: row.tradeDate,
         lastSeenAt: row.tradeDate,
       });
@@ -846,7 +1087,8 @@ function collectExistingStatementSecurityIdentities(
     if (!current.rawSymbol) current.rawSymbol = rawSymbol;
     if (
       (!current.description || current.description === current.symbol) &&
-      row.description
+      row.description &&
+      normalizedCompositeText(row.assetType) !== "OPTION"
     ) {
       current.description = row.description;
     }
@@ -884,6 +1126,7 @@ export async function repairQuestradeStatementSecurityLinks(
       exchangeMicCode: securities.exchangeMicCode,
       figiCode: securities.figiCode,
       description: securities.description,
+      instrumentTypeCode: securities.instrumentTypeCode,
     }).from(securities).where(eq(securities.isArchived, false)),
     db.select({
       securityId: securityAliases.securityId,
@@ -908,6 +1151,7 @@ export async function repairQuestradeStatementSecurityLinks(
         description: transactionsTable.description,
         type: transactionsTable.type,
         amount: transactionsTable.amount,
+        units: transactionsTable.units,
         currencyCode: transactionsTable.currencyCode,
         tradeDate: transactionsTable.tradeDate,
         legacyImportKey: transactionsTable.legacyImportKey,
@@ -929,6 +1173,12 @@ export async function repairQuestradeStatementSecurityLinks(
   ]);
 
   const lookup = buildSecurityLookup(securityRows, aliasRows);
+  const securityTypesById = new Map(
+    securityRows.map((security) => [security.id, security.instrumentTypeCode])
+  );
+  const securitySymbolsById = new Map(
+    securityRows.map((security) => [security.id, security.symbol])
+  );
   const identities =
     collectExistingStatementSecurityIdentities(statementRows);
 
@@ -936,12 +1186,15 @@ export async function repairQuestradeStatementSecurityLinks(
     const securityResult = await ensureStatementSecurities(
       tx,
       lookup,
-      identities
+      identities,
+      securityTypesById,
+      securitySymbolsById
     );
     const transactionsRepaired = await repairStatementSecurityLinks(
       tx,
       statementRows,
-      lookup
+      lookup,
+      securityTypesById
     );
     return {
       ...securityResult,
@@ -1018,6 +1271,7 @@ export async function saveExtractedStatements(
       exchangeMicCode: securities.exchangeMicCode,
       figiCode: securities.figiCode,
       description: securities.description,
+      instrumentTypeCode: securities.instrumentTypeCode,
     }).from(securities).where(eq(securities.isArchived, false)),
     db.select({
       securityId: securityAliases.securityId,
@@ -1066,6 +1320,26 @@ export async function saveExtractedStatements(
   }
 
   const securityLookup = buildSecurityLookup(securityRows, aliasRows);
+  const securityTypesById = new Map(
+    securityRows.map((security) => [security.id, security.instrumentTypeCode])
+  );
+  const securitySymbolsById = new Map(
+    securityRows.map((security) => [security.id, security.symbol])
+  );
+  const securityCandidates: SecurityResolutionCandidate[] = securityRows.map(
+    (security) => ({
+      id: security.id,
+      securityKey: security.securityKey,
+      source: security.source,
+      symbol: security.symbol,
+      rawSymbol: security.rawSymbol,
+      description: security.description,
+      currencyCode: security.currencyCode,
+      snaptradeSymbolId: security.snaptradeSymbolId,
+      figiCode: security.figiCode,
+      instrumentTypeCode: security.instrumentTypeCode,
+    })
+  );
 
   const relevantAccountIds = [...new Set(data.statements.map((statement) =>
     accountsByNumber.get(statement.account_number)!
@@ -1085,6 +1359,7 @@ export async function saveExtractedStatements(
         description: transactionsTable.description,
         type: transactionsTable.type,
         amount: transactionsTable.amount,
+        units: transactionsTable.units,
         currencyCode: transactionsTable.currencyCode,
         tradeDate: transactionsTable.tradeDate,
         legacyImportKey: transactionsTable.legacyImportKey,
@@ -1105,6 +1380,9 @@ export async function saveExtractedStatements(
       data,
       accountsByNumber,
       securityLookup,
+      securityTypesById,
+      securitySymbolsById,
+      securityCandidates,
       existingTransactionRows
     );
     return {
@@ -1140,25 +1418,27 @@ export async function saveExtractedStatements(
     await ensureStatementSecurities(
       tx,
       securityLookup,
-      statementSecurityIdentities
+      statementSecurityIdentities,
+      securityTypesById,
+      securitySymbolsById
     );
     const preparedTransactions = prepareStatementTransactions(
       data,
       accountsByNumber,
       securityLookup,
+      securityTypesById,
+      securitySymbolsById,
+      securityCandidates,
       existingTransactionRows
     );
-    if (preparedTransactions.duplicateStatementIdsToArchive.length > 0) {
+    if (preparedTransactions.duplicateTransactionIdsToArchive.length > 0) {
       await tx
         .update(transactionsTable)
         .set({ isArchived: true })
         .where(
-          and(
-            inArray(
-              transactionsTable.id,
-              preparedTransactions.duplicateStatementIdsToArchive
-            ),
-            eq(transactionsTable.source, STATEMENT_SOURCE)
+          inArray(
+            transactionsTable.id,
+            preparedTransactions.duplicateTransactionIdsToArchive
           )
         );
     }
@@ -1267,7 +1547,8 @@ export async function saveExtractedStatements(
     await repairStatementSecurityLinks(
       tx,
       existingTransactionRows,
-      securityLookup
+      securityLookup,
+      securityTypesById
     );
 
     for (const [accountNumber, statement] of latestStatementByAccount) {

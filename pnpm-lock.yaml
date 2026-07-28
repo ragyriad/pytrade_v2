@@ -7,6 +7,22 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@repo/data-deduplicator':
+        specifier: workspace:*
+        version: link:packages/data_deduplicator
+      '@repo/data-normalizer':
+        specifier: workspace:*
+        version: link:packages/data_normalizer
+      '@repo/db':
+        specifier: workspace:*
+        version: link:packages/db
+      dotenv:
+        specifier: ^17.4.2
+        version: 17.4.2
+      postgres:
+        specifier: 3.4.5
+        version: 3.4.5
     devDependencies:
       dotenv-cli:
         specifier: 7.4.4
@@ -32,6 +48,9 @@ importers:
       '@fastify/cors':
         specifier: ^10.0.0
         version: 10.1.0
+      '@repo/data-normalizer':
+        specifier: workspace:*
+        version: link:../../packages/data_normalizer
       '@repo/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -69,6 +88,9 @@ importers:
       '@fortawesome/react-fontawesome':
         specifier: ^3.3.1
         version: 3.3.1(@fortawesome/fontawesome-svg-core@7.2.0)(react@18.3.1)
+      '@repo/data-normalizer':
+        specifier: workspace:*
+        version: link:../../packages/data_normalizer
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -107,6 +129,34 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  packages/data_deduplicator:
+    dependencies:
+      '@repo/data-normalizer':
+        specifier: workspace:*
+        version: link:../data_normalizer
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.39
+        version: 20.19.39
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/data_normalizer:
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.39
+        version: 20.19.39
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/db:
     dependencies:
       dotenv:
@@ -131,9 +181,6 @@ importers:
       drizzle-orm:
         specifier: 1.0.0-beta.22
         version: 1.0.0-beta.22(pg@8.20.0)(postgres@3.4.5)(zod@3.25.76)
-      snaptrade-typescript-sdk:
-        specifier: ^9.0.181
-        version: 9.0.181
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.13)(tsx@4.21.0)(typescript@5.9.3)
@@ -160,8 +207,36 @@ importers:
         specifier: ^5.0.0
         version: 5.9.3
 
+  packages/questrade_legacy_import:
+    dependencies:
+      '@repo/data-deduplicator':
+        specifier: workspace:*
+        version: link:../data_deduplicator
+      '@repo/data-normalizer':
+        specifier: workspace:*
+        version: link:../data_normalizer
+      '@repo/db':
+        specifier: workspace:*
+        version: link:../db
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.39
+        version: 20.19.39
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/questrade_statement_import:
     dependencies:
+      '@repo/data-deduplicator':
+        specifier: workspace:*
+        version: link:../data_deduplicator
+      '@repo/data-normalizer':
+        specifier: workspace:*
+        version: link:../data_normalizer
       '@repo/db':
         specifier: workspace:*
         version: link:../db
@@ -185,29 +260,22 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/snaptrade_activity_processor:
-    dependencies:
-      '@repo/db':
-        specifier: workspace:*
-        version: link:../db
-    devDependencies:
-      typescript:
-        specifier: ^5.0.0
-        version: 5.9.3
-
   packages/snaptrade_sync:
     dependencies:
+      '@repo/data-deduplicator':
+        specifier: workspace:*
+        version: link:../data_deduplicator
+      '@repo/data-normalizer':
+        specifier: workspace:*
+        version: link:../data_normalizer
       '@repo/db':
         specifier: workspace:*
         version: link:../db
-      '@repo/snaptrade-activity-processor':
-        specifier: workspace:*
-        version: link:../snaptrade_activity_processor
       dotenv:
         specifier: ^16.0.0
         version: 16.6.1
       snaptrade-typescript-sdk:
-        specifier: ^9.0.160
+        specifier: ^9.0.181
         version: 9.0.181
     devDependencies:
       '@types/node':
@@ -216,6 +284,9 @@ importers:
       ts-node:
         specifier: ^10.9.0
         version: 10.9.2(@types/node@20.19.39)(typescript@5.9.3)
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
       typescript:
         specifier: ^5.0.0
         version: 5.9.3

@@ -1,6 +1,7 @@
 import path from "node:path";
 import { mkdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { resolveReportsDirectory } from "./cli_paths.js";
 import { extractStatements } from "./parser.js";
 import { writeReviewWorkbook } from "./workbook.js";
 
@@ -9,16 +10,8 @@ function argument(name: string): string | null {
   return index >= 0 ? process.argv[index + 1] ?? null : null;
 }
 
-function reportsDirectory(): string {
-  const configured = process.env.QESTRADE_REPORTS_DIR?.trim();
-  if (!configured) {
-    throw new Error("Missing required environment variable: QESTRADE_REPORTS_DIR");
-  }
-  return path.resolve(configured);
-}
-
 async function main(): Promise<void> {
-  const input = reportsDirectory();
+  const input = resolveReportsDirectory();
   const outputDirectory = fileURLToPath(
     new URL("../../../generated files/", import.meta.url),
   );
@@ -33,6 +26,7 @@ async function main(): Promise<void> {
   const errors = data.issues.filter((issue) => issue.severity === "ERROR").length;
   const warnings = data.issues.filter((issue) => issue.severity === "WARNING").length;
   console.log(JSON.stringify({
+    input,
     output,
     statements: data.statements.length,
     cashBalances: data.cashBalances.length,

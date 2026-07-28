@@ -2,6 +2,7 @@ import { Snaptrade } from "snaptrade-typescript-sdk";
 import type { UniversalActivity } from "snaptrade-typescript-sdk";
 import * as dotenv from "dotenv";
 import { getWorkspaceParentEnvPath } from "./env.js";
+import { fetchAllActivityPages } from "./activity_pagination.js";
 
 dotenv.config({ path: getWorkspaceParentEnvPath() });
 
@@ -74,10 +75,7 @@ export async function getSnaptradeTransactionsByAccountId(
   endDate: string,
   type?: string
 ) {
-  const pageSize = 1000;
-  const activities: UniversalActivity[] = [];
-
-  for (let offset = 0; ; offset += pageSize) {
+  return fetchAllActivityPages<UniversalActivity>(async (offset, limit) => {
     const res = await snaptrade.accountInformation.getAccountActivities({
       accountId,
       userId: SNAPTRADE_USER_ID,
@@ -85,14 +83,9 @@ export async function getSnaptradeTransactionsByAccountId(
       startDate,
       endDate,
       offset,
-      limit: pageSize,
+      limit,
       ...(type && { type }),
     });
-    const page = res.data?.data ?? [];
-    activities.push(...page);
-
-    if (page.length < pageSize) break;
-  }
-
-  return activities;
+    return res.data?.data ?? [];
+  });
 }
