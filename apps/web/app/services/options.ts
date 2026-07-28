@@ -1,9 +1,5 @@
 import type { MoneyBreakdownDto, TransactionDto } from "../lib/portfolio-types";
 import { groupMoney } from "./value_helpers";
-import {
-  canonicalizeSymbol,
-  parseOptionContract,
-} from "@repo/data-normalizer";
 
 export type OptionSecurityRow = {
   id: string;
@@ -18,13 +14,9 @@ export type OptionSecurityRow = {
 };
 
 function optionKey(transaction: TransactionDto): string {
-  const contract = parseOptionContract(
-    transaction.description,
-    transaction.symbol
-  );
   return (
     transaction.optionId ??
-    contract?.ticker ??
+    transaction.optionTicker ??
     `${transaction.symbol ?? "UNKNOWN"}:${transaction.description ?? "UNKNOWN"}`
   );
 }
@@ -49,10 +41,7 @@ function signedUnits(transaction: TransactionDto): number {
 }
 
 function optionExpiration(transaction: TransactionDto): Date | null {
-  const expirationDate = parseOptionContract(
-    transaction.description,
-    transaction.symbol
-  )?.expirationDate;
+  const expirationDate = transaction.optionExpirationDate;
   if (!expirationDate) return null;
 
   const expiration = new Date(`${expirationDate}T23:59:59.999`);
@@ -91,10 +80,9 @@ export function isOptionTransaction(transaction: TransactionDto): boolean {
     action.includes("CORPORATE_ACTION");
   const hasContractIdentity =
     Boolean(transaction.optionId) ||
+    Boolean(transaction.optionTicker) ||
     Boolean(transaction.optionAction) ||
-    Boolean(
-      parseOptionContract(transaction.description, transaction.symbol)
-    );
+    Boolean(transaction.optionExpirationDate);
 
   return isOptionAction && hasContractIdentity;
 }
@@ -144,7 +132,7 @@ export function buildOptionSecurityRows(
 
   for (const transaction of transactions) {
     const key =
-      canonicalizeSymbol(transaction.symbol) ??
+      transaction.symbol ??
       transaction.underlyingSecurityId ??
       transaction.securityId ??
       "UNKNOWN";
@@ -152,7 +140,7 @@ export function buildOptionSecurityRows(
   }
   for (const transaction of positionTransactions) {
     const key =
-      canonicalizeSymbol(transaction.symbol) ??
+      transaction.symbol ??
       transaction.underlyingSecurityId ??
       transaction.securityId ??
       "UNKNOWN";
@@ -176,9 +164,7 @@ export function buildOptionSecurityRows(
           rows.find((transaction) => transaction.securityId)?.securityId ??
           id,
         symbol:
-          canonicalizeSymbol(
-            rows.find((transaction) => transaction.symbol)?.symbol
-          ) ?? "Unknown",
+          rows.find((transaction) => transaction.symbol)?.symbol ?? "Unknown",
         transactionCount: rows.length,
         activeOptionCount: getActiveOptionCount(positionGroups.get(id) ?? rows),
         totalFees: getOptionFees(rows),

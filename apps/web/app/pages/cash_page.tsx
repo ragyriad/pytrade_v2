@@ -1,5 +1,5 @@
 import { CashDashboard } from "../components/portfolio/cash-dashboard";
-import { fetchCashDashboardFromBackend } from "../api-layer/cash";
+import { fetchCashDashboardFromBackend } from "../repositories/cash";
 import type { CashDashboardDto } from "../lib/portfolio-types";
 
 type PageProps = {

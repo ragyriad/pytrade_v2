@@ -8,7 +8,10 @@ import {
   deleteTransactionsByAccount,
 } from "@repo/db";
 import type { NewTransaction } from "@repo/db";
-import { normalizeTransaction } from "@repo/data-normalizer";
+import {
+  normalizeSecurityIdentity,
+  normalizeTransaction,
+} from "@repo/data-normalizer";
 
 // ---------------------------------------------------------------------------
 // Input schemas
@@ -157,11 +160,16 @@ export const transactionsRouter = router({
     .mutation(async ({ ctx, input }) => {
       await assertAccountOwnership(ctx.db, input.accountId, ctx.userId);
       const normalized = normalizeTransaction(input);
+      const securityIdentity = normalizeSecurityIdentity({
+        symbol: input.symbol,
+        description: input.description,
+      });
 
       const data: NewTransaction = {
         ...input,
         action: input.action ?? normalized.action,
         assetType: input.assetType ?? normalized.assetType,
+        symbol: securityIdentity.symbol,
         tradeDate: new Date(input.tradeDate),
       };
 

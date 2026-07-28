@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchCashDashboardFromBackend } from "../../../api-layer/cash";
+import { fetchCashDashboardFromBackend } from "../../../repositories/cash";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);

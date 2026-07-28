@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchDividendSummaryFromBackend } from "../../../api-layer/dividends";
+import { fetchDividendSummaryFromBackend } from "../../../repositories/dividends";
 import type { DividendTimelineRange } from "../../../lib/portfolio-types";
 
 const timelineValues = new Set<DividendTimelineRange>([

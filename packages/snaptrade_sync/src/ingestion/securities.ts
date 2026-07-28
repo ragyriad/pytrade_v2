@@ -2,6 +2,7 @@ import type { NewSecurity } from "@repo/db";
 import {
   canonicalizeSymbol,
   extractSymbolsFromRawData,
+  normalizeSecurityIdentity,
   normalizeSecurityProfile,
   normalizeSecurityType,
   resolveSecurityCandidate,
@@ -277,23 +278,33 @@ export function prepareSecurityInputs(
 ): PreparedSecurityInputs {
   const storageKeyByInputKey = new Map<string, string>();
   const aligned = inputs.map((input) => {
-    const existing = resolveSecurityCandidate(
-      {
-        symbol: input.symbol,
-        description: input.description,
-        currencyCode: input.currencyCode,
-        instrumentTypeCode: input.instrumentTypeCode,
-        rawData: input,
-      },
-      candidates.map((candidate) => ({
-        ...candidate,
-        isArchived: false,
-      }))
-    ) as StoredSecurityCandidate | null;
-    const storageKey = existing?.securityKey ?? input.securityKey;
-    storageKeyByInputKey.set(input.securityKey, storageKey);
-    return {
+    const identity = normalizeSecurityIdentity(input);
+    const normalizedInput = {
       ...input,
+      symbol: identity.symbol ?? input.symbol,
+      rawSymbol: identity.rawSymbol,
+    };
+    const existing = identity.optionContract
+      ? candidates.find(
+          (candidate) => candidate.securityKey === normalizedInput.securityKey
+        ) ?? null
+      : (resolveSecurityCandidate(
+          {
+            symbol: normalizedInput.symbol,
+            description: normalizedInput.description,
+            currencyCode: normalizedInput.currencyCode,
+            instrumentTypeCode: normalizedInput.instrumentTypeCode,
+            rawData: normalizedInput,
+          },
+          candidates.map((candidate) => ({
+            ...candidate,
+            isArchived: false,
+          }))
+        ) as StoredSecurityCandidate | null);
+    const storageKey = existing?.securityKey ?? normalizedInput.securityKey;
+    storageKeyByInputKey.set(normalizedInput.securityKey, storageKey);
+    return {
+      ...normalizedInput,
       securityKey: storageKey,
     };
   });

@@ -212,16 +212,13 @@ export function DataExplorer({ dashboard }: DataExplorerProps) {
       header: "Amount",
       align: "right",
       value: (transaction) => transaction.amount.amount,
-      render: (transaction) => {
-        const signed = (transaction.action ?? transaction.type).includes("DIVIDEND")
-          ? Math.abs(transaction.amount.amount)
-          : transaction.amount.amount;
-        return (
-          <span className={`font-medium ${signedValueClassName(signed)}`}>
-            {formatMoney(transaction.amount)}
-          </span>
-        );
-      },
+      render: (transaction) => (
+        <span
+          className={`font-medium ${signedValueClassName(transaction.amount.amount)}`}
+        >
+          {formatMoney(transaction.amount)}
+        </span>
+      ),
     },
   ];
 

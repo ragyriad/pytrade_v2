@@ -39,7 +39,9 @@ export function PortfolioDashboard({ dashboard }: PortfolioDashboardProps) {
   }, [dashboard.accounts]);
 
   const activeAccounts = useMemo(() => {
-    return dashboard.accounts.filter(isActiveAccount);
+    return dashboard.accounts.filter(
+      (account) => isActiveAccount(account) && account.isInvestmentAccount !== false
+    );
   }, [dashboard.accounts]);
 
   const activePositions = useMemo(() => {
@@ -95,7 +97,14 @@ export function PortfolioDashboard({ dashboard }: PortfolioDashboardProps) {
       key: "price",
       header: "Price",
       align: "right",
-      render: (position) => (position.price ? formatMoney(position.price) : "-"),
+      render: (position) =>
+        position.price ? (
+          <span className={signedValueClassName(position.price.amount)}>
+            {formatMoney(position.price)}
+          </span>
+        ) : (
+          "-"
+        ),
     },
     {
       key: "value",
@@ -129,7 +138,7 @@ export function PortfolioDashboard({ dashboard }: PortfolioDashboardProps) {
         return percent == null ? (
           "-"
         ) : (
-          <span className={signedValueClassName(percent)}>{formatPercent(percent)}</span>
+          formatPercent(percent)
         );
       },
     },

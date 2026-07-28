@@ -5,10 +5,12 @@ import {
   desc,
   eq,
   inArray,
+  options as optionsTable,
   positions,
   transactions,
   users,
   type Account,
+  type Option,
   type Position,
   type Transaction,
 } from "@repo/db";
@@ -23,6 +25,7 @@ export type AccountDto = {
   accountCurrency: string | null;
   type: string | null;
   status: string | null;
+  isInvestmentAccount: boolean;
   balance: MoneyDto;
   lastSyncedAt: string | null;
 };
@@ -49,6 +52,9 @@ export type TransactionDto = {
   securityId: string | null;
   underlyingSecurityId: string | null;
   optionId: string | null;
+  optionTicker: string | null;
+  optionExpirationDate: string | null;
+  optionContractType: string | null;
   source: string;
   type: string;
   action: string | null;
@@ -138,6 +144,23 @@ function marketValueForPosition(position: Position): number {
 }
 
 function toAccountDto(account: Account): AccountDto {
+  const accountClassification = [
+    account.type,
+    account.rawType,
+    account.snaptradeMetaType,
+    account.snaptradeUnifiedAccountType,
+    account.name,
+    account.brokerageName,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toUpperCase();
+  const isCashOrCreditAccount =
+    accountClassification.includes("MSB") ||
+    accountClassification.includes("CASH") ||
+    accountClassification.includes("CREDIT") ||
+    accountClassification.includes("CARD");
+
   return {
     id: account.id,
     brokerageAccountNumber: account.brokerageAccountNumber,
@@ -147,6 +170,7 @@ function toAccountDto(account: Account): AccountDto {
     accountCurrency: account.accountCurrency,
     type: account.type,
     status: account.status,
+    isInvestmentAccount: !isCashOrCreditAccount,
     balance: {
       amount: toNumber(account.balanceAmount),
       currency: account.balanceCurrency ?? account.accountCurrency ?? "USD",
@@ -196,7 +220,10 @@ function toPositionDto(position: Position): PositionDto {
   };
 }
 
-function toTransactionDto(transaction: Transaction): TransactionDto {
+function toTransactionDto(
+  transaction: Transaction,
+  option: Option | undefined
+): TransactionDto {
   const currency = transaction.currencyCode ?? "USD";
 
   return {
@@ -205,6 +232,9 @@ function toTransactionDto(transaction: Transaction): TransactionDto {
     securityId: transaction.securityId,
     underlyingSecurityId: transaction.underlyingSecurityId,
     optionId: transaction.optionId,
+    optionTicker: option?.ticker ?? null,
+    optionExpirationDate: option?.expirationDate ?? null,
+    optionContractType: option?.contractType ?? null,
     source: transaction.source,
     type: transaction.type,
     action: transaction.action ?? transaction.type,
@@ -383,10 +413,37 @@ export async function getPortfolioDashboard(
             )
           )
           .orderBy(desc(transactions.tradeDate));
+  const optionIds = [
+    ...new Set(
+      transactionRows
+        .map((transaction) => transaction.optionId)
+        .filter((id): id is string => Boolean(id))
+    ),
+  ];
+  const optionRows =
+    optionIds.length === 0
+      ? []
+      : await db
+          .select()
+          .from(optionsTable)
+          .where(
+            and(
+              inArray(optionsTable.id, optionIds),
+              eq(optionsTable.isArchived, false)
+            )
+          );
+  const optionsById = new Map(optionRows.map((option) => [option.id, option]));
 
   const accountDtos = accountRows.map(toAccountDto);
   const positionDtos = positionRows.map(toPositionDto);
-  const transactionDtos = transactionRows.map(toTransactionDto);
+  const transactionDtos = transactionRows.map((transaction) =>
+    toTransactionDto(
+      transaction,
+      transaction.optionId
+        ? optionsById.get(transaction.optionId)
+        : undefined
+    )
+  );
   const recentTransactionDtos = transactionDtos.slice(0, 25);
   const dividendTransactions = transactionDtos.filter(isDividendTransaction);
   const accountNameById = new Map(accountDtos.map((account) => [account.id, account.name]));

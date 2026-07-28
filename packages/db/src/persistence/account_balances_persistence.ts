@@ -1,4 +1,4 @@
-import { and, eq, notInArray, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { DB } from "../db_type.js";
 import {
   accountBalances,
@@ -7,11 +7,10 @@ import {
 } from "../schemas/account_balances_schema.js";
 
 /**
- * Reconciles the current balance snapshot by account + currency. Existing
- * rows retain their ids; currencies no longer returned by SnapTrade are the
- * only rows removed.
+ * Upserts balance snapshots by account + currency. A partial or empty provider
+ * response never deletes an existing balance row.
  */
-export async function reconcileAccountBalances(
+export async function upsertAccountBalances(
   db: DB,
   accountId: string,
   data: NewAccountBalance[]
@@ -24,41 +23,29 @@ export async function reconcileAccountBalances(
     data.map((balance) => [balance.currencyCode, balance])
   );
   const balancesToSync = [...byCurrency.values()];
-  const currencies = [...byCurrency.keys()];
+  if (balancesToSync.length === 0) return;
 
-  await db.transaction(async (tx) => {
-    if (balancesToSync.length > 0) {
-      await tx
-        .insert(accountBalances)
-        .values(balancesToSync)
-        .onConflictDoUpdate({
-          target: [accountBalances.accountId, accountBalances.currencyCode],
-          set: {
-            cash: sql`excluded.cash`,
-            buyingPower: sql`excluded.buying_power`,
-            source: sql`excluded.source`,
-            sourceFile: sql`excluded.source_file`,
-            asOfDate: sql`excluded.as_of_date`,
-            syncedAt: sql`excluded.synced_at`,
-          },
-        });
-      await tx
-        .delete(accountBalances)
-        .where(
-          and(
-            eq(accountBalances.accountId, accountId),
-            notInArray(accountBalances.currencyCode, currencies)
-          )
-        );
-      return;
-    }
-
-    await tx.delete(accountBalances).where(eq(accountBalances.accountId, accountId));
-  });
+  await db
+    .insert(accountBalances)
+    .values(balancesToSync)
+    .onConflictDoUpdate({
+      target: [accountBalances.accountId, accountBalances.currencyCode],
+      set: {
+        cash: sql`excluded.cash`,
+        buyingPower: sql`excluded.buying_power`,
+        source: sql`excluded.source`,
+        sourceFile: sql`excluded.source_file`,
+        asOfDate: sql`excluded.as_of_date`,
+        syncedAt: sql`excluded.synced_at`,
+      },
+    });
 }
 
-/** @deprecated Use reconcileAccountBalances. */
-export const replaceAccountBalances = reconcileAccountBalances;
+/** @deprecated Use upsertAccountBalances. */
+export const reconcileAccountBalances = upsertAccountBalances;
+
+/** @deprecated Use upsertAccountBalances. */
+export const replaceAccountBalances = upsertAccountBalances;
 
 export async function getBalancesByAccount(
   db: DB,

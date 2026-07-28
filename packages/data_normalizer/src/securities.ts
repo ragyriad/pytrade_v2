@@ -1,5 +1,9 @@
 import { canonicalizeSymbol, extractSymbolsFromRawData } from "./symbols.ts";
 import {
+  parseOptionContract,
+  type ParsedOptionContract,
+} from "./options.ts";
+import {
   SECURITY_PROFILE_RULES,
   type SecurityListingStatus,
 } from "./rules/security_profiles.ts";
@@ -136,6 +140,54 @@ export type SecurityProfileInput = {
   currencyCode?: string | null;
   observedAt?: Date | string | null;
 };
+
+export type SecurityIdentityInput = {
+  securityKey?: string | null;
+  symbol?: string | null;
+  rawSymbol?: string | null;
+  description?: string | null;
+};
+
+export type NormalizedSecurityIdentity = {
+  symbol: string | null;
+  rawSymbol: string | null;
+  optionContract: ParsedOptionContract | null;
+};
+
+/**
+ * Normalizes the persisted identity fields of a security. Option contract
+ * identifiers remain available as raw symbols and option tickers, while the
+ * security's display symbol is always the underlying company symbol.
+ */
+export function normalizeSecurityIdentity(
+  input: SecurityIdentityInput
+): NormalizedSecurityIdentity {
+  const symbol = input.symbol?.trim() || null;
+  const rawSymbol = input.rawSymbol?.trim() || null;
+  const keyTicker = input.securityKey?.startsWith("option:")
+    ? input.securityKey.slice("option:".length)
+    : null;
+  const optionContract = parseOptionContract(
+    input.description,
+    rawSymbol,
+    symbol,
+    keyTicker
+  );
+
+  if (optionContract) {
+    return {
+      symbol: optionContract.underlyingSymbol,
+      rawSymbol: rawSymbol ?? symbol ?? optionContract.ticker,
+      optionContract,
+    };
+  }
+
+  return {
+    symbol: canonicalizeSymbol(symbol),
+    rawSymbol,
+    optionContract: null,
+  };
+}
 
 export type NormalizedSecurityProfile = {
   symbol: string;

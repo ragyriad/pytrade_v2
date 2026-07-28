@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   canonicalizeSymbol,
+  normalizeSecurityIdentity,
   normalizeSecurityProfile,
   normalizeSecurityType,
   normalizeTransaction,
@@ -40,6 +41,19 @@ test("uses the readable description when the provider symbol is malformed", () =
   assert.equal(parsed?.underlyingSymbol, "CNQ");
   assert.equal(parsed?.expirationDate, "2022-04-14");
   assert.equal(parsed?.strikePrice, "55.000000");
+});
+
+test("keeps an option contract in rawSymbol while displaying the underlying symbol", () => {
+  const identity = normalizeSecurityIdentity({
+    securityKey: "option:NVDA230421P00125000",
+    symbol: "NVDA230421P00125000",
+    rawSymbol: "PUT NVDA 04/21/23 125",
+    description: "PUT NVDA 04/21/23 125 NVIDIA CORPORATION",
+  });
+
+  assert.equal(identity.symbol, "NVDA");
+  assert.equal(identity.rawSymbol, "PUT NVDA 04/21/23 125");
+  assert.equal(identity.optionContract?.ticker, "NVDA230421P00125000");
 });
 
 test("classifies statement holdings more specifically than SECURITY", () => {

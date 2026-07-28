@@ -17,6 +17,7 @@ export type AccountDto = {
   accountCurrency?: string | null;
   type: string | null;
   status: string | null;
+  isInvestmentAccount?: boolean;
   balance: MoneyDto;
   lastSyncedAt: string | null;
 };
@@ -45,6 +46,9 @@ export type TransactionDto = {
   securityId?: string | null;
   underlyingSecurityId?: string | null;
   optionId?: string | null;
+  optionTicker?: string | null;
+  optionExpirationDate?: string | null;
+  optionContractType?: string | null;
   source: string;
   type: string;
   action: string | null;
@@ -291,6 +295,7 @@ export type CashDashboardDto = {
   cashAccounts: CashAccountDto[];
   creditAccounts: CashAccountDto[];
   cashTransactions: CashTransactionDto[];
+  expenses: CashTransactionDto[];
   debitAccountExpenses: CashTransactionDto[];
   creditCardExpenses: CashTransactionDto[];
   creditCardBalances: CalculatedCreditCardBalanceDto[];

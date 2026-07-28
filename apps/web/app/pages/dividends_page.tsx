@@ -1,6 +1,6 @@
 import { DividendsDashboard } from "../components/portfolio/dividends-dashboard";
-import { fetchDividendSummaryFromBackend } from "../api-layer/dividends";
-import { fetchPortfolioDashboardFromBackend } from "../api-layer/dashboard";
+import { fetchDividendSummaryFromBackend } from "../repositories/dividends";
+import { fetchPortfolioDashboardFromBackend } from "../repositories/dashboard";
 import type {
   DividendDashboardSummaryDto,
   PortfolioDashboardDto,

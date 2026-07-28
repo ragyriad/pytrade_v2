@@ -414,7 +414,7 @@ export function mapOptionFromActivity(
     contractSecurity: {
       securityKey: `option:${ticker}`,
       snaptradeSymbolId: clean(option?.id),
-      symbol: ticker,
+      symbol: underlyingSymbol,
       rawSymbol: clean(option?.ticker) ?? ticker,
       description,
       currencyCode: currency,

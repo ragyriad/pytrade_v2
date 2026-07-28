@@ -60,7 +60,8 @@ function optionSecurity(order: AccountOrderRecord): NewSecurity | null {
           strikePrice: option.strike_price,
         })
       : clean(option.ticker));
-  if (!ticker) return null;
+  const displayUnderlyingSymbol = parsed?.underlyingSymbol ?? underlyingSymbol;
+  if (!ticker || !displayUnderlyingSymbol) return null;
 
   const timestamp = seenAt(order);
   const underlying = option.underlying_symbol;
@@ -79,7 +80,7 @@ function optionSecurity(order: AccountOrderRecord): NewSecurity | null {
     securityKey: `option:${ticker}`,
     // The order response's option id is deprecated; the OCC ticker is stable.
     snaptradeSymbolId: null,
-    symbol: ticker,
+    symbol: displayUnderlyingSymbol,
     rawSymbol: ticker,
     description: description || ticker,
     currencyCode: clean(underlying?.currency?.code),

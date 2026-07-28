@@ -51,6 +51,7 @@ export type CashDashboardDto = {
   cashAccounts: CashAccountDto[];
   creditAccounts: CashAccountDto[];
   cashTransactions: CashTransactionDto[];
+  expenses: CashTransactionDto[];
   debitAccountExpenses: CashTransactionDto[];
   creditCardExpenses: CashTransactionDto[];
   creditCardBalances: CalculatedCreditCardBalance[];
@@ -103,16 +104,23 @@ function isCashAccount(account: Account): boolean {
 }
 
 function isCreditAccount(account: Account): boolean {
-  const value = normalizedText(
+  const accountTypes = normalizedText(
     account.type,
     account.rawType,
     account.snaptradeMetaType,
-    account.snaptradeUnifiedAccountType,
-    account.name,
-    account.brokerageName
+    account.snaptradeUnifiedAccountType
   );
+  const accountName = normalizedText(account.name);
 
-  return value.includes("CREDIT") || value.includes("CARD");
+  if (accountTypes.includes("DEBIT")) return false;
+  if (accountTypes.includes("CREDIT_CARD") || accountTypes.includes("CREDIT CARD")) {
+    return true;
+  }
+
+  return (
+    (accountName.includes("CREDIT_CARD") || accountName.includes("CREDIT CARD")) &&
+    !accountName.includes("DEBIT")
+  );
 }
 
 function groupMoney(values: MoneyDto[]): MoneyBreakdownDto[] {
@@ -529,6 +537,10 @@ export async function getCashDashboard(
         isExpenseTransaction(transaction)
     )
   );
+  const expenses = dedupeExpenses([
+    ...debitAccountExpenses,
+    ...creditCardExpenses,
+  ]);
   const creditCardBalanceCalculation = calculateCreditCardBalances(
     accountDtos,
     transactionDtos
@@ -539,6 +551,7 @@ export async function getCashDashboard(
     cashAccounts,
     creditAccounts,
     cashTransactions,
+    expenses,
     debitAccountExpenses,
     creditCardExpenses,
     creditCardBalances: creditCardBalanceCalculation.balances,
@@ -547,7 +560,7 @@ export async function getCashDashboard(
     totalCash: groupMoney(cashAccounts.flatMap((account) => account.balances)),
     totalCreditBalance: groupMoney(
       creditCardBalanceCalculation.balances.map((balance) => ({
-        amount: balance.netAmount,
+        amount: balance.amountOwing,
         currency: balance.currency,
       }))
     ),

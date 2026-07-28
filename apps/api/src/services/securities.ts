@@ -94,11 +94,7 @@ function toHistoricSecurityDto(row: HistoricSecurityRow): HistoricSecurityDto {
     exchangeMicCode: row.exchangeMicCode,
     exchangeName: row.exchangeName,
     instrumentType:
-      (row.instrumentTypeDescription ?? row.instrumentTypeCode)
-        ?.trim()
-        .toUpperCase() === "OPTION"
-        ? null
-        : row.instrumentTypeDescription ?? row.instrumentTypeCode,
+      row.instrumentTypeDescription ?? row.instrumentTypeCode,
     listingStatus:
       row.listingStatus === "DELISTED" ? "DELISTED" : "ACTIVE",
     delistedAt: row.delistedAt,

@@ -72,6 +72,7 @@ test("expired compact-date contracts are never counted as open", () => {
     getActiveOptionCount([
       transaction({
         description: "CALL AMD 21JAN22 100",
+        optionExpirationDate: "2022-01-21",
         units: 5,
       }),
     ]),
@@ -86,12 +87,14 @@ test("open positions net by account and canonical contract", () => {
       transaction({
         id: "buy",
         description: futureDescription,
+        optionExpirationDate: "2099-01-19",
         action: "BUY",
         units: 1,
       }),
       transaction({
         id: "sell",
         description: futureDescription,
+        optionExpirationDate: "2099-01-19",
         action: "SELL",
         units: 1,
       }),
@@ -104,6 +107,7 @@ test("open positions net by account and canonical contract", () => {
         id: "account-a",
         accountId: "a",
         description: futureDescription,
+        optionExpirationDate: "2099-01-19",
         action: "BUY",
         units: 1,
       }),
@@ -111,6 +115,7 @@ test("open positions net by account and canonical contract", () => {
         id: "account-b",
         accountId: "b",
         description: futureDescription,
+        optionExpirationDate: "2099-01-19",
         action: "SELL",
         units: 1,
       }),
@@ -119,11 +124,11 @@ test("open positions net by account and canonical contract", () => {
   );
 });
 
-test("groups FB and META option history under META", () => {
+test("groups already-normalized option history without rewriting symbols", () => {
   const rows = buildOptionSecurityRows([
     transaction({
-      id: "fb",
-      symbol: "FB",
+      id: "meta-old",
+      symbol: "META",
       description: "FB 2022-01-21 CALL 300",
     }),
     transaction({

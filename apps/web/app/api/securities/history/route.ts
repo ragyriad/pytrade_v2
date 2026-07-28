@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchHistoricSecuritiesFromBackend } from "../../../api-layer/securities";
+import { fetchHistoricSecuritiesFromBackend } from "../../../repositories/securities";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);

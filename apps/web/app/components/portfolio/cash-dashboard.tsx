@@ -23,6 +23,7 @@ import {
   formatMoney,
   formatNumber,
   formatPercent,
+  signedValueClassName,
 } from "../../lib/formatters";
 import {
   filterTransactionsByTimeline,
@@ -117,40 +118,8 @@ function isInterestTransaction(transaction: CashTransactionDto): boolean {
   return label.includes("INTEREST");
 }
 
-function isExpenseTransaction(transaction: CashTransactionDto): boolean {
-  const label = `${transaction.action ?? ""} ${transaction.type} ${
-    transaction.description ?? ""
-  }`.toUpperCase();
-
-  return ["SPEND", "PURCHASE", "CHARGE", "DEBIT", "FEE"].some((term) =>
-    label.includes(term)
-  );
-}
-
-function isOutflowTransaction(transaction: CashTransactionDto): boolean {
-  if (isExpenseTransaction(transaction)) return transaction.amount.amount > 0;
-
-  const label = `${transaction.action ?? ""} ${transaction.type} ${
-    transaction.description ?? ""
-  }`.toUpperCase();
-  const inflowLabels = [
-    "DEPOSIT",
-    "CONTRIBUTION",
-    "INTEREST",
-    "REFUND",
-    "REIMBURSEMENT",
-    "PROMOTION",
-    "REWARD",
-    "CASHBACK",
-  ];
-  if (inflowLabels.some((term) => label.includes(term))) return false;
-  if (
-    ["WITHDRAW", "CREDIT_CARD_PAYMENT"].some((term) => label.includes(term))
-  ) {
-    return true;
-  }
-
-  return transaction.amount.amount < 0;
+function isClosedAccountStatus(status: string): boolean {
+  return ["CLOSED", "INACTIVE", "DEACTIVATED"].includes(status.trim().toUpperCase());
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -330,25 +299,15 @@ function formatMoneyRows(values: MoneyDto[]) {
 function formatCreditBalanceRows(values: CalculatedCreditCardBalanceDto[]) {
   return groupMoney(
     values.map((value) => ({
-      amount: value.netAmount,
+      amount: value.amountOwing,
       currency: value.currency,
     }))
-  ).map((value) => {
-    const status =
-      value.amount > 0 ? "owing" : value.amount < 0 ? "credit" : "paid";
-
-    return {
-      id: value.currency,
-      value: formatNumber(value.amount),
-      suffix: `${value.currency} ${status}`,
-      className:
-        status === "owing"
-          ? "text-negative"
-          : status === "credit"
-            ? "text-positive"
-            : "text-foreground",
-    };
-  });
+  ).map((value) => ({
+    id: value.currency,
+    value: formatNumber(value.amount),
+    suffix: `${value.currency} owing`,
+    className: value.amount > 0 ? "text-negative" : "text-foreground",
+  }));
 }
 
 function formatInterestRows(values: Array<{ currency: string; percent: number | null }>) {
@@ -546,6 +505,7 @@ function CashFilterBar({
 
 export function CashDashboard({ dashboard }: CashDashboardProps) {
   const [filters, setFilters] = useState(defaultFilters);
+  const [showClosedBalances, setShowClosedBalances] = useState(false);
   const accountsById = useMemo(
     () => new Map(dashboard.accounts.map((account) => [account.id, account])),
     [dashboard.accounts]
@@ -570,6 +530,11 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
   const accountFilteredCreditCardExpenses = dashboard.creditCardExpenses.filter((transaction) =>
     filteredCreditAccountIds.has(transaction.accountId)
   );
+  const accountFilteredExpenses = dashboard.expenses.filter(
+    (transaction) =>
+      filteredCashAccountIds.has(transaction.accountId) ||
+      filteredCreditAccountIds.has(transaction.accountId)
+  );
   const cashTransactions = filterTransactionsByTimeline(
     accountFilteredCashTransactions,
     filters.timeline
@@ -580,6 +545,10 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
   );
   const creditCardExpenses = filterTransactionsByTimeline(
     accountFilteredCreditCardExpenses,
+    filters.timeline
+  );
+  const expenses = filterTransactionsByTimeline(
+    accountFilteredExpenses,
     filters.timeline
   );
   const interestRates = getCurrentInterestRates(
@@ -614,7 +583,10 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
         category: "credit" as const,
         status: account?.status ?? "Unknown",
         balance: {
-          amount: balance.netAmount,
+          amount:
+            balance.amountOwing > 0
+              ? balance.amountOwing
+              : -balance.creditAmount,
           currency: balance.currency,
         },
         balanceStatus: balance.status,
@@ -622,6 +594,9 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
       };
     }),
   ];
+  const visibleBalanceRows = showClosedBalances
+    ? balanceRows
+    : balanceRows.filter((row) => !isClosedAccountStatus(row.status));
 
   const transactionColumns: TableColumn<CashTransactionDto>[] = [
     {
@@ -656,11 +631,7 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
       align: "right",
       value: (transaction) => transaction.amount.amount,
       render: (transaction) => (
-        <span
-          className={`font-medium ${
-            isOutflowTransaction(transaction) ? "text-negative" : "text-foreground"
-          }`}
-        >
+        <span className={`font-medium ${signedValueClassName(transaction.amount.amount)}`}>
           {formatMoney(transaction.amount)}
         </span>
       ),
@@ -723,15 +694,7 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
       align: "right",
       value: (row) => row.balance.amount,
       render: (row) => (
-        <span
-          className={`font-medium ${
-            row.balanceStatus === "owing"
-              ? "text-negative"
-              : row.balanceStatus === "credit"
-                ? "text-positive"
-                : ""
-          }`}
-        >
+        <span className={`font-medium ${signedValueClassName(row.balance.amount)}`}>
           {formatMoney(row.balance)}
         </span>
       ),
@@ -759,7 +722,7 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
             align="center"
           />
           <StatCard
-            label="Credit card amount"
+            label="Credit card owing balance"
             icon={faCreditCard}
             value={
               <MetricValueList
@@ -812,11 +775,22 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
 
         <section className="mt-6">
           <DataTable
-            title="Cash and credit card balances"
-            rows={balanceRows}
+            title="Account Balances"
+            titleAccessory={
+              <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-muted">
+                <input
+                  type="checkbox"
+                  checked={showClosedBalances}
+                  onChange={(event) => setShowClosedBalances(event.target.checked)}
+                  className="h-4 w-4 rounded border-border text-primary-700 focus:ring-primary-600"
+                />
+                Show closed
+              </label>
+            }
+            rows={visibleBalanceRows}
             columns={balanceColumns}
             getRowKey={(row) => row.id}
-            emptyMessage="No cash or credit card balances match this view."
+            emptyMessage="No account balances match this view."
           />
         </section>
 
@@ -832,11 +806,11 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
 
         <section className="mt-6">
           <DataTable
-            title="Credit card expenses"
-            rows={creditCardExpenses}
+            title="Expenses"
+            rows={expenses}
             columns={transactionColumns}
             getRowKey={(transaction) => transaction.id}
-            emptyMessage="No credit card expenses match this view."
+            emptyMessage="No expenses match this view."
           />
         </section>
       </div>

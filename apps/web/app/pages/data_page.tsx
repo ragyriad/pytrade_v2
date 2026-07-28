@@ -1,5 +1,5 @@
 import { DataExplorer } from "../components/portfolio/data-explorer";
-import { fetchPortfolioDashboardFromBackend } from "../api-layer/dashboard";
+import { fetchPortfolioDashboardFromBackend } from "../repositories/dashboard";
 import type { PortfolioDashboardDto } from "../lib/portfolio-types";
 
 type PageProps = {

@@ -88,9 +88,6 @@ importers:
       '@fortawesome/react-fontawesome':
         specifier: ^3.3.1
         version: 3.3.1(@fortawesome/fontawesome-svg-core@7.2.0)(react@18.3.1)
-      '@repo/data-normalizer':
-        specifier: workspace:*
-        version: link:../../packages/data_normalizer
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)

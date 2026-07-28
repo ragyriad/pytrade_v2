@@ -1,5 +1,5 @@
 import { OptionsDashboard } from "../components/portfolio/options-dashboard";
-import { fetchPortfolioDashboardFromBackend } from "../api-layer/dashboard";
+import { fetchPortfolioDashboardFromBackend } from "../repositories/dashboard";
 import type { PortfolioDashboardDto } from "../lib/portfolio-types";
 
 type PageProps = {

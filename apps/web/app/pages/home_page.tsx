@@ -2,7 +2,7 @@ import { PortfolioDashboard } from "../components/portfolio/portfolio-dashboard"
 import {
   backendApiBaseUrl,
   fetchPortfolioDashboardFromBackend,
-} from "../api-layer/dashboard";
+} from "../repositories/dashboard";
 import type { PortfolioDashboardDto } from "../lib/portfolio-types";
 
 type PageProps = {

@@ -5,6 +5,7 @@ import {
   canonicalizeSymbol,
   normalizeTransaction,
   normalizeSecurityProfile,
+  normalizeSecurityIdentity,
   normalizeSecurityType as normalizeCommonSecurityType,
   parseOptionContract,
 } from "@repo/data-normalizer";
@@ -1442,7 +1443,17 @@ async function main() {
     });
   }
 
-  const insertedSecurities = await upsertSecurities(db, missingSecurities);
+  const insertedSecurities = await upsertSecurities(
+    db,
+    missingSecurities.map((input) => {
+      const identity = normalizeSecurityIdentity(input);
+      return {
+        ...input,
+        symbol: identity.symbol ?? input.symbol,
+        rawSymbol: identity.rawSymbol,
+      };
+    })
+  );
   for (const security of insertedSecurities) {
     addSecurityLookup(security);
     const legacyId = security.securityKey.replace("legacy-security:", "");
@@ -1526,16 +1537,25 @@ async function main() {
   >();
 
   async function ensureSecurity(input: NewSecurity, preferSymbolLookup: boolean): Promise<Security> {
-    const existingByKey = securitiesByLookup.get(`${input.securityKey}|`);
+    const identity = normalizeSecurityIdentity(input);
+    const normalizedInput: NewSecurity = {
+      ...input,
+      symbol: identity.symbol ?? input.symbol,
+      rawSymbol: identity.rawSymbol,
+    };
+    const existingByKey = securitiesByLookup.get(`${normalizedInput.securityKey}|`);
     const existingBySymbol = preferSymbolLookup
-      ? securityLookupKeys(input.symbol, input.currencyCode ?? null)
+      ? securityLookupKeys(
+          normalizedInput.symbol,
+          normalizedInput.currencyCode ?? null
+        )
           .map((lookupKey) => securitiesByLookup.get(lookupKey))
           .find(Boolean)
       : undefined;
     const existing = existingBySymbol ?? existingByKey;
     if (existing) return existing;
 
-    const [inserted] = await upsertSecurities(db, [input]);
+    const [inserted] = await upsertSecurities(db, [normalizedInput]);
     addSecurityLookup(inserted);
     return inserted;
   }
@@ -1619,7 +1639,7 @@ async function main() {
         source: legacyImportSource,
         isArchived: true,
         snaptradeSymbolId: null,
-        symbol: input.parsed.ticker,
+        symbol: input.parsed.underlyingSymbol,
         rawSymbol: input.parsed.rawSymbol ?? input.parsed.ticker,
         description: legacyOptionDescription(input.parsed),
         currencyCode: input.currency,

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchSecurityTransactionsFromBackend } from "../../../../api-layer/securities";
+import { fetchSecurityTransactionsFromBackend } from "../../../../repositories/securities";
 
 export type SecurityTransactionsRouteContext = {
   params: {

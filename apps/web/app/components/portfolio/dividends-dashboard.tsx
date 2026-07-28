@@ -11,6 +11,7 @@ import {
   formatNumber,
   formatPercent,
   normalizeAccountType,
+  signedValueClassName,
 } from "../../lib/formatters";
 import type {
   DividendDashboardSummaryDto,
@@ -136,7 +137,11 @@ export function DividendsDashboard({
       }));
 
   const formatMoneyAmount = (value: { amount: number; currency: string }) => (
-    <span className="inline-flex items-baseline justify-end gap-1">
+    <span
+      className={`inline-flex items-baseline justify-end gap-1 ${signedValueClassName(
+        value.amount
+      )}`}
+    >
       {formatMoney(value)}
     </span>
   );
@@ -265,7 +270,9 @@ export function DividendsDashboard({
       header: "Amount",
       align: "center",
       render: (transaction) => (
-        <span className="font-semibold text-foreground">
+        <span
+          className={`font-semibold ${signedValueClassName(transaction.amount.amount)}`}
+        >
           {formatMoney(transaction.amount)}
         </span>
       ),

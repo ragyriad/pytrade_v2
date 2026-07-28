@@ -8,7 +8,7 @@ import {
   getAccountBySnaptradeId,
   deleteSnaptradeTransactionsByAccount,
   markAccountSynced,
-  reconcileAccountBalances,
+  upsertAccountBalances,
   reconcileAccountPositions,
   upsertAccountOrders,
 } from "@repo/db";
@@ -296,8 +296,8 @@ async function main() {
       const accountBalances = allMappedBalances.filter(
         (balance) => balance.accountId === dbAccountId
       );
-      await reconcileAccountBalances(db, dbAccountId, accountBalances);
-      console.log(`  Reconciled ${accountBalances.length} balances for: ${accountName}`);
+      await upsertAccountBalances(db, dbAccountId, accountBalances);
+      console.log(`  Upserted ${accountBalances.length} balances for: ${accountName}`);
 
       const accountOrders = allMappedOrders.filter(
         (order) => order.accountId === dbAccountId

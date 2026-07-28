@@ -1,5 +1,5 @@
 import { SecuritiesDashboard } from "../components/portfolio/securities-dashboard";
-import { fetchHistoricSecuritiesFromBackend } from "../api-layer/securities";
+import { fetchHistoricSecuritiesFromBackend } from "../repositories/securities";
 import type { HistoricSecurityDto } from "../lib/portfolio-types";
 
 type PageProps = {

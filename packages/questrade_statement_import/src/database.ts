@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import {
   canonicalizeSymbol,
   normalizeSecurityProfile,
+  normalizeSecurityIdentity,
   optionUnderlyingDescription,
   normalizeSecurityType,
   normalizeTransaction,
@@ -26,9 +27,11 @@ import {
   securityAliases,
   sql,
   transactions as transactionsTable,
+  upsertOptions,
   upsertSecurities,
   upsertSecurityAliases,
   type DB,
+  type NewOption,
   type NewSecurity,
   type NewSecurityAlias,
   type NewTransaction,
@@ -204,14 +207,21 @@ function collectStatementSecurityIdentities(
     instrumentTypeCode: string | null;
     seenAt: Date;
   }) => {
-    const profile = normalizeSecurityProfile({
+    const normalizedIdentity = normalizeSecurityIdentity({
       symbol: input.symbol,
+      rawSymbol: input.rawSymbol,
+      description: input.description,
+    });
+    const profile = normalizeSecurityProfile({
+      symbol: normalizedIdentity.symbol ?? input.symbol,
       description: input.description,
       currencyCode: input.currencyCode,
       observedAt: input.seenAt,
     });
     const symbol = boundedSymbol(
-      profile?.symbol ?? canonicalizeSymbol(input.symbol)
+      profile?.symbol ??
+        normalizedIdentity.symbol ??
+        canonicalizeSymbol(input.symbol)
     );
     if (!symbol) return;
 
@@ -220,7 +230,7 @@ function collectStatementSecurityIdentities(
     if (!current) {
       identities.set(key, {
         symbol,
-        rawSymbol: boundedSymbol(input.rawSymbol),
+        rawSymbol: boundedSymbol(normalizedIdentity.rawSymbol),
         currencyCode: input.currencyCode,
         description:
           profile?.description ?? input.description?.trim() ?? null,
@@ -240,7 +250,9 @@ function collectStatementSecurityIdentities(
       input.seenAt < current.firstSeenAt ? input.seenAt : current.firstSeenAt;
     current.lastSeenAt =
       input.seenAt > current.lastSeenAt ? input.seenAt : current.lastSeenAt;
-    if (!current.rawSymbol) current.rawSymbol = boundedSymbol(input.rawSymbol);
+    if (!current.rawSymbol) {
+      current.rawSymbol = boundedSymbol(normalizedIdentity.rawSymbol);
+    }
     if (
       (!current.description || current.description === current.symbol) &&
       input.description?.trim()
@@ -319,6 +331,141 @@ function collectStatementSecurityIdentities(
   }
 
   return [...identities.values()];
+}
+
+type StatementOptionSeed = {
+  ticker: string;
+  underlyingSymbol: string;
+  rawSymbol: string;
+  description: string;
+  currencyCode: string | null;
+  contractType: "CALL" | "PUT";
+  strikePrice: string;
+  expirationDate: string;
+  firstSeenAt: Date;
+  lastSeenAt: Date;
+};
+
+async function ensureStatementOptions(
+  db: DB,
+  data: ExtractedStatementData,
+  securityLookup: SecurityLookup
+): Promise<Map<string, string>> {
+  const seeds = new Map<string, StatementOptionSeed>();
+  const add = (input: {
+    symbol: string;
+    rawSymbol: string;
+    description: string;
+    currencyCode: string | null;
+    seenAt: Date;
+  }) => {
+    const parsed = parseOptionContract(
+      input.description,
+      input.rawSymbol,
+      input.symbol
+    );
+    if (!parsed) return;
+    const current = seeds.get(parsed.ticker);
+    if (current) {
+      current.firstSeenAt =
+        input.seenAt < current.firstSeenAt ? input.seenAt : current.firstSeenAt;
+      current.lastSeenAt =
+        input.seenAt > current.lastSeenAt ? input.seenAt : current.lastSeenAt;
+      return;
+    }
+    seeds.set(parsed.ticker, {
+      ticker: parsed.ticker,
+      underlyingSymbol: parsed.underlyingSymbol,
+      rawSymbol: input.rawSymbol.trim() || parsed.ticker,
+      description: input.description,
+      currencyCode: input.currencyCode,
+      contractType: parsed.contractType,
+      strikePrice: parsed.strikePrice,
+      expirationDate: parsed.expirationDate,
+      firstSeenAt: input.seenAt,
+      lastSeenAt: input.seenAt,
+    });
+  };
+
+  for (const row of data.holdings) {
+    if (row.asset_type !== "OPTION") continue;
+    add({
+      symbol: row.symbol,
+      rawSymbol: row.raw_symbol,
+      description: row.description,
+      currencyCode: row.currency_code,
+      seenAt: dateFromStatement(row.statement_date),
+    });
+  }
+  for (const row of data.transactions) {
+    if (row.asset_type !== "OPTION") continue;
+    add({
+      symbol: row.symbol,
+      rawSymbol: row.raw_symbol,
+      description: row.description,
+      currencyCode: statementCurrency(row),
+      seenAt: utcDate(row.transaction_date),
+    });
+  }
+  if (seeds.size === 0) return new Map();
+
+  const contractInputs: NewSecurity[] = [...seeds.values()].map((seed) => ({
+    securityKey: `option:${seed.ticker}`,
+    source: STATEMENT_SOURCE,
+    isArchived: false,
+    snaptradeSymbolId: null,
+    symbol: seed.underlyingSymbol,
+    rawSymbol: seed.rawSymbol,
+    description: seed.description,
+    currencyCode: seed.currencyCode,
+    exchangeCode: null,
+    exchangeMicCode: null,
+    exchangeName: null,
+    instrumentTypeCode: null,
+    instrumentTypeDescription: null,
+    figiCode: null,
+    figiInstrumentCode: null,
+    logoUrl: null,
+    firstSeenAt: seed.firstSeenAt,
+    lastSeenAt: seed.lastSeenAt,
+  }));
+  const contractSecurities = await upsertSecurities(db, contractInputs);
+  const contractByKey = new Map(
+    contractSecurities.map((security) => [security.securityKey, security])
+  );
+  const today = new Date().toISOString().slice(0, 10);
+  const optionInputs: NewOption[] = [...seeds.values()]
+    .map((seed): NewOption | null => {
+      const contractSecurity = contractByKey.get(`option:${seed.ticker}`);
+      const underlyingSecurityId = resolveSecurityId(
+        securityLookup,
+        seed.underlyingSymbol,
+        seed.currencyCode
+      );
+      if (!contractSecurity || !underlyingSecurityId) return null;
+      return {
+        securityId: contractSecurity.id,
+        underlyingSecurityId,
+        ticker: seed.ticker,
+        contractType: seed.contractType,
+        strikePrice: seed.strikePrice,
+        expirationDate: seed.expirationDate,
+        multiplier: "100",
+        status: seed.expirationDate < today ? "closed" : "open",
+        isMiniOption: false,
+        isArchived: false,
+        rawData: {
+          source: STATEMENT_SOURCE,
+          rawSymbol: seed.rawSymbol,
+          description: seed.description,
+        },
+        firstSeenAt: seed.firstSeenAt,
+        lastSeenAt: seed.lastSeenAt,
+      };
+    })
+    .filter((option): option is NewOption => option !== null);
+  const persistedOptions = await upsertOptions(db, optionInputs);
+  return new Map(persistedOptions.map((option) => [option.ticker, option.id]));
 }
 
 async function ensureStatementSecurities(
@@ -693,7 +840,8 @@ function buildStatementTransaction(
   securityLookup: SecurityLookup,
   securityTypesById: Map<string, string | null>,
   securitySymbolsById: Map<string, string>,
-  securityCandidates: SecurityResolutionCandidate[]
+  securityCandidates: SecurityResolutionCandidate[],
+  optionIdsByTicker: Map<string, string>
 ): NewTransaction {
   const currencyCode = statementCurrency(row);
   const directSecurityId = row.symbol
@@ -712,6 +860,12 @@ function buildStatementTransaction(
       );
   const resolvedSecurityId = directSecurityId ?? resolvedCandidate?.id ?? null;
   const isOption = row.asset_type === "OPTION";
+  const parsedOption = isOption
+    ? parseOptionContract(row.description, row.raw_symbol, row.symbol)
+    : null;
+  const optionId = parsedOption
+    ? optionIdsByTicker.get(parsedOption.ticker) ?? null
+    : null;
   const resolvedSecurityType = resolvedSecurityId
     ? securityTypesById.get(resolvedSecurityId) ?? null
     : null;
@@ -758,10 +912,15 @@ function buildStatementTransaction(
     accountId,
     securityId: isCashLike || isOption ? null : resolvedSecurityId,
     underlyingSecurityId: isCashLike ? null : isOption ? resolvedSecurityId : null,
-    optionId: null,
+    optionId,
     type: row.normalized_type,
     action: normalizedTransaction.action,
-    optionAction: null,
+    optionAction:
+      normalizedTransaction.action === "BUY"
+        ? "BUY_TO_OPEN"
+        : normalizedTransaction.action === "SELL"
+          ? "SELL_TO_CLOSE"
+          : null,
     assetType: isCashLike ? normalizedTransaction.assetType : assetType,
     description: row.description,
     amount: requiredDecimal(statementAmount(row)),
@@ -782,6 +941,7 @@ function prepareStatementTransactions(
   securityTypesById: Map<string, string | null>,
   securitySymbolsById: Map<string, string>,
   securityCandidates: SecurityResolutionCandidate[],
+  optionIdsByTicker: Map<string, string>,
   existingRows: ExistingTransactionRow[]
 ): {
   rows: PreparedStatementTransaction[];
@@ -843,7 +1003,8 @@ function prepareStatementTransactions(
       securityLookup,
       securityTypesById,
       securitySymbolsById,
-      securityCandidates
+      securityCandidates,
+      optionIdsByTicker
     );
     const importKey = value.legacyImportKey!;
     const compositeKeys = incomingTransactionKeys(accountId, row, value.symbol);
@@ -1383,6 +1544,7 @@ export async function saveExtractedStatements(
       securityTypesById,
       securitySymbolsById,
       securityCandidates,
+      new Map(),
       existingTransactionRows
     );
     return {
@@ -1422,6 +1584,11 @@ export async function saveExtractedStatements(
       securityTypesById,
       securitySymbolsById
     );
+    const optionIdsByTicker = await ensureStatementOptions(
+      tx,
+      data,
+      securityLookup
+    );
     const preparedTransactions = prepareStatementTransactions(
       data,
       accountsByNumber,
@@ -1429,6 +1596,7 @@ export async function saveExtractedStatements(
       securityTypesById,
       securitySymbolsById,
       securityCandidates,
+      optionIdsByTicker,
       existingTransactionRows
     );
     if (preparedTransactions.duplicateTransactionIdsToArchive.length > 0) {

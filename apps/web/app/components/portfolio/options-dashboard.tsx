@@ -135,9 +135,7 @@ export function OptionsDashboard({ dashboard }: OptionsDashboardProps) {
         transaction.units == null ? (
           "-"
         ) : (
-          <span className={signedValueClassName(transaction.units)}>
-            {formatNumber(transaction.units)}
-          </span>
+          formatNumber(transaction.units)
         ),
     },
     {
@@ -145,7 +143,14 @@ export function OptionsDashboard({ dashboard }: OptionsDashboardProps) {
       header: "Price",
       align: "right",
       value: (transaction) => transaction.price?.amount ?? null,
-      render: (transaction) => (transaction.price ? formatMoney(transaction.price) : "-"),
+      render: (transaction) =>
+        transaction.price ? (
+          <span className={signedValueClassName(transaction.price.amount)}>
+            {formatMoney(transaction.price)}
+          </span>
+        ) : (
+          "-"
+        ),
     },
     {
       key: "amount",
@@ -223,11 +228,14 @@ export function OptionsDashboard({ dashboard }: OptionsDashboardProps) {
       header: "Fees",
       align: "right",
       value: (security) => security.totalFees.reduce((sum, fee) => sum + fee.amount, 0),
-      render: (security) => (
-        <span className="font-medium text-negative">
-          {formatMoneyBreakdown(security.totalFees, fallbackMoney())}
-        </span>
-      ),
+      render: (security) => {
+        const value = security.totalFees.reduce((sum, fee) => sum + fee.amount, 0);
+        return (
+          <span className={`font-medium ${signedValueClassName(value)}`}>
+            {formatMoneyBreakdown(security.totalFees, fallbackMoney())}
+          </span>
+        );
+      },
     },
     {
       key: "pnl",
@@ -379,13 +387,17 @@ function OptionTransactionsSubTable({
                   {transaction.units == null ? (
                     "-"
                   ) : (
-                    <span className={signedValueClassName(transaction.units)}>
-                      {formatNumber(transaction.units)}
-                    </span>
+                    formatNumber(transaction.units)
                   )}
                 </td>
                 <td className="px-4 py-3 text-center">
-                  {transaction.price ? formatMoney(transaction.price) : "-"}
+                  {transaction.price ? (
+                    <span className={signedValueClassName(transaction.price.amount)}>
+                      {formatMoney(transaction.price)}
+                    </span>
+                  ) : (
+                    "-"
+                  )}
                 </td>
                 <td
                   className={`px-4 py-3 text-center font-medium ${signedValueClassName(

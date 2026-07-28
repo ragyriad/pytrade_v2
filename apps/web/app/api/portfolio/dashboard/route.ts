@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchPortfolioDashboardFromBackend } from "../../../api-layer/dashboard";
+import { fetchPortfolioDashboardFromBackend } from "../../../repositories/dashboard";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);

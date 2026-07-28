@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import {
   canonicalizeSymbol,
   normalizeSecurityProfile,
+  normalizeSecurityIdentity,
   optionUnderlyingDescription,
   normalizeTransaction,
   parseOptionContract,
@@ -172,6 +173,12 @@ async function main() {
         row.rawSymbol,
         row.symbol
       );
+      const normalizedIdentity = normalizeSecurityIdentity({
+        securityKey: row.securityKey,
+        symbol: row.symbol,
+        rawSymbol: row.rawSymbol,
+        description: row.description,
+      });
       const linkedTransactionProfiles = rows
         .filter(
           (transaction) =>
@@ -199,9 +206,11 @@ async function main() {
         });
       const nextSymbol =
         profile?.symbol ??
-        (!contractSecurity && parsedOption
-          ? parsedOption.underlyingSymbol
-          : row.symbol);
+        normalizedIdentity.symbol ??
+        row.symbol;
+      const nextRawSymbol =
+        normalizedIdentity.rawSymbol ??
+        (contractSecurity ? row.symbol : row.rawSymbol);
       const siblingDescription = securityRows
         .filter(
           (candidate) =>
@@ -238,6 +247,7 @@ async function main() {
       return {
         row,
         nextSymbol,
+        nextRawSymbol,
         nextDescription,
         nextInstrumentTypeCode: hadOptionType
           ? null
@@ -258,6 +268,7 @@ async function main() {
     .filter(
       (change) =>
         change.row.symbol !== change.nextSymbol ||
+        change.row.rawSymbol !== change.nextRawSymbol ||
         change.row.description !== change.nextDescription ||
         change.row.instrumentTypeCode !==
           change.nextInstrumentTypeCode ||
@@ -404,6 +415,7 @@ async function main() {
       `  ${change.row.id} [${change.row.source}]: ` +
         JSON.stringify({
           symbol: [change.row.symbol, change.nextSymbol],
+          rawSymbol: [change.row.rawSymbol, change.nextRawSymbol],
           description: [
             change.row.description,
             change.nextDescription,
@@ -526,6 +538,7 @@ async function main() {
         update securities
         set
           symbol = ${change.nextSymbol},
+          raw_symbol = ${change.nextRawSymbol},
           description = ${change.nextDescription},
           instrument_type_code = ${change.nextInstrumentTypeCode},
           instrument_type_description = ${change.nextInstrumentTypeDescription},

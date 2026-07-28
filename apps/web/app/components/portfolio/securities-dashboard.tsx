@@ -165,15 +165,7 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
       key: "status",
       header: "Status",
       value: (security) => security.status,
-      render: (security) => (
-        <span
-          className={
-            security.status === "active" ? "font-medium text-positive" : "text-muted"
-          }
-        >
-          {security.status}
-        </span>
-      ),
+      render: (security) => security.status,
     },
     {
       key: "transactions",
@@ -185,11 +177,7 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
       key: "dividends",
       header: "Dividends",
       value: (security) => security.dividendCount,
-      render: (security) => (
-        <span className="font-medium text-positive">
-          {formatNumber(security.dividendCount)}
-        </span>
-      ),
+      render: (security) => formatNumber(security.dividendCount),
     },
     {
       key: "gainLoss",
@@ -207,7 +195,7 @@ export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardP
           <span className={`font-medium ${signedValueClassName(security.totalGainLoss.amount)}`}>
             {formatMoney(security.totalGainLoss)}
             {security.totalGainLossPercent == null ? null : (
-              <span className="ml-1 text-xs font-semibold text-current opacity-75">
+              <span className="ml-1 text-xs font-semibold text-muted">
                 ({formatPercent(security.totalGainLossPercent)})
               </span>
             )}
@@ -341,13 +329,17 @@ function SecurityTransactionsSubTable({
                   {transaction.units == null ? (
                     "-"
                   ) : (
-                    <span className={signedValueClassName(transaction.units)}>
-                      {formatNumber(transaction.units)}
-                    </span>
+                    formatNumber(transaction.units)
                   )}
                 </td>
                 <td className="px-4 py-3 text-center">
-                  {transaction.price ? formatMoney(transaction.price) : "-"}
+                  {transaction.price ? (
+                    <span className={signedValueClassName(transaction.price.amount)}>
+                      {formatMoney(transaction.price)}
+                    </span>
+                  ) : (
+                    "-"
+                  )}
                 </td>
                 <td
                   className={`px-4 py-3 text-center font-medium ${signedValueClassName(

@@ -8,7 +8,7 @@ import { processAccountActivities } from "./ingestion/index.js";
 import {
   getLatestSnaptradeTransactionDate,
   markAccountSynced,
-  reconcileAccountBalances,
+  upsertAccountBalances,
   reconcileAccountPositions,
   upsertAccountOrders,
   upsertAccount,
@@ -145,7 +145,7 @@ export async function syncBalancesByAccount(
     .map((balance) => mapSnaptradeBalance(balance, dbAccountId))
     .filter((balance): balance is NonNullable<typeof balance> => balance !== null);
 
-  await reconcileAccountBalances(db, dbAccountId, mappedBalances);
+  await upsertAccountBalances(db, dbAccountId, mappedBalances);
   console.log(`  Synced ${mappedBalances.length} balances for account: ${accountName}`);
   return mappedBalances;
 }
