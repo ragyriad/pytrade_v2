@@ -3,7 +3,10 @@ import {
   getTransactionSyncStartDate,
   syncAccounts,
 } from "../sync_functions.js";
-import { processAccountActivities } from "../ingestion/index.js";
+import {
+  normalizeSnaptradeCreditCardPayments,
+  processAccountActivities,
+} from "../ingestion/index.js";
 import {
   getAccountBySnaptradeId,
   deleteSnaptradeTransactionsByAccount,
@@ -234,6 +237,19 @@ async function main() {
         (result.duplicateTransactionsArchived > 0
           ? ` (${result.duplicateTransactionsArchived} stored duplicates archived)`
           : "")
+      );
+    }
+
+    const normalizedCreditCardPaymentCount =
+      resolvedAccounts.length > 0
+        ? await normalizeSnaptradeCreditCardPayments(
+            db,
+            resolvedAccounts[0].dbAccountId
+          )
+        : 0;
+    if (normalizedCreditCardPaymentCount > 0) {
+      console.log(
+        `  Normalized ${normalizedCreditCardPaymentCount} credit-card payment rows`
       );
     }
 

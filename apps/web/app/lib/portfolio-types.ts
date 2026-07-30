@@ -258,6 +258,7 @@ export type CashAccountDto = {
   category: "cash" | "credit";
   balance: MoneyDto;
   balances: MoneyDto[];
+  creditLimit: MoneyDto | null;
   lastSyncedAt: string | null;
 };
 
@@ -282,6 +283,7 @@ export type CalculatedCreditCardBalanceDto = {
   netAmount: number;
   amountOwing: number;
   creditAmount: number;
+  creditLimit: number | null;
   charges: number;
   returns: number;
   payments: number;

@@ -28,6 +28,7 @@ export type CashAccountDto = {
   category: "cash" | "credit";
   balance: MoneyDto;
   balances: MoneyDto[];
+  creditLimit: MoneyDto | null;
   lastSyncedAt: string | null;
 };
 
@@ -196,6 +197,11 @@ function toCashAccountDto(
       (balance) =>
         balance.currency === (account.balanceCurrency ?? account.accountCurrency)
     ) ?? balances[0];
+  const creditLimit =
+    category === "credit" &&
+    normalizedText(account.brokerageName).includes("WEALTHSIMPLE")
+      ? { amount: 10_000, currency: "CAD" }
+      : null;
 
   return {
     id: account.id,
@@ -207,6 +213,7 @@ function toCashAccountDto(
     category,
     balance: primaryBalance,
     balances,
+    creditLimit,
     lastSyncedAt: latestIso(
       account.lastHoldingsSyncAt,
       account.lastTransactionsSyncAt,
@@ -514,7 +521,25 @@ export async function getCashDashboard(
   );
   const cashAccounts = accountDtos.filter((account) => account.category === "cash");
   const creditAccounts = accountDtos.filter((account) => account.category === "credit");
-  const transactionDtos = transactionRows.map(toCashTransactionDto);
+  const rawTransactionDtos = transactionRows.map(toCashTransactionDto);
+  const creditCardBalanceCalculation = calculateCreditCardBalances(
+    accountDtos,
+    rawTransactionDtos
+  );
+  const sentPaymentTransactionIds = new Set(
+    creditCardBalanceCalculation.sentPaymentTransactionIds
+  );
+  const receivedPaymentTransactionIds = new Set(
+    creditCardBalanceCalculation.receivedPaymentTransactionIds
+  );
+  const transactionDtos = rawTransactionDtos.map((transaction) => ({
+    ...transaction,
+    action: sentPaymentTransactionIds.has(transaction.id)
+      ? "CREDIT_CARD_PAYMENT_SENT"
+      : receivedPaymentTransactionIds.has(transaction.id)
+        ? "CREDIT_CARD_PAYMENT_RECEIVED"
+        : transaction.action,
+  }));
   const cashAccountIds = new Set(cashAccounts.map((account) => account.id));
   const creditAccountIds = new Set(creditAccounts.map((account) => account.id));
   const cashAccountTransactions = transactionDtos.filter(
@@ -541,11 +566,6 @@ export async function getCashDashboard(
     ...debitAccountExpenses,
     ...creditCardExpenses,
   ]);
-  const creditCardBalanceCalculation = calculateCreditCardBalances(
-    accountDtos,
-    transactionDtos
-  );
-
   return {
     accounts: accountDtos,
     cashAccounts,
@@ -560,7 +580,7 @@ export async function getCashDashboard(
     totalCash: groupMoney(cashAccounts.flatMap((account) => account.balances)),
     totalCreditBalance: groupMoney(
       creditCardBalanceCalculation.balances.map((balance) => ({
-        amount: balance.amountOwing,
+        amount: balance.netAmount,
         currency: balance.currency,
       }))
     ),

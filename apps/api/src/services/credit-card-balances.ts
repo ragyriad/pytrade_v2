@@ -7,6 +7,7 @@ export type CreditCardBalanceAccountInput = {
   status: string | null;
   category: "cash" | "credit";
   balances: MoneyDto[];
+  creditLimit?: MoneyDto | null;
 };
 
 export type CreditCardBalanceTransactionInput = {
@@ -25,6 +26,7 @@ export type CalculatedCreditCardBalance = {
   netAmount: number;
   amountOwing: number;
   creditAmount: number;
+  creditLimit: number | null;
   charges: number;
   returns: number;
   payments: number;
@@ -36,6 +38,8 @@ export type CalculatedCreditCardBalance = {
 export type CreditCardBalanceCalculation = {
   balances: CalculatedCreditCardBalance[];
   unallocatedPayments: MoneyBreakdownDto[];
+  sentPaymentTransactionIds: string[];
+  receivedPaymentTransactionIds: string[];
 };
 
 type BalanceAccumulator = {
@@ -67,14 +71,14 @@ function isPayment(transaction: CreditCardBalanceTransactionInput): boolean {
 
 function isReturn(transaction: CreditCardBalanceTransactionInput): boolean {
   const action = normalized(transaction.action ?? transaction.type);
-  return ["REFUND", "REIMBURSEMENT", "REVERSAL", "CASHBACK"].some((term) =>
+  return ["REFUND", "REIMBURSEMENT", "REVERSAL", "CASHBACK", "INTEREST"].some((term) =>
     action.includes(term)
   );
 }
 
 function isCharge(transaction: CreditCardBalanceTransactionInput): boolean {
   const action = normalized(transaction.action ?? transaction.type);
-  return ["SPEND", "PURCHASE", "CHARGE", "DEBIT", "FEE", "INTEREST"].some(
+  return ["SPEND", "PURCHASE", "CHARGE", "DEBIT", "FEE"].some(
     (term) => action.includes(term)
   );
 }
@@ -125,6 +129,76 @@ function balanceKey(accountId: string, currency: string): string {
   return `${accountId}:${currency}`;
 }
 
+function transferKey(
+  account: CreditCardBalanceAccountInput,
+  transaction: CreditCardBalanceTransactionInput
+): string {
+  return [
+    normalized(account.institutionName),
+    transaction.amount.currency,
+    Math.round(Math.abs(transaction.amount.amount) * 100),
+  ].join("|");
+}
+
+function inferPaymentPairs(
+  accountsById: Map<string, CreditCardBalanceAccountInput>,
+  transactions: CreditCardBalanceTransactionInput[]
+): { sentIds: Set<string>; receivedIds: Set<string> } {
+  const sentByKey = new Map<string, CreditCardBalanceTransactionInput[]>();
+  const receivedByKey = new Map<string, CreditCardBalanceTransactionInput[]>();
+
+  for (const transaction of transactions) {
+    if (transaction.isArchived) continue;
+    const account = accountsById.get(transaction.accountId);
+    if (!account || !normalized(account.institutionName).includes("WEALTHSIMPLE")) {
+      continue;
+    }
+    const action = normalized(transaction.action ?? transaction.type);
+    const eligible = action.includes("SPEND") || isPayment(transaction);
+    if (!eligible) continue;
+
+    const key = transferKey(account, transaction);
+    if (
+      account.category === "cash" &&
+      (isPayment(transaction) || transaction.amount.amount < 0)
+    ) {
+      const rows = sentByKey.get(key) ?? [];
+      rows.push(transaction);
+      sentByKey.set(key, rows);
+    } else if (account.category === "credit" && transaction.amount.amount > 0) {
+      const rows = receivedByKey.get(key) ?? [];
+      rows.push(transaction);
+      receivedByKey.set(key, rows);
+    }
+  }
+
+  const sentIds = new Set<string>();
+  const receivedIds = new Set<string>();
+  for (const [key, sentRows] of sentByKey) {
+    const availableReceivedRows = [...(receivedByKey.get(key) ?? [])];
+    for (const sentRow of sentRows) {
+      let matchIndex = -1;
+      let closestGap = Number.POSITIVE_INFINITY;
+      for (let index = 0; index < availableReceivedRows.length; index += 1) {
+        const gap = Math.abs(
+          new Date(availableReceivedRows[index].tradeDate).getTime() -
+            new Date(sentRow.tradeDate).getTime()
+        );
+        if (gap < 1_000 && gap < closestGap) {
+          matchIndex = index;
+          closestGap = gap;
+        }
+      }
+      if (matchIndex >= 0) {
+        sentIds.add(sentRow.id);
+        receivedIds.add(availableReceivedRows[matchIndex].id);
+        availableReceivedRows.splice(matchIndex, 1);
+      }
+    }
+  }
+  return { sentIds, receivedIds };
+}
+
 function paymentCandidates(
   paymentAccount: CreditCardBalanceAccountInput | undefined,
   currency: string,
@@ -154,6 +228,18 @@ export function calculateCreditCardBalances(
   transactions: CreditCardBalanceTransactionInput[]
 ): CreditCardBalanceCalculation {
   const accountsById = new Map(accounts.map((account) => [account.id, account]));
+  const inferredPayments = inferPaymentPairs(accountsById, transactions);
+  const sentPaymentTransactionIds = new Set(inferredPayments.sentIds);
+  const receivedPaymentTransactionIds = new Set(inferredPayments.receivedIds);
+  for (const transaction of transactions) {
+    if (!isPayment(transaction)) continue;
+    const account = accountsById.get(transaction.accountId);
+    if (account?.category === "credit") {
+      receivedPaymentTransactionIds.add(transaction.id);
+    } else if (account?.category === "cash") {
+      sentPaymentTransactionIds.add(transaction.id);
+    }
+  }
   const creditAccounts = accounts.filter(
     (account) => account.category === "credit"
   );
@@ -185,16 +271,15 @@ export function calculateCreditCardBalances(
     if (!accumulator) continue;
     const amount = transaction.amount.amount;
 
-    if (isPayment(transaction)) {
+    if (isPayment(transaction) || inferredPayments.receivedIds.has(transaction.id)) {
       accumulator.payments += Math.abs(amount);
-      accumulator.activity -= Math.abs(amount);
+      accumulator.activity += Math.abs(amount);
     } else if (isReturn(transaction)) {
       accumulator.returns += Math.abs(amount);
-      accumulator.activity -= Math.abs(amount);
+      accumulator.activity += Math.abs(amount);
     } else if (isCharge(transaction)) {
-      if (amount >= 0) accumulator.charges += amount;
-      else accumulator.returns += Math.abs(amount);
-      accumulator.activity += amount;
+      accumulator.charges += Math.abs(amount);
+      accumulator.activity -= Math.abs(amount);
     } else {
       continue;
     }
@@ -203,9 +288,15 @@ export function calculateCreditCardBalances(
   }
 
   for (const transaction of transactions) {
-    if (transaction.isArchived || !isPayment(transaction)) continue;
+    if (
+      transaction.isArchived ||
+      (!isPayment(transaction) && !inferredPayments.sentIds.has(transaction.id))
+    ) {
+      continue;
+    }
     const paymentAccount = accountsById.get(transaction.accountId);
     if (paymentAccount?.category === "credit") continue;
+    if (inferredPayments.sentIds.has(transaction.id)) continue;
 
     const candidates = paymentCandidates(
       paymentAccount,
@@ -228,15 +319,20 @@ export function calculateCreditCardBalances(
 
     const payment = Math.abs(transaction.amount.amount);
     accumulator.payments += payment;
-    accumulator.activity -= payment;
+    accumulator.activity += payment;
     updateActivityDates(accumulator, transaction.tradeDate);
   }
 
   const balances = Array.from(accumulators.values())
     .map((accumulator): CalculatedCreditCardBalance => {
       const netAmount = roundMoney(accumulator.activity);
-      const amountOwing = roundMoney(Math.max(netAmount, 0));
-      const creditAmount = roundMoney(Math.max(-netAmount, 0));
+      const amountOwing = roundMoney(Math.max(-netAmount, 0));
+      const creditAmount = roundMoney(Math.max(netAmount, 0));
+      const account = accountsById.get(accumulator.accountId);
+      const creditLimit =
+        account?.creditLimit?.currency === accumulator.currency
+          ? roundMoney(account.creditLimit.amount)
+          : null;
 
       return {
         accountId: accumulator.accountId,
@@ -244,6 +340,7 @@ export function calculateCreditCardBalances(
         netAmount,
         amountOwing,
         creditAmount,
+        creditLimit,
         charges: roundMoney(accumulator.charges),
         returns: roundMoney(accumulator.returns),
         payments: roundMoney(accumulator.payments),
@@ -262,5 +359,7 @@ export function calculateCreditCardBalances(
   return {
     balances,
     unallocatedPayments: groupMoney(unallocatedPayments),
+    sentPaymentTransactionIds: [...sentPaymentTransactionIds],
+    receivedPaymentTransactionIds: [...receivedPaymentTransactionIds],
   };
 }

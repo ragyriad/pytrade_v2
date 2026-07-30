@@ -4,7 +4,10 @@ import {
   getSnaptradeTransactionsByAccountId,
   getSnaptradeUserAccounts,
 } from "./snaptrade.js";
-import { processAccountActivities } from "./ingestion/index.js";
+import {
+  normalizeSnaptradeCreditCardPayments,
+  processAccountActivities,
+} from "./ingestion/index.js";
 import {
   getLatestSnaptradeTransactionDate,
   markAccountSynced,
@@ -88,6 +91,7 @@ export async function syncTransactionsByAccount(
       providerName: accountName,
       activities: rawTransactions,
     });
+    await normalizeSnaptradeCreditCardPayments(db, dbAccountId);
     await markAccountSynced(db, dbAccountId, { transactions: true });
 
     console.log(

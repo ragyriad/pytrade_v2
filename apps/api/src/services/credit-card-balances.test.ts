@@ -22,6 +22,7 @@ const cardAccount: CreditCardBalanceAccountInput = {
   status: "open",
   category: "credit",
   balances: [{ amount: 0, currency: "CAD" }],
+  creditLimit: { amount: 10_000, currency: "CAD" },
 };
 
 function transaction(
@@ -57,7 +58,7 @@ test("calculates charges, reversals, and cash-account payments", () => {
       transaction({
         id: "reversal",
         accountId: "card",
-        action: "SPEND",
+        action: "REVERSAL",
         amount: -25,
       }),
       transaction({
@@ -75,15 +76,17 @@ test("calculates charges, reversals, and cash-account payments", () => {
       netAmount: result.balances[0].netAmount,
       amountOwing: result.balances[0].amountOwing,
       creditAmount: result.balances[0].creditAmount,
+      creditLimit: result.balances[0].creditLimit,
       charges: result.balances[0].charges,
       returns: result.balances[0].returns,
       payments: result.balances[0].payments,
       status: result.balances[0].status,
     },
     {
-      netAmount: 75,
+      netAmount: -75,
       amountOwing: 75,
       creditAmount: 0,
+      creditLimit: 10_000,
       charges: 200,
       returns: 25,
       payments: 100,
@@ -117,7 +120,7 @@ test("reports an overpaid or returned balance as positive available credit", () 
     ]
   );
 
-  assert.equal(result.balances[0].netAmount, -25);
+  assert.equal(result.balances[0].netAmount, 25);
   assert.equal(result.balances[0].amountOwing, 0);
   assert.equal(result.balances[0].creditAmount, 25);
   assert.equal(result.balances[0].status, "credit");
@@ -144,4 +147,35 @@ test("does not guess when a payment could belong to multiple cards", () => {
     { amount: 50, currency: "CAD" },
   ]);
   assert.ok(result.balances.every((balance) => balance.payments === 0));
+});
+
+test("infers a same-brokerage payment pair without double-counting it", () => {
+  const result = calculateCreditCardBalances(
+    [cashAccount, cardAccount],
+    [
+      transaction({
+        id: "charge",
+        accountId: "card",
+        action: "SPEND",
+        amount: 235.68,
+      }),
+      transaction({
+        id: "cash-side",
+        accountId: "cash",
+        action: "SPEND",
+        amount: -217.77,
+      }),
+      transaction({
+        id: "card-side",
+        accountId: "card",
+        action: "SPEND",
+        amount: 217.77,
+      }),
+    ]
+  );
+
+  assert.equal(result.balances[0].charges, 235.68);
+  assert.equal(result.balances[0].payments, 217.77);
+  assert.equal(result.balances[0].netAmount, -17.91);
+  assert.equal(result.balances[0].amountOwing, 17.91);
 });

@@ -299,15 +299,54 @@ function formatMoneyRows(values: MoneyDto[]) {
 function formatCreditBalanceRows(values: CalculatedCreditCardBalanceDto[]) {
   return groupMoney(
     values.map((value) => ({
-      amount: value.amountOwing,
+      amount: value.netAmount,
       currency: value.currency,
     }))
-  ).map((value) => ({
-    id: value.currency,
-    value: formatNumber(value.amount),
-    suffix: `${value.currency} owing`,
-    className: value.amount > 0 ? "text-negative" : "text-foreground",
-  }));
+  ).map((value) => {
+    const status =
+      value.amount > 0 ? "credit" : value.amount < 0 ? "owing" : "paid";
+    return {
+      id: value.currency,
+      value: formatNumber(value.amount),
+      suffix: `${value.currency} ${status}`,
+      className:
+        value.amount > 0
+          ? "text-positive"
+          : value.amount < 0
+            ? "text-negative"
+            : "text-foreground",
+    };
+  });
+}
+
+function transactionDisplayAmount(
+  transaction: CashTransactionDto,
+  account: CashAccountDto | undefined
+): number {
+  const action = `${transaction.action ?? ""} ${transaction.type}`.toUpperCase();
+  const amount = Math.abs(transaction.amount.amount);
+
+  if (action.includes("CREDIT_CARD_PAYMENT_RECEIVED")) return amount;
+  if (action.includes("CREDIT_CARD_PAYMENT_SENT")) return -amount;
+  if (action.includes("CREDIT_CARD_PAYMENT")) {
+    return account?.category === "credit" ? amount : -amount;
+  }
+  if (
+    ["REIMBURSEMENT", "REFUND", "REVERSAL", "INTEREST", "CASHBACK"].some(
+      (term) => action.includes(term)
+    )
+  ) {
+    return amount;
+  }
+  if (
+    ["SPEND", "PURCHASE", "CHARGE", "DEBIT", "FEE"].some((term) =>
+      action.includes(term)
+    )
+  ) {
+    return -amount;
+  }
+
+  return transaction.amount.amount;
 }
 
 function formatInterestRows(values: Array<{ currency: string; percent: number | null }>) {
@@ -524,12 +563,6 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
     filteredCashAccountIds.has(transaction.accountId) ||
     filteredCreditAccountIds.has(transaction.accountId)
   );
-  const accountFilteredDebitExpenses = dashboard.debitAccountExpenses.filter(
-    (transaction) => filteredCashAccountIds.has(transaction.accountId)
-  );
-  const accountFilteredCreditCardExpenses = dashboard.creditCardExpenses.filter((transaction) =>
-    filteredCreditAccountIds.has(transaction.accountId)
-  );
   const accountFilteredExpenses = dashboard.expenses.filter(
     (transaction) =>
       filteredCashAccountIds.has(transaction.accountId) ||
@@ -537,14 +570,6 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
   );
   const cashTransactions = filterTransactionsByTimeline(
     accountFilteredCashTransactions,
-    filters.timeline
-  );
-  const debitAccountExpenses = filterTransactionsByTimeline(
-    accountFilteredDebitExpenses,
-    filters.timeline
-  );
-  const creditCardExpenses = filterTransactionsByTimeline(
-    accountFilteredCreditCardExpenses,
     filters.timeline
   );
   const expenses = filterTransactionsByTimeline(
@@ -583,10 +608,7 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
         category: "credit" as const,
         status: account?.status ?? "Unknown",
         balance: {
-          amount:
-            balance.amountOwing > 0
-              ? balance.amountOwing
-              : -balance.creditAmount,
+          amount: balance.netAmount,
           currency: balance.currency,
         },
         balanceStatus: balance.status,
@@ -629,12 +651,19 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
       key: "amount",
       header: "Amount",
       align: "right",
-      value: (transaction) => transaction.amount.amount,
-      render: (transaction) => (
-        <span className={`font-medium ${signedValueClassName(transaction.amount.amount)}`}>
-          {formatMoney(transaction.amount)}
-        </span>
-      ),
+      value: (transaction) =>
+        transactionDisplayAmount(transaction, accountsById.get(transaction.accountId)),
+      render: (transaction) => {
+        const amount = transactionDisplayAmount(
+          transaction,
+          accountsById.get(transaction.accountId)
+        );
+        return (
+          <span className={`font-medium ${signedValueClassName(amount)}`}>
+            {formatMoney({ ...transaction.amount, amount })}
+          </span>
+        );
+      },
     },
   ];
   const balanceColumns: TableColumn<CashBalanceRow>[] = [
@@ -732,29 +761,33 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
             align="center"
           />
           <StatCard
+            label="Credit limit"
+            icon={faCreditCard}
+            value={
+              <MetricValueList
+                rows={formatMoneyRows(
+                  filteredCreditAccounts.flatMap((account) =>
+                    account.creditLimit ? [account.creditLimit] : []
+                  )
+                )}
+              />
+            }
+            align="center"
+          />
+          <StatCard
             label="Current interest rate (30 days)"
             value={<MetricValueList rows={formatInterestRows(interestRates)} />}
             align="center"
           />
           <StatCard
-            label="Debit account expenses"
+            label="Total expenses"
             value={
               <MetricValueList
                 rows={formatMoneyRows(
-                  debitAccountExpenses.map((transaction) => transaction.amount)
-                )}
-              />
-            }
-            tone="negative"
-            align="center"
-          />
-          <StatCard
-            label="Credit card expenses"
-            icon={faCreditCard}
-            value={
-              <MetricValueList
-                rows={formatMoneyRows(
-                  creditCardExpenses.map((transaction) => transaction.amount)
+                  expenses.map((transaction) => ({
+                    amount: Math.abs(transaction.amount.amount),
+                    currency: transaction.amount.currency,
+                  }))
                 )}
               />
             }
@@ -806,7 +839,7 @@ export function CashDashboard({ dashboard }: CashDashboardProps) {
 
         <section className="mt-6">
           <DataTable
-            title="Expenses"
+            title="Total Expenses"
             rows={expenses}
             columns={transactionColumns}
             getRowKey={(transaction) => transaction.id}
