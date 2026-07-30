@@ -7,6 +7,8 @@ export * from "./providers/eodhd/prices.js";
 export * from "./providers/eodhd/tickers.js";
 export * from "./providers/tiingo/dividends.js";
 export * from "./providers/tiingo/tickers.js";
+export * from "./providers/alpha-vantage/earnings-calendar.js";
+export * from "./providers/alpha-vantage/tickers.js";
 export {
   closeMarketDataSyncDbConnection,
   syncEodhdMarketData,
@@ -20,3 +22,8 @@ export {
   type TiingoSyncOptions,
   type TiingoSyncResult,
 } from "./sync/tiingo-sync.js";
+export {
+  syncAlphaVantageMarketData,
+  type AlphaVantageSyncOptions,
+  type AlphaVantageSyncResult,
+} from "./sync/alpha-vantage-sync.js";

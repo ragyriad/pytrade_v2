@@ -886,7 +886,7 @@ function toDividendCalendarEventDto(event: DividendEvent): DividendCalendarEvent
     securityId: event.securityId,
     symbol: event.symbol,
     providerTicker: event.providerTicker,
-    source: event.source,
+    source: event.providerSource,
     cashAmount: {
       amount: toNumber(event.cashAmount),
       currency: event.currencyCode ?? "USD",

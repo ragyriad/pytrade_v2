@@ -4,8 +4,9 @@ import { fetchEodhdDividendEvents } from "../providers/eodhd/dividends.js";
 import { fetchEodhdForexRateSnapshots } from "../providers/eodhd/forex.js";
 import { fetchLatestEodhdPriceSnapshot } from "../providers/eodhd/prices.js";
 import { fetchTiingoDividendEvents } from "../providers/tiingo/dividends.js";
+import { fetchAlphaVantageEarningsCalendar } from "../providers/alpha-vantage/earnings-calendar.js";
 
-type MarketDataProvider = "eodhd" | "tiingo";
+type MarketDataProvider = "alpha-vantage" | "eodhd" | "tiingo";
 
 type EndpointResult = {
   status: "ok" | "failed";
@@ -17,11 +18,17 @@ function readProvider(argv: string[]): MarketDataProvider {
   const providerArg = argv.find((arg) => arg.startsWith("--provider="));
   const provider = providerArg?.split("=")[1]?.toLowerCase();
 
-  if (provider === "eodhd" || provider === "tiingo") return provider;
+  if (
+    provider === "alpha-vantage" ||
+    provider === "eodhd" ||
+    provider === "tiingo"
+  ) {
+    return provider;
+  }
   throw new Error(
     provider
       ? `Unsupported market data provider: ${provider}`
-      : "Missing --provider=eodhd or --provider=tiingo."
+      : "Missing --provider=alpha-vantage, --provider=eodhd, or --provider=tiingo."
   );
 }
 
@@ -103,12 +110,44 @@ async function testTiingo(argv: string[]) {
   return { provider: "tiingo", ticker, endpoints: { dividends } };
 }
 
+async function testAlphaVantage(argv: string[]) {
+  const horizon = readArg(argv, "--horizon", "3month");
+  if (
+    horizon !== "3month" &&
+    horizon !== "6month" &&
+    horizon !== "12month"
+  ) {
+    throw new Error(`Unsupported Alpha Vantage horizon: ${horizon}`);
+  }
+
+  const earnings = await capture(async () => {
+    const rows = await fetchAlphaVantageEarningsCalendar(horizon);
+    return {
+      horizon,
+      earningsEventCount: rows.length,
+      firstReportDate: rows[0]?.eventDate ?? null,
+      lastReportDate: rows.at(-1)?.eventDate ?? null,
+    };
+  });
+
+  return {
+    provider: "alpha-vantage",
+    horizon,
+    endpoints: { earnings },
+  };
+}
+
 async function main() {
   loadMarketDataEnv();
 
   const argv = process.argv.slice(2);
   const provider = readProvider(argv);
-  const result = provider === "eodhd" ? await testEodhd(argv) : await testTiingo(argv);
+  const result =
+    provider === "eodhd"
+      ? await testEodhd(argv)
+      : provider === "tiingo"
+        ? await testTiingo(argv)
+        : await testAlphaVantage(argv);
 
   console.log(JSON.stringify(result, null, 2));
 

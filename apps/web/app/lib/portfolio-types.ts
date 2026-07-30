@@ -162,6 +162,31 @@ export type DividendCalendarEventDto = {
   isSpecial: boolean;
 };
 
+export type CalendarEventDto = {
+  id: string;
+  securityId: string | null;
+  eventType: string;
+  eventDate: string;
+  eventName: string | null;
+  eventStatus: string | null;
+  isEstimated: boolean;
+  providerSource: string;
+  providerTicker: string;
+  symbol: string;
+  currencyCode: string | null;
+  cashAmount: number | null;
+  exDate: string | null;
+  paymentDate: string | null;
+  recordDate: string | null;
+  declarationDate: string | null;
+  frequency: string | null;
+  distributionType: string | null;
+  isSpecial: boolean;
+  fiscalDateEnding: string | null;
+  estimatedEps: number | null;
+  reportedEps: number | null;
+};
+
 export type DividendSummaryMetricsDto = {
   totalDividends: MoneyBreakdownDto[];
   annualIncome: MoneyBreakdownDto[];

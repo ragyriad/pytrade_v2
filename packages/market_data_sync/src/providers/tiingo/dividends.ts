@@ -54,6 +54,11 @@ export async function fetchTiingoDividendEvents(
     const distributionType = row.distributionType ?? null;
 
     return {
+      eventType: "dividend",
+      eventDate: toDateOnly(row.exDate) ?? row.exDate,
+      eventName: "Dividend",
+      eventStatus: null,
+      isEstimated: false,
       source: TIINGO_SOURCE,
       sourceEventId: buildSourceEventId(row, normalizedTicker),
       providerTicker: row.ticker ?? normalizedTicker,
@@ -69,6 +74,9 @@ export async function fetchTiingoDividendEvents(
       isSpecial:
         distributionType?.toLowerCase().includes("special") ??
         frequency === "ir",
+      fiscalDateEnding: null,
+      estimatedEps: null,
+      reportedEps: null,
       rawData: row as Record<string, unknown>,
     };
   });

@@ -12,6 +12,7 @@ import {
 } from "./services/dividend_summary.js";
 import { getAnnualAccountGains } from "./services/account_performance.js";
 import { getCashDashboard } from "./services/cash.js";
+import { getCalendarEvents } from "./services/calendar.js";
 import { getPortfolioDashboard } from "./services/portfolio.js";
 import {
   getHistoricSecurities,
@@ -253,6 +254,10 @@ fastify.get("/api/dividends/summary", async (request, reply) => {
 
   return summary;
 });
+
+fastify.get("/api/calendar/events", async () => ({
+  events: await getCalendarEvents(),
+}));
 
 fastify.get("/api/performance/annual-account-gains", async (request, reply) => {
   const query = z

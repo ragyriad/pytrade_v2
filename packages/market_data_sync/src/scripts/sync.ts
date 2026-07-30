@@ -8,19 +8,33 @@ import {
   syncTiingoMarketData,
   type TiingoSyncResult,
 } from "../sync/tiingo-sync.js";
-import { parseEodhdSyncArgs, parseTiingoSyncArgs } from "./args.js";
+import {
+  syncAlphaVantageMarketData,
+  type AlphaVantageSyncResult,
+} from "../sync/alpha-vantage-sync.js";
+import {
+  parseAlphaVantageSyncArgs,
+  parseEodhdSyncArgs,
+  parseTiingoSyncArgs,
+} from "./args.js";
 
-type MarketDataProvider = "eodhd" | "tiingo";
+type MarketDataProvider = "alpha-vantage" | "eodhd" | "tiingo";
 
 function readProvider(argv: string[]): MarketDataProvider {
   const providerArg = argv.find((arg) => arg.startsWith("--provider="));
   const provider = providerArg?.split("=")[1]?.toLowerCase();
 
-  if (provider === "eodhd" || provider === "tiingo") return provider;
+  if (
+    provider === "alpha-vantage" ||
+    provider === "eodhd" ||
+    provider === "tiingo"
+  ) {
+    return provider;
+  }
   throw new Error(
     provider
       ? `Unsupported market data provider: ${provider}`
-      : "Missing --provider=eodhd or --provider=tiingo."
+      : "Missing --provider=alpha-vantage, --provider=eodhd, or --provider=tiingo."
   );
 }
 
@@ -62,6 +76,16 @@ function printTiingoResult(result: TiingoSyncResult) {
   }
 }
 
+function printAlphaVantageResult(result: AlphaVantageSyncResult) {
+  console.log(
+    `${result.status === "skipped" ? "Skipped" : "Synced"} Alpha Vantage earnings calendar: ` +
+      `${result.fetchedEventCount} fetched, ${result.matchedEventCount} matched, ` +
+      `${result.savedEventCount} saved, ${result.removedStaleEventCount} stale removed ` +
+      `across ${result.securityCount} securities ` +
+      `(${result.unmatchedTickerCount} unmatched tickers).`
+  );
+}
+
 function hasEodhdFailure(result: EodhdSyncResult): boolean {
   return (
     result.results.some(
@@ -87,9 +111,17 @@ async function main() {
     return;
   }
 
-  const result = await syncTiingoMarketData(parseTiingoSyncArgs(argv));
-  printTiingoResult(result);
-  if (hasTiingoFailure(result)) process.exitCode = 1;
+  if (provider === "tiingo") {
+    const result = await syncTiingoMarketData(parseTiingoSyncArgs(argv));
+    printTiingoResult(result);
+    if (hasTiingoFailure(result)) process.exitCode = 1;
+    return;
+  }
+
+  const result = await syncAlphaVantageMarketData(
+    parseAlphaVantageSyncArgs(argv)
+  );
+  printAlphaVantageResult(result);
 }
 
 main()

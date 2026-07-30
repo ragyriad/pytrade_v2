@@ -2,7 +2,10 @@ import { closeDbConnection, db } from "@repo/db";
 import type { DB } from "@repo/db";
 import { oneYearAgoDateOnly, todayDateOnly } from "../shared/dates.js";
 import { fetchTiingoDividendEvents } from "../providers/tiingo/dividends.js";
-import { TiingoHttpError } from "../providers/tiingo/errors.js";
+import {
+  isTiingoAuthorizationError,
+  TiingoHttpError,
+} from "../providers/tiingo/errors.js";
 import { resolveTiingoTicker, TIINGO_SOURCE } from "../providers/tiingo/tickers.js";
 import type { MarketDataSecurity } from "../shared/provider-types.js";
 import { persistDividendEvents } from "../persistence/dividends.js";
@@ -49,6 +52,10 @@ type SyncContext = Required<
 > &
   Pick<TiingoSyncOptions, "maxSecurities">;
 
+type TiingoProviderState = {
+  unavailableReason: string | null;
+};
+
 function normalizeOptions(options: TiingoSyncOptions = {}): SyncContext {
   return {
     dividendStartDate: options.dividendStartDate ?? oneYearAgoDateOnly(),
@@ -73,7 +80,8 @@ async function syncSecurity(
   database: DB,
   security: MarketDataSecurity,
   context: SyncContext,
-  dividendRefreshState: Map<string, Date | string | null>
+  dividendRefreshState: Map<string, Date | string | null>,
+  providerState: TiingoProviderState
 ): Promise<TiingoSecuritySyncResult> {
   const providerTicker = resolveTiingoTicker(security);
   const result: TiingoSecuritySyncResult = {
@@ -93,6 +101,12 @@ async function syncSecurity(
 
   if (!refreshDividends) return result;
 
+  if (providerState.unavailableReason) {
+    result.dividendStatus = "unsupported";
+    result.errors.push(providerState.unavailableReason);
+    return result;
+  }
+
   try {
     const events = await fetchTiingoDividendEvents(providerTicker, {
       from: context.dividendStartDate,
@@ -103,8 +117,18 @@ async function syncSecurity(
     result.dividendStatus = "synced";
     result.dividendEventCount = saved.length;
   } catch (error) {
-    result.dividendStatus = isTickerNotFound(error) ? "unsupported" : "failed";
-    result.errors.push(errorMessage(error));
+    const message = errorMessage(error);
+    if (isTiingoAuthorizationError(error)) {
+      providerState.unavailableReason =
+        `Tiingo dividend corporate-actions access is unavailable for this API plan: ${message}`;
+      result.dividendStatus = "unsupported";
+      result.errors.push(providerState.unavailableReason);
+    } else {
+      result.dividendStatus = isTickerNotFound(error)
+        ? "unsupported"
+        : "failed";
+      result.errors.push(message);
+    }
   }
 
   return result;
@@ -122,10 +146,18 @@ export async function syncTiingoMarketData(
     TIINGO_SOURCE,
     database
   );
+  const providerState: TiingoProviderState = { unavailableReason: null };
   const results = await mapWithConcurrency(
     securities,
     context.concurrency,
-    (security) => syncSecurity(database, security, context, dividendRefreshState)
+    (security) =>
+      syncSecurity(
+        database,
+        security,
+        context,
+        dividendRefreshState,
+        providerState
+      )
   );
 
   return {

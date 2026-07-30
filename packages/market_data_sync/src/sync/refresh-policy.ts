@@ -1,7 +1,7 @@
 import {
   and,
   db,
-  dividendEvents,
+  calendarEvents,
   eq,
   forexRateSnapshots,
   inArray,
@@ -38,23 +38,44 @@ export async function getDividendRefreshState(
 
   const rows = await database
     .select({
-      securityId: dividendEvents.securityId,
-      latestUpdatedAt: sql<Date>`max(${dividendEvents.updatedAt})`,
+      securityId: calendarEvents.securityId,
+      latestUpdatedAt: sql<Date>`max(${calendarEvents.updatedAt})`,
     })
-    .from(dividendEvents)
+    .from(calendarEvents)
     .where(
       and(
-        inArray(dividendEvents.securityId, securityIds),
-        eq(dividendEvents.source, source)
+        inArray(calendarEvents.securityId, securityIds),
+        eq(calendarEvents.eventType, "dividend"),
+        eq(calendarEvents.providerSource, source)
       )
     )
-    .groupBy(dividendEvents.securityId);
+    .groupBy(calendarEvents.securityId);
 
   return new Map(
     (rows as RefreshRow[])
       .filter((row) => row.securityId)
       .map((row) => [row.securityId as string, row.latestUpdatedAt])
   );
+}
+
+export async function getCalendarRefreshState(
+  eventType: string,
+  source: string,
+  database: DB = db
+): Promise<Date | string | null> {
+  const rows = await database
+    .select({
+      latestUpdatedAt: sql<Date>`max(${calendarEvents.updatedAt})`,
+    })
+    .from(calendarEvents)
+    .where(
+      and(
+        eq(calendarEvents.eventType, eventType),
+        eq(calendarEvents.providerSource, source)
+      )
+    );
+
+  return rows[0]?.latestUpdatedAt ?? null;
 }
 
 export async function getPriceRefreshState(

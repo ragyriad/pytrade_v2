@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChartPie,
   faChartLine,
+  faCalendarDays,
   faChevronDown,
   faReceipt,
   faGear,
@@ -22,6 +23,7 @@ const links = [
   { href: "/", label: "Portfolio", icon: faChartPie },
   { href: "/securities", label: "Securities", icon: faChartLine },
   { href: "/dividends", label: "Dividends", icon: faWallet },
+  { href: "/calendar", label: "Calendar", icon: faCalendarDays },
   { href: "/data", label: "Data Tables", icon: faTable },
   { href: "/options", label: "Options", icon: faChartLine },
   { href: "/fees", label: "Fees", icon: faReceipt },
@@ -118,7 +120,7 @@ export function TopNav() {
       </header>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-7 border-t border-primary-900 bg-surface px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-10px_30px_rgba(22,55,85,0.14)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-8 border-t border-primary-900 bg-surface px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-10px_30px_rgba(22,55,85,0.14)] md:hidden"
         aria-label="Primary navigation"
       >
         {links.map((link) => {

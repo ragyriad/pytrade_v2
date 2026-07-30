@@ -1,7 +1,7 @@
 import { defineRelations } from "drizzle-orm";
 import { accounts } from "./accounts_schema.js";
 import { accountBalances } from "./account_balances_schema.js";
-import { dividendEvents } from "./dividend_events_schema.js";
+import { calendarEvents } from "./calendar_events_schema.js";
 import { holdings } from "./holdings_schema.js";
 import { options } from "./options_schema.js";
 import { orders } from "./orders_schema.js";
@@ -89,7 +89,7 @@ export const transactionsRelations = defineRelations(
 );
 
 export const securitiesRelations = defineRelations(
-  { securities, transactions, securityAliases, options, dividendEvents, positions, holdings, orders, securityPriceSnapshots },
+  { securities, transactions, securityAliases, options, calendarEvents, positions, holdings, orders, securityPriceSnapshots },
   (r) => ({
     securities: {
       transactions: r.many.transactions({
@@ -129,9 +129,9 @@ export const securitiesRelations = defineRelations(
         from: r.securities.id,
         to: r.orders.securityId,
       }),
-      dividendEvents: r.many.dividendEvents({
+      calendarEvents: r.many.calendarEvents({
         from: r.securities.id,
-        to: r.dividendEvents.securityId,
+        to: r.calendarEvents.securityId,
       }),
       priceSnapshots: r.many.securityPriceSnapshots({
         from: r.securities.id,
@@ -209,12 +209,12 @@ export const ordersRelations = defineRelations(
   })
 );
 
-export const dividendEventsRelations = defineRelations(
-  { dividendEvents, securities },
+export const calendarEventsRelations = defineRelations(
+  { calendarEvents, securities },
   (r) => ({
-    dividendEvents: {
+    calendarEvents: {
       security: r.one.securities({
-        from: r.dividendEvents.securityId,
+        from: r.calendarEvents.securityId,
         to: r.securities.id,
         optional: true,
       }),

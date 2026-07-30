@@ -41,6 +41,11 @@ export async function fetchEodhdDividendEvents(
     if (!exDate || cashAmount == null) return [];
 
     return {
+      eventType: "dividend",
+      eventDate: exDate,
+      eventName: "Dividend",
+      eventStatus: null,
+      isEstimated: false,
       source: EODHD_SOURCE,
       sourceEventId: buildSourceEventId(row, providerTicker),
       providerTicker,
@@ -54,6 +59,9 @@ export async function fetchEodhdDividendEvents(
       frequency: null,
       distributionType: "cash",
       isSpecial: false,
+      fiscalDateEnding: null,
+      estimatedEps: null,
+      reportedEps: null,
       rawData: row as Record<string, unknown>,
     };
   });

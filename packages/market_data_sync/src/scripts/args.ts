@@ -1,5 +1,6 @@
 import type { EodhdSyncOptions } from "../sync/eodhd-sync.js";
 import type { TiingoSyncOptions } from "../sync/tiingo-sync.js";
+import type { AlphaVantageSyncOptions } from "../sync/alpha-vantage-sync.js";
 
 function readNumber(value: string | undefined): number | undefined {
   if (!value) return undefined;
@@ -76,6 +77,40 @@ export function parseTiingoSyncArgs(argv: string[]): TiingoSyncOptions {
       options.refreshDividendsAfterDays = readNumber(value);
     }
     if (key === "--concurrency") options.concurrency = readNumber(value);
+    if (key === "--maxSecurities") options.maxSecurities = readNumber(value);
+  }
+
+  return options;
+}
+
+export function parseAlphaVantageSyncArgs(
+  argv: string[]
+): AlphaVantageSyncOptions {
+  const options: AlphaVantageSyncOptions = {};
+
+  for (const arg of argv) {
+    if (arg === "--force") {
+      options.force = true;
+      continue;
+    }
+
+    if (arg === "--includeInactive") {
+      options.includeInactive = true;
+      continue;
+    }
+
+    const [key, value] = arg.split("=");
+    if (!value) continue;
+
+    if (
+      key === "--horizon" &&
+      (value === "3month" || value === "6month" || value === "12month")
+    ) {
+      options.horizon = value;
+    }
+    if (key === "--refreshEarningsAfterDays") {
+      options.refreshEarningsAfterDays = readNumber(value);
+    }
     if (key === "--maxSecurities") options.maxSecurities = readNumber(value);
   }
 

@@ -1,7 +1,13 @@
 export { accounts, statusEnum, Account, NewAccount } from "./accounts_schema.js";
 export { securities, Security, NewSecurity } from "./securities_schema.js";
 export { securityAliases, SecurityAlias, NewSecurityAlias } from "./security_aliases_schema.js";
-export { dividendEvents, DividendEvent, NewDividendEvent } from "./dividend_events_schema.js";
+export {
+  calendarEvents,
+  CalendarEvent,
+  NewCalendarEvent,
+  DividendEvent,
+  NewDividendEvent,
+} from "./calendar_events_schema.js";
 export { securityPriceSnapshots, SecurityPriceSnapshot, NewSecurityPriceSnapshot } from "./security_price_snapshots_schema.js";
 export { forexRateSnapshots, ForexRateSnapshot, NewForexRateSnapshot } from "./forex_rate_snapshots_schema.js";
 export { options, Option, NewOption } from "./options_schema.js";
@@ -11,4 +17,4 @@ export { holdings, Holding, NewHolding } from "./holdings_schema.js";
 export { accountBalances, AccountBalance, NewAccountBalance } from "./account_balances_schema.js";
 export { orders, Order, NewOrder } from "./orders_schema.js";
 export { users, User, NewUser, rolesEnum } from "./users_schema.js";
-export { usersRelations, accountsRelations, transactionsRelations, securitiesRelations, securityAliasesRelations, optionsRelations, dividendEventsRelations, positionsRelations, holdingsRelations, accountBalancesRelations, ordersRelations, securityPriceSnapshotsRelations } from "./relations.js";
+export { usersRelations, accountsRelations, transactionsRelations, securitiesRelations, securityAliasesRelations, optionsRelations, calendarEventsRelations, positionsRelations, holdingsRelations, accountBalancesRelations, ordersRelations, securityPriceSnapshotsRelations } from "./relations.js";

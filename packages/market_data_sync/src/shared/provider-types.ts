@@ -16,22 +16,40 @@ export type DateRange = {
   to?: string;
 };
 
-export type ProviderDividendEvent = {
+export type ProviderCalendarEvent = {
+  eventType: string;
+  eventDate: string;
+  eventName: string | null;
+  eventStatus: string | null;
+  isEstimated: boolean;
   source: string;
   sourceEventId: string;
   providerTicker: string;
   symbol: string;
   currencyCode: string | null;
-  cashAmount: number;
-  exDate: string;
+  cashAmount: number | null;
+  exDate: string | null;
   paymentDate: string | null;
   recordDate: string | null;
   declarationDate: string | null;
   frequency: string | null;
   distributionType: string | null;
   isSpecial: boolean;
+  fiscalDateEnding: string | null;
+  estimatedEps: number | null;
+  reportedEps: number | null;
   rawData: Record<string, unknown>;
 };
+
+export type ProviderDividendEvent = {
+  eventType: "dividend";
+  eventDate: string;
+  eventName: string | null;
+  eventStatus: string | null;
+  isEstimated: false;
+  cashAmount: number;
+  exDate: string;
+} & ProviderCalendarEvent;
 
 export type ProviderPriceSnapshot = {
   source: string;
