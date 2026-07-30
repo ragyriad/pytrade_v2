@@ -36,7 +36,15 @@ export function getSelectableAccounts(
   accounts: AccountDto[],
   filters: Pick<PortfolioFilterState, "brokerages" | "accountTypes">
 ): AccountDto[] {
-  return accounts
+  const uniqueAccounts = new Map<string, AccountDto>();
+
+  for (const account of accounts) {
+    // Dashboard data may contain the same account more than once. Keep one option
+    // per account ID so the filter never renders duplicate choices.
+    uniqueAccounts.set(account.id, account);
+  }
+
+  return Array.from(uniqueAccounts.values())
     .filter((account) => {
       const brokerageMatch =
         filters.brokerages.length === 0 ||

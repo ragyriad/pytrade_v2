@@ -20,10 +20,17 @@ import { DetailsDropdown } from "../ui/details-dropdown";
 import { SelectField } from "../ui/select";
 import { timelineOptions } from "../../services/filter_timeline";
 
+export type CostTypeFilterValue = "both" | "fees" | "taxes";
+
 type FilterBarProps = {
   accounts: AccountDto[];
   value: PortfolioFilterState;
   onChange: (value: PortfolioFilterState) => void;
+  /** Presence is the sentinel that enables this costs-only control. */
+  costType?: {
+    value: CostTypeFilterValue;
+    onChange: (value: CostTypeFilterValue) => void;
+  };
 };
 
 type FilterBarMultiSelectProps = {
@@ -35,6 +42,26 @@ type FilterBarMultiSelectProps = {
   onChange: (value: string[]) => void;
   className?: string;
 };
+
+type AccountFilterOption = {
+  value: string;
+  label: string;
+  accountIds: string[];
+};
+
+function accountOptionKey(account: AccountDto): string {
+  const normalize = (value: string | null | undefined) =>
+    value?.trim().toLowerCase().replace(/\s+/g, " ") ?? "";
+
+  // Group records that render as the same logical account. All record IDs are
+  // retained in the option, so selecting it still scopes every matching row.
+  return [
+    normalize(account.institutionName),
+    normalize(account.name),
+    normalize(account.type),
+    normalize(account.accountCurrency),
+  ].join(":");
+}
 
 function FilterBarMultiSelect({
   label,
@@ -139,6 +166,7 @@ export function FilterBar({
   accounts,
   value,
   onChange,
+  costType,
 }: FilterBarProps) {
   const brokerages = useMemo(() => getUniqueBrokerages(accounts), [accounts]);
   const accountTypes = useMemo(() => getUniqueAccountTypes(accounts), [accounts]);
@@ -146,6 +174,21 @@ export function FilterBar({
     () => getSelectableAccounts(accounts, value),
     [accounts, value]
   );
+  const accountOptions = useMemo(() => {
+    const options = new Map<string, AccountFilterOption>();
+
+    for (const account of selectableAccounts) {
+      const value = accountOptionKey(account);
+      const existing = options.get(value);
+      if (existing) {
+        existing.accountIds.push(account.id);
+      } else {
+        options.set(value, { value, label: account.name, accountIds: [account.id] });
+      }
+    }
+
+    return Array.from(options.values());
+  }, [selectableAccounts]);
 
   useEffect(() => {
     const selectableIds = new Set(selectableAccounts.map((account) => account.id));
@@ -175,12 +218,18 @@ export function FilterBar({
         label="Account"
         icon={faFilter}
         emptyLabel="All accounts"
-        options={selectableAccounts.map((account) => ({
-          value: account.id,
-          label: account.name,
-        }))}
-        value={value.accountIds}
-        onChange={(accountIds) => onChange({ ...value, accountIds })}
+        options={accountOptions}
+        value={accountOptions
+          .filter((option) => option.accountIds.some((id) => value.accountIds.includes(id)))
+          .map((option) => option.value)}
+        onChange={(selectedOptions) =>
+          onChange({
+            ...value,
+            accountIds: accountOptions
+              .filter((option) => selectedOptions.includes(option.value))
+              .flatMap((option) => option.accountIds),
+          })
+        }
         className="w-fit min-w-64"
       />
 
@@ -216,6 +265,26 @@ export function FilterBar({
             </option>
           ))}
       </SelectField>
+
+      {costType ? (
+        <SelectField
+          label={
+            <>
+              <FontAwesomeIcon icon={faFilter} className="h-3 w-3" />
+              Cost type
+            </>
+          }
+          value={costType.value}
+          onChange={(event) =>
+            costType.onChange(event.target.value as CostTypeFilterValue)
+          }
+          className="w-auto min-w-32"
+        >
+          <option value="both">All costs</option>
+          <option value="fees">Fees</option>
+          <option value="taxes">Taxes</option>
+        </SelectField>
+      ) : null}
     </div>
   );
 }

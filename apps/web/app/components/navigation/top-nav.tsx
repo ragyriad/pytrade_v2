@@ -26,7 +26,7 @@ const links = [
   { href: "/calendar", label: "Calendar", icon: faCalendarDays },
   { href: "/data", label: "Data Tables", icon: faTable },
   { href: "/options", label: "Options", icon: faChartLine },
-  { href: "/fees", label: "Fees", icon: faReceipt },
+  { href: "/costs", label: "Costs", icon: faReceipt },
   { href: "/cash", label: "Cash", icon: faMoneyBillWave }
 ];
 
