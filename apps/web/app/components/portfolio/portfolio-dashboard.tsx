@@ -66,6 +66,10 @@ export function PortfolioDashboard({ dashboard }: PortfolioDashboardProps) {
     () => getAggregateUnrealizedPercent(activePositions),
     [activePositions]
   );
+  const totalAllocationValue = useMemo(
+    () => activePositions.reduce((sum, position) => sum + position.marketValue.amount, 0),
+    [activePositions]
+  );
 
   const positionColumns: TableColumn<PositionDto>[] = [
     {
@@ -97,14 +101,7 @@ export function PortfolioDashboard({ dashboard }: PortfolioDashboardProps) {
       key: "price",
       header: "Price",
       align: "right",
-      render: (position) =>
-        position.price ? (
-          <span className={signedValueClassName(position.price.amount)}>
-            {formatMoney(position.price)}
-          </span>
-        ) : (
-          "-"
-        ),
+      render: (position) => position.price ? formatMoney(position.price) : "-",
     },
     {
       key: "value",
@@ -113,6 +110,24 @@ export function PortfolioDashboard({ dashboard }: PortfolioDashboardProps) {
       render: (position) => (
         <span className={`font-medium ${signedValueClassName(position.marketValue.amount)}`}>
           {formatMoney(position.marketValue)}
+        </span>
+      ),
+    },
+    {
+      key: "allocation",
+      header: "Allocation %",
+      align: "right",
+      value: (position) =>
+        totalAllocationValue > 0
+          ? (position.marketValue.amount / totalAllocationValue) * 100
+          : 0,
+      render: (position) => (
+        <span className="text-foreground">
+          {formatPercent(
+            totalAllocationValue > 0
+              ? (position.marketValue.amount / totalAllocationValue) * 100
+              : 0
+          )}
         </span>
       ),
     },
@@ -138,7 +153,7 @@ export function PortfolioDashboard({ dashboard }: PortfolioDashboardProps) {
         return percent == null ? (
           "-"
         ) : (
-          formatPercent(percent)
+          <span className={signedValueClassName(percent)}>{formatPercent(percent)}</span>
         );
       },
     },
