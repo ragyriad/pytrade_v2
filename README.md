@@ -7,7 +7,8 @@ pnpm install
 ```
 
 Requires PostgreSQL and a root `.env` with `DATABASE_URL`.
-Market data sync also uses `EODHD_TOKEN` and `TIINGO_API_TOKEN`.
+Market data sync also uses `EODHD_TOKEN`, `TIINGO_API_TOKEN`, and
+`ALPHA_VANTAGE_API_KEY` for their respective providers.
 
 ## Run Apps
 
@@ -26,6 +27,7 @@ API: `http://localhost:3001`
 pnpm build
 pnpm build:api
 pnpm build:web
+pnpm lint:theme
 pnpm typecheck:api
 pnpm market-data:build
 ```
@@ -58,14 +60,25 @@ transactions are preserved. `--replace` is accepted as a shorter alias.
 ```powershell
 pnpm market-data:sync -- --provider=eodhd
 pnpm market-data:sync -- --provider=tiingo
+pnpm market-data:sync -- --provider=alpha-vantage
+pnpm market-data:sync:all
 pnpm market-data:test -- --provider=eodhd
 pnpm market-data:test -- --provider=tiingo
 ```
 
-There is one market-data sync entry point. The provider is explicit because
-EODHD stores dividends, prices, and FX snapshots while Tiingo currently stores
-dividends only. The separate `market-data:test` command checks provider
-credentials and responses without running a database sync.
+There is one market-data sync package with two command forms:
+
+- `market-data:sync` runs one provider and requires an explicit
+  `--provider=eodhd`, `--provider=tiingo`, or `--provider=alpha-vantage`
+  argument. Calling it without a provider fails intentionally so that a sync
+  cannot silently use the wrong external service.
+- `market-data:sync:all` runs EODHD, Tiingo, and Alpha Vantage in sequence and
+  reports provider failures after attempting all three.
+
+The provider capabilities differ: EODHD stores dividends, prices, and FX
+snapshots; Tiingo currently stores dividends only; and Alpha Vantage stores
+earnings-calendar events. The separate `market-data:test` command checks
+provider credentials and responses without running a database sync.
 
 Common options:
 

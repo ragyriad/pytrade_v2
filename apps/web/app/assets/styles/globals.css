@@ -41,15 +41,15 @@ body {
   }
 
   .app-control-focus:focus {
-    border-color: var(--color-primary-600);
-    --tw-ring-color: var(--color-primary-200);
+    border-color: var(--color-focus);
+    --tw-ring-color: var(--color-interactive-border);
   }
 
-  .metallic-primary-bar {
+  .navigation-bar {
     background:
-      linear-gradient(105deg, var(--color-primary-highlight), var(--color-primary-highlight-transparent) 28%),
-      linear-gradient(180deg, var(--color-primary-500), var(--color-primary-800));
-    box-shadow: var(--shadow-primary-bar);
+      linear-gradient(105deg, var(--color-navigation-highlight), var(--color-navigation-highlight-transparent) 28%),
+      linear-gradient(180deg, var(--color-action), var(--color-action-strong));
+    box-shadow: var(--shadow-navigation-bar);
   }
 
   .nav-desktop-shell {
@@ -66,31 +66,31 @@ body {
 
   .nav-bar-button {
     @apply h-11 whitespace-nowrap px-2.5 text-sm duration-200 ease-out xl:px-3.5 xl:text-base;
-    color: var(--color-on-primary-muted);
+    color: var(--color-navigation-text);
   }
 
   .nav-bar-button:hover {
-    background: var(--color-on-primary-border);
-    color: var(--color-on-primary);
+    background: var(--color-navigation-border);
+    color: var(--color-on-action);
   }
 
   .nav-bar-button-active,
   .nav-bar-button-active:hover {
-    background: var(--color-on-primary);
-    color: var(--color-primary-800);
-    box-shadow: var(--shadow-primary-active);
+    background: var(--color-on-action);
+    color: var(--color-action-hover);
+    box-shadow: var(--shadow-navigation-active);
   }
 
   .nav-user-button {
     @apply cursor-pointer list-none border;
-    border-color: var(--color-on-primary-border);
-    background: var(--color-on-primary-surface);
-    color: var(--color-on-primary);
+    border-color: var(--color-navigation-border);
+    background: var(--color-navigation-surface);
+    color: var(--color-on-action);
   }
 
   .nav-user-button:hover {
-    background: var(--color-on-primary-border);
-    color: var(--color-on-primary);
+    background: var(--color-navigation-border);
+    color: var(--color-on-action);
   }
 
   .nav-user-button-compact {
@@ -101,11 +101,11 @@ body {
   .nav-user-button-mobile:hover {
     border-color: var(--color-border);
     background: var(--color-surface);
-    color: var(--color-primary-800);
+    color: var(--color-action-hover);
   }
 
   .nav-user-button-mobile:hover {
-    background: var(--color-primary-50);
+    background: var(--color-interactive-surface);
   }
 
   .nav-tablet-shell {
@@ -118,23 +118,23 @@ body {
 
   .nav-tablet-button {
     @apply flex h-9 items-center justify-center rounded-md transition focus:outline-none focus-visible:ring-2;
-    color: var(--color-on-primary-muted);
+    color: var(--color-navigation-text);
   }
 
   .nav-tablet-button:hover {
-    background: var(--color-on-primary-border);
-    color: var(--color-on-primary);
+    background: var(--color-navigation-border);
+    color: var(--color-on-action);
   }
 
   .nav-tablet-button:focus-visible {
-    --tw-ring-color: var(--color-on-primary);
+    --tw-ring-color: var(--color-on-action);
   }
 
   .nav-tablet-button-active,
   .nav-tablet-button-active:hover {
     @apply shadow-sm;
-    color: var(--color-primary-800);
-    background: var(--color-on-primary);
+    color: var(--color-action-hover);
+    background: var(--color-on-action);
   }
 
   .mobile-nav-button {
@@ -143,26 +143,26 @@ body {
   }
 
   .mobile-nav-button:hover {
-    background: var(--color-primary-50);
-    color: var(--color-primary-800);
+    background: var(--color-interactive-surface);
+    color: var(--color-action-hover);
   }
 
   .mobile-nav-button-active,
   .mobile-nav-button-active:hover {
-    color: var(--color-primary-800);
+    color: var(--color-action-hover);
   }
 
   .security-symbol-button {
     @apply justify-start border;
     border-color: var(--color-security-action);
     background: var(--color-security-action);
-    color: var(--color-on-primary);
+    color: var(--color-on-action);
   }
 
   .security-symbol-button:hover {
     border-color: var(--color-security-action-hover);
     background: var(--color-security-action-hover);
-    color: var(--color-on-primary);
+    color: var(--color-on-action);
   }
 
   .security-symbol-button-selected,

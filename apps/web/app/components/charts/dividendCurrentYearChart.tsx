@@ -11,7 +11,15 @@ import {
 } from "recharts";
 import { formatMoney } from "../../lib/formatters";
 import type { MoneyBreakdownDto, TransactionDto } from "../../lib/portfolioTypes";
-import { chartGridColor, dividendCurrencyColor } from "./chartColors";
+import {
+  chartAxisLine,
+  chartAxisTick,
+  chartCurrencyColor,
+  chartGridColor,
+  chartTickLine,
+  chartTooltipContentStyle,
+  chartTooltipLabelStyle,
+} from "./chartColors";
 
 type DividendCurrentYearChartProps = {
   transactions: TransactionDto[];
@@ -97,7 +105,7 @@ export function DividendCurrentYearChart({
   return (
     <section className="app-panel p-5">
       <div className="border-b border-border pb-4 text-left">
-        <p className="text-xs font-semibold uppercase tracking-normal text-primary-700">
+        <p className="text-xs font-semibold uppercase tracking-normal text-action">
           Current year
         </p>
         <h2 className="mt-1 text-lg font-semibold text-foreground">
@@ -119,12 +127,20 @@ export function DividendCurrentYearChart({
               <CartesianGrid stroke={chartGridColor} strokeDasharray="3 3" vertical={false} />
               <XAxis
                 dataKey="label"
-                tick={{ fontSize: 12 }}
+                axisLine={chartAxisLine}
+                tick={chartAxisTick}
+                tickLine={chartTickLine}
                 interval={0}
                 minTickGap={8}
               />
-              <YAxis tick={{ fontSize: 12 }} />
+              <YAxis
+                axisLine={chartAxisLine}
+                tick={chartAxisTick}
+                tickLine={chartTickLine}
+              />
               <Tooltip
+                contentStyle={chartTooltipContentStyle}
+                labelStyle={chartTooltipLabelStyle}
                 formatter={(value, name) => {
                   return [
                     formatMoney({ amount: Number(value), currency: String(name) }),
@@ -137,7 +153,7 @@ export function DividendCurrentYearChart({
                   key={currency}
                   dataKey={currency}
                   name={currency}
-                  fill={dividendCurrencyColor(currency, index)}
+                  fill={chartCurrencyColor(currency, index)}
                   radius={[4, 4, 0, 0]}
                   isAnimationActive
                   animationDuration={850}

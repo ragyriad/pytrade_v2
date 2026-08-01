@@ -76,7 +76,7 @@ function TableSearch({ value, onChange }: TableSearchProps) {
         <button
           type="button"
           onClick={() => onChange("")}
-          className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-muted hover:bg-primary-50 hover:text-primary-800"
+          className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-muted hover:bg-interactive-surface hover:text-action-hover"
         >
           <span className="sr-only">Clear search</span>
           <FontAwesomeIcon icon={faXmark} className="h-3 w-3" />
@@ -234,7 +234,7 @@ export function DataTable<T>({
             <button
               type="button"
               onClick={clearFilters}
-              className="font-medium text-primary-700 hover:text-primary-800"
+              className="font-medium text-action hover:text-action-hover"
             >
               Clear filters
             </button>
@@ -267,7 +267,7 @@ export function DataTable<T>({
                           <button
                             type="button"
                             onClick={header.column.getToggleSortingHandler()}
-                            className="inline-flex items-center gap-1 rounded px-1 py-0.5 hover:bg-primary-50 hover:text-primary-900"
+                            className="inline-flex items-center gap-1 rounded px-1 py-0.5 hover:bg-interactive-surface hover:text-action-strong"
                           >
                             {flexRender(header.column.columnDef.header, header.getContext())}
                             <FontAwesomeIcon
@@ -283,12 +283,12 @@ export function DataTable<T>({
                           </button>
                           {(columns.find((column) => column.key === header.column.id)?.enableFilter ?? true) ? (
                             <DetailsDropdown className="group relative">
-                              <summary className="inline-flex h-6 w-6 cursor-pointer list-none items-center justify-center rounded hover:bg-primary-50">
+                              <summary className="inline-flex h-6 w-6 cursor-pointer list-none items-center justify-center rounded hover:bg-interactive-surface">
                                 <FontAwesomeIcon
                                   icon={faFilter}
                                   className={`h-3 w-3 ${
                                     getColumnFilterValues(header.column.id).length > 0
-                                      ? "text-primary-700"
+                                      ? "text-action"
                                       : "text-muted"
                                   }`}
                                 />
@@ -301,7 +301,7 @@ export function DataTable<T>({
                                   <button
                                     type="button"
                                     onClick={() => clearColumnFilter(header.column.id)}
-                                    className="text-xs font-medium text-primary-700"
+                                    className="text-xs font-medium text-action"
                                   >
                                     Clear
                                   </button>
@@ -311,7 +311,7 @@ export function DataTable<T>({
                                     key={value}
                                     className={`flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-xs transition ${
                                       getColumnFilterValues(header.column.id).includes(value)
-                                        ? "bg-primary-50 text-primary-900"
+                                        ? "bg-interactive-surface text-action-strong"
                                         : "text-foreground hover:bg-surface-muted"
                                     }`}
                                   >
@@ -319,7 +319,7 @@ export function DataTable<T>({
                                       type="checkbox"
                                       checked={getColumnFilterValues(header.column.id).includes(value)}
                                       onChange={() => toggleFilterValue(header.column.id, value)}
-                                      className="h-3.5 w-3.5 rounded border-border text-primary-700 focus:ring-primary-600"
+                                      className="h-3.5 w-3.5 rounded border-border text-action focus:ring-focus"
                                     />
                                     <span className="truncate">{value}</span>
                                   </label>
@@ -349,7 +349,7 @@ export function DataTable<T>({
 
                 return (
                   <Fragment key={row.id}>
-                    <tr className={`${rowShade} transition-colors hover:bg-primary-50`}>
+                    <tr className={`${rowShade} transition-colors hover:bg-interactive-surface`}>
                       {row.getVisibleCells().map((cell) => {
                         const align = alignByColumnId.get(cell.column.id);
 
@@ -399,7 +399,7 @@ export function DataTable<T>({
 
             return (
               <Fragment key={row.id}>
-                <article className={`${rowShade} px-4 py-3 transition-colors active:bg-primary-50`}>
+                <article className={`${rowShade} px-4 py-3 transition-colors active:bg-interactive-surface`}>
                   <dl className="grid gap-3">
                     {columns.map((column) => (
                       <div
@@ -454,7 +454,7 @@ export function DataTable<T>({
           <select
             value={table.getState().pagination.pageSize}
             onChange={(event) => table.setPageSize(Number(event.target.value))}
-            className="h-9 rounded-md border border-border bg-surface px-2 text-sm text-foreground outline-none focus:border-primary-600"
+            className="h-9 rounded-md border border-border bg-surface px-2 text-sm text-foreground outline-none focus:border-focus"
           >
             {[10, 20, 30, 50].map((pageSize) => (
               <option key={pageSize} value={pageSize}>

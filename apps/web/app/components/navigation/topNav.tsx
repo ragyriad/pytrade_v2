@@ -89,8 +89,8 @@ export function TopNav() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 hidden border-b border-primary-900 text-on-primary lg:block">
-        <div className="metallic-primary-bar">
+      <header className="sticky top-0 z-30 hidden border-b border-action-strong text-on-action lg:block">
+        <div className="navigation-bar">
           <div className="nav-desktop-shell">
             <Link href="/" onClick={handleNavigate("/")} className="nav-brand">
               PyTrade
@@ -119,8 +119,8 @@ export function TopNav() {
         </div>
       </header>
 
-      <header className="sticky top-0 z-30 hidden border-b border-primary-900 text-on-primary md:block lg:hidden">
-        <div className="metallic-primary-bar">
+      <header className="sticky top-0 z-30 hidden border-b border-action-strong text-on-action md:block lg:hidden">
+        <div className="navigation-bar">
           <div className="nav-tablet-shell">
             <Link href="/" onClick={handleNavigate("/")} className="nav-brand">
               PyTrade
@@ -153,14 +153,14 @@ export function TopNav() {
         <Link
           href="/"
           onClick={handleNavigate("/")}
-          className="text-base font-semibold tracking-normal text-primary-900"
+          className="text-base font-semibold tracking-normal text-action-strong"
         >
           PyTrade
         </Link>
         <UserMenu compact mobile />
       </header>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-primary-900 bg-surface px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[var(--shadow-mobile-nav)] md:hidden" aria-label="Primary navigation">
+      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-action-strong bg-surface px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[var(--shadow-mobile-nav)] md:hidden" aria-label="Primary navigation">
         {mobileLinks.map((link) => (
           <Link
             key={link.href}
@@ -195,9 +195,9 @@ export function TopNav() {
                 key={link.href}
                 href={link.href}
                 onClick={handleNavigate(link.href)}
-                className="flex h-10 items-center gap-3 rounded px-3 text-sm font-medium text-foreground hover:bg-primary-50"
+                className="flex h-10 items-center gap-3 rounded px-3 text-sm font-medium text-foreground hover:bg-interactive-surface"
               >
-                <FontAwesomeIcon icon={link.icon} className="h-4 w-4 text-primary-700" />
+                <FontAwesomeIcon icon={link.icon} className="h-4 w-4 text-action" />
                 {link.label}
               </Link>
             ))}

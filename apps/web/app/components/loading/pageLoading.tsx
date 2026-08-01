@@ -10,9 +10,9 @@ export function MoneySpinner() {
     <span className="relative flex h-9 w-9 items-center justify-center">
       <FontAwesomeIcon
         icon={faCircleNotch}
-        className="absolute h-9 w-9 animate-spin text-primary-600"
+        className="absolute h-9 w-9 animate-spin text-focus"
       />
-      <FontAwesomeIcon icon={faCoins} className="h-3.5 w-3.5 text-primary-800" />
+      <FontAwesomeIcon icon={faCoins} className="h-3.5 w-3.5 text-action-hover" />
     </span>
   );
 }

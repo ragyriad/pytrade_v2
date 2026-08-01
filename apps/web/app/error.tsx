@@ -14,7 +14,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
           <h1 className="mt-3 text-xl font-semibold text-foreground sm:text-2xl">Something failed while loading.</h1>
           <p className="mt-3 break-words text-sm text-muted">{error.message}</p>
           <div className="mt-5 flex justify-center">
-            <button type="button" onClick={reset} className="rounded-md bg-primary-700 px-4 py-2 text-sm font-semibold text-on-primary transition hover:bg-primary-800">
+            <button type="button" onClick={reset} className="rounded-md bg-action px-4 py-2 text-sm font-semibold text-on-action transition hover:bg-action-hover">
               Try again
             </button>
           </div>

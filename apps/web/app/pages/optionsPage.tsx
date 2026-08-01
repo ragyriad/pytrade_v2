@@ -123,7 +123,7 @@ export function OptionsPage({ dashboard }: OptionsPageProps) {
       header: "Symbol",
       value: (transaction) => transaction.symbol ?? "-",
       render: (transaction) => (
-        <span className="font-semibold text-primary-700">{transaction.symbol ?? "-"}</span>
+        <span className="font-semibold text-action">{transaction.symbol ?? "-"}</span>
       ),
     },
     {
@@ -200,8 +200,8 @@ export function OptionsPage({ dashboard }: OptionsPageProps) {
             onClick={() => setSelectedSecurityId(selected ? null : security.id)}
             className={
               selected
-                ? "justify-start border-primary-500 bg-primary-50 text-primary-800 shadow-sm hover:bg-primary-100"
-                : "justify-start text-primary-700 hover:text-primary-800"
+                ? "justify-start border-accent bg-interactive-surface text-action-hover shadow-sm hover:bg-interactive-border-subtle"
+                : "justify-start text-action hover:text-action-hover"
             }
           >
             {security.symbol}
@@ -351,7 +351,7 @@ function OptionTransactionsSubTable({
   transactions: TransactionDto[];
 }) {
   return (
-    <div className="border-t border-primary-100 bg-primary-50 p-4">
+    <div className="border-t border-interactive-border-subtle bg-interactive-surface p-4">
       <div className="overflow-x-auto rounded-md border border-border bg-surface shadow-sm">
         <table className="w-full min-w-[1080px] text-sm">
           <thead className="bg-surface-muted text-xs uppercase text-muted">

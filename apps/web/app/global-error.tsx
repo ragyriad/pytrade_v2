@@ -10,11 +10,17 @@ type GlobalErrorPageProps = {
 export default function GlobalErrorPage({ error, reset }: GlobalErrorPageProps) {
   return (
     <html lang="en">
-      <body>
+      <body
+        style={{
+          background: "var(--color-background)",
+          color: "var(--color-foreground)",
+          margin: 0,
+        }}
+      >
         <main style={{ padding: "2rem", fontFamily: "system-ui, sans-serif" }}>
           <section
             style={{
-              border: "1px solid var(--color-global-error-accent)",
+              border: "1px solid var(--color-negative)",
               borderRadius: "0.5rem",
               margin: "0 auto",
               maxWidth: "48rem",
@@ -22,7 +28,7 @@ export default function GlobalErrorPage({ error, reset }: GlobalErrorPageProps) 
               textAlign: "center",
             }}
           >
-            <p style={{ color: "var(--color-global-error-accent)", fontSize: "0.875rem", fontWeight: 600 }}>
+            <p style={{ color: "var(--color-negative)", fontSize: "0.875rem", fontWeight: 600 }}>
               Application unavailable
             </p>
             <h1 style={{ fontSize: "1.5rem", marginTop: "0.75rem" }}>
@@ -35,10 +41,10 @@ export default function GlobalErrorPage({ error, reset }: GlobalErrorPageProps) 
               type="button"
               onClick={reset}
               style={{
-                background: "var(--color-global-error-action)",
+                background: "var(--color-action)",
                 border: 0,
                 borderRadius: "0.375rem",
-                color: "var(--color-on-primary)",
+                color: "var(--color-on-action)",
                 cursor: "pointer",
                 fontWeight: 600,
                 marginTop: "1.25rem",

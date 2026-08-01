@@ -8,7 +8,12 @@ import {
   Tooltip,
 } from "recharts";
 import { formatMoney } from "../../lib/formatters";
-import { chartSeparatorColor, chartSeriesColors } from "./chartColors";
+import {
+  chartSeparatorColor,
+  chartSeriesColors,
+  chartTooltipContentStyle,
+  chartTooltipLabelStyle,
+} from "./chartColors";
 
 export type PieSlice = {
   label: string;
@@ -55,6 +60,8 @@ export function AllocationPieChart({ title, rows }: AllocationPieChartProps) {
                   ))}
                 </Pie>
                 <Tooltip
+                  contentStyle={chartTooltipContentStyle}
+                  labelStyle={chartTooltipLabelStyle}
                   formatter={(value, _name, item) => {
                     const payload = item.payload as PieSlice;
                     return [

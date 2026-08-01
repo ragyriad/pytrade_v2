@@ -20,16 +20,17 @@ import {
   type MonthlyCostSeries,
 } from "../../services/costs";
 import {
+  chartAxisLine,
+  chartAxisTick,
+  chartCurrencyColor,
   chartGridColor,
-  costFallbackColors,
-  costFeeCurrencyColors,
-  costTaxCurrencyColors,
+  chartTickLine,
+  chartTooltipContentStyle,
+  chartTooltipLabelStyle,
 } from "./chartColors";
 
 function seriesColor(item: MonthlyCostSeries, index: number): string {
-  const currency = item.currency.toUpperCase();
-  const colors = item.kind === "fee" ? costFeeCurrencyColors : costTaxCurrencyColors;
-  return colors[currency] ?? costFallbackColors[index % costFallbackColors.length];
+  return chartCurrencyColor(item.currency, index);
 }
 
 type CostsMonthlyChartProps = {
@@ -72,9 +73,21 @@ function CostChartPanel({ kind, rows, series }: CostChartPanelProps) {
               barCategoryGap="20%"
             >
               <CartesianGrid stroke={chartGridColor} strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 12 }} minTickGap={20} />
-              <YAxis tick={{ fontSize: 12 }} />
+              <XAxis
+                dataKey="label"
+                axisLine={chartAxisLine}
+                tick={chartAxisTick}
+                tickLine={chartTickLine}
+                minTickGap={20}
+              />
+              <YAxis
+                axisLine={chartAxisLine}
+                tick={chartAxisTick}
+                tickLine={chartTickLine}
+              />
               <Tooltip
+                contentStyle={chartTooltipContentStyle}
+                labelStyle={chartTooltipLabelStyle}
                 formatter={(value, name) => {
                   const item = seriesByLabel.get(String(name));
                   return formatMoney({

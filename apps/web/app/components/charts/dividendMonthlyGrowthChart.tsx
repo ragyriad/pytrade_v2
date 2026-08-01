@@ -11,7 +11,15 @@ import {
 } from "recharts";
 import { formatDate, formatMoney } from "../../lib/formatters";
 import type { TransactionDto } from "../../lib/portfolioTypes";
-import { chartGridColor, dividendCurrencyColor } from "./chartColors";
+import {
+  chartAxisLine,
+  chartAxisTick,
+  chartCurrencyColor,
+  chartGridColor,
+  chartTickLine,
+  chartTooltipContentStyle,
+  chartTooltipLabelStyle,
+} from "./chartColors";
 
 type DividendMonthlyGrowthChartProps = {
   transactions: TransactionDto[];
@@ -72,7 +80,7 @@ export function DividendMonthlyGrowthChart({
   return (
     <section className="app-panel p-5">
       <div className="border-b border-border pb-4 text-left">
-        <p className="text-xs font-semibold uppercase tracking-normal text-primary-700">
+        <p className="text-xs font-semibold uppercase tracking-normal text-action">
           Monthly growth
         </p>
         <h2 className="mt-1 text-lg font-semibold text-foreground">
@@ -92,9 +100,21 @@ export function DividendMonthlyGrowthChart({
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={rows} margin={{ left: 8, right: 24, top: 18, bottom: 0 }}>
               <CartesianGrid stroke={chartGridColor} strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 12 }} minTickGap={20} />
-              <YAxis tick={{ fontSize: 12 }} />
+              <XAxis
+                dataKey="label"
+                axisLine={chartAxisLine}
+                tick={chartAxisTick}
+                tickLine={chartTickLine}
+                minTickGap={20}
+              />
+              <YAxis
+                axisLine={chartAxisLine}
+                tick={chartAxisTick}
+                tickLine={chartTickLine}
+              />
               <Tooltip
+                contentStyle={chartTooltipContentStyle}
+                labelStyle={chartTooltipLabelStyle}
                 formatter={(value, name) =>
                   formatMoney({ amount: Number(value), currency: String(name) })
                 }
@@ -103,7 +123,7 @@ export function DividendMonthlyGrowthChart({
                 <Bar
                   key={currency}
                   dataKey={currency}
-                  fill={dividendCurrencyColor(currency, index)}
+                  fill={chartCurrencyColor(currency, index)}
                   radius={[4, 4, 0, 0]}
                   isAnimationActive
                   animationDuration={850}

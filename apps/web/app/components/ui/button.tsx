@@ -5,12 +5,12 @@ import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "reac
 type ButtonVariant = "ghost" | "outline" | "solid" | "plain";
 
 const base =
-  "inline-flex h-9 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2";
+  "inline-flex h-9 items-center justify-center gap-2 rounded-md px-3 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2";
 
 const variants: Record<ButtonVariant, string> = {
-  ghost: "text-muted hover:bg-primary-50 hover:text-primary-900",
-  outline: "border border-border bg-surface text-primary-800 hover:bg-primary-50",
-  solid: "bg-primary-700 text-on-primary hover:bg-primary-800",
+  ghost: "text-muted hover:bg-interactive-surface hover:text-action-strong",
+  outline: "border border-border bg-surface text-action-hover hover:bg-interactive-surface",
+  solid: "bg-action text-on-action hover:bg-action-hover",
   plain: "",
 };
 

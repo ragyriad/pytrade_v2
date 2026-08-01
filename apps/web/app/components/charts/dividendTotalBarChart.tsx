@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { formatMoney } from "../../lib/formatters";
 import type { MoneyBreakdownDto } from "../../lib/portfolioTypes";
-import { dividendCurrencyColor } from "./chartColors";
+import { chartCurrencyColor } from "./chartColors";
 
 type DividendTotalBarChartProps = {
   totals: MoneyBreakdownDto[];
@@ -73,7 +73,7 @@ export function DividendTotalBarChart({ totals }: DividendTotalBarChartProps) {
                     className="h-full rounded-full transition-[width] duration-700 ease-out"
                     style={{
                       width: `${Math.max(8, (row.amount / maxAmount) * 100)}%`,
-                      backgroundColor: dividendCurrencyColor(row.currency, index),
+                      backgroundColor: chartCurrencyColor(row.currency, index),
                       transformOrigin: "left",
                       animation: "dividend-total-bar-grow 700ms ease-out both",
                     }}

@@ -260,8 +260,8 @@ function SecurityTransactionsSubTable({
 
   if (isLoading) {
     return (
-      <div className="border-t border-primary-100 bg-primary-50 p-8 text-center text-sm text-muted">
-        <div className="mx-auto flex max-w-sm items-center justify-center gap-3 rounded-md border border-primary-200 bg-surface px-4 py-3 shadow-sm">
+      <div className="border-t border-interactive-border-subtle bg-interactive-surface p-8 text-center text-sm text-muted">
+        <div className="mx-auto flex max-w-sm items-center justify-center gap-3 rounded-md border border-interactive-border bg-surface px-4 py-3 shadow-sm">
           <MoneySpinner />
           <span className="font-medium text-foreground">Loading transaction history</span>
         </div>
@@ -286,7 +286,7 @@ function SecurityTransactionsSubTable({
   }
 
   return (
-    <div className="border-t border-primary-100 bg-primary-50 p-4">
+    <div className="border-t border-interactive-border-subtle bg-interactive-surface p-4">
       <div className="overflow-x-auto rounded-md border border-border bg-surface shadow-sm">
         <table className="w-full min-w-[940px] text-sm">
           <thead className="bg-surface-muted text-xs uppercase text-muted">

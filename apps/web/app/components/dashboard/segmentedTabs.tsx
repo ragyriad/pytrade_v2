@@ -31,8 +31,8 @@ export function SegmentedTabs<T extends string>({
               "ghost",
               `min-w-0 flex-1 sm:flex-none ${
               active
-                ? "bg-surface text-primary-900 shadow-sm hover:bg-surface"
-                : "text-muted hover:text-primary-900"
+                ? "bg-surface text-action-strong shadow-sm hover:bg-surface"
+                : "text-muted hover:text-action-strong"
               }`
             )}
           >

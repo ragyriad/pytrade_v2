@@ -36,7 +36,7 @@ export function StatCard({
         }`}
       >
         <p className="text-sm text-muted">{label}</p>
-        {icon ? <FontAwesomeIcon icon={icon} className="h-4 w-4 text-primary-500" /> : null}
+        {icon ? <FontAwesomeIcon icon={icon} className="h-4 w-4 text-accent" /> : null}
       </div>
       <div className={`mt-2 whitespace-pre-line text-xl font-semibold tracking-normal ${toneClass}`}>
         {value}

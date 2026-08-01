@@ -95,11 +95,11 @@ function FilterBarMultiSelect({
         {label}
       </div>
       <DetailsDropdown className="group relative">
-        <summary className="app-control-focus flex h-10 w-full cursor-pointer list-none items-center justify-between gap-3 rounded-md border border-border bg-surface px-3 text-left text-sm text-foreground shadow-sm outline-none transition hover:border-primary-200">
+        <summary className="app-control-focus flex h-10 w-full cursor-pointer list-none items-center justify-between gap-3 rounded-md border border-border bg-surface px-3 text-left text-sm text-foreground shadow-sm outline-none transition hover:border-interactive-border">
           <span className="min-w-0 truncate">{buttonLabel}</span>
           <span className="flex items-center gap-2">
             {value.length > 0 ? (
-              <span className="rounded-full bg-primary-50 px-2 py-0.5 text-xs font-semibold text-primary-700">
+              <span className="rounded-full bg-interactive-surface px-2 py-0.5 text-xs font-semibold text-action">
                 {value.length}
               </span>
             ) : null}
@@ -116,7 +116,7 @@ function FilterBarMultiSelect({
               <button
                 type="button"
                 onClick={() => onChange([])}
-                className="inline-flex items-center gap-1 rounded px-1.5 py-1 text-xs font-medium text-primary-700 hover:bg-primary-50"
+                className="inline-flex items-center gap-1 rounded px-1.5 py-1 text-xs font-medium text-action hover:bg-interactive-surface"
               >
                 <FontAwesomeIcon icon={faXmark} className="h-3 w-3" />
                 Clear
@@ -132,7 +132,7 @@ function FilterBarMultiSelect({
                   key={option.value}
                   className={`flex cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm transition ${
                     checked
-                      ? "bg-primary-50 text-primary-900"
+                      ? "bg-interactive-surface text-action-strong"
                       : "text-foreground hover:bg-surface-muted"
                   }`}
                 >
@@ -145,7 +145,7 @@ function FilterBarMultiSelect({
                   <span
                     className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
                       checked
-                        ? "border-primary-700 bg-primary-700 text-on-primary"
+                        ? "border-action bg-action text-on-action"
                         : "border-border bg-surface"
                     }`}
                   >

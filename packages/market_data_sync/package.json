@@ -6,7 +6,6 @@
   "scripts": {
     "build": "tsc -p tsconfig.market_data_sync.json",
     "sync": "tsx src/scripts/sync.ts",
-    "sync:alpha-vantage": "tsx src/scripts/sync.ts --provider=alpha-vantage",
     "sync:all": "tsx src/scripts/sync-all.ts",
     "test": "tsx src/scripts/test_provider.ts",
     "test:unit": "tsx --test src/**/*.test.ts"

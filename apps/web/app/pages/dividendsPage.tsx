@@ -192,7 +192,7 @@ export function DividendsPage({
         <span
           className={
             position.status === "open"
-              ? "font-medium text-primary-700"
+              ? "font-medium text-action"
               : "text-muted"
           }
         >

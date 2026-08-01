@@ -95,7 +95,7 @@ export function DividendPositionYieldChart({
   return (
     <section className="app-panel p-6 text-center">
       <div className="border-b border-border pb-4 text-left">
-        <h2 className="text-base font-semibold text-primary-700">
+        <h2 className="text-base font-semibold text-action">
           Total dividends received, stacked by account
         </h2>
       </div>
@@ -169,7 +169,7 @@ export function DividendPositionYieldChart({
                             </p>
                           ) : null}
                         </div>
-                        <span className="rounded bg-primary-50 px-2 py-1 text-xs font-semibold text-primary-700">
+                        <span className="rounded bg-interactive-surface px-2 py-1 text-xs font-semibold text-action">
                           {formatPercent(row.yieldOnCostPercent)}
                         </span>
                       </div>
@@ -251,7 +251,7 @@ export function DividendPositionYieldChart({
                             x={Number(x) + Number(width) / 2}
                             y={Number(y) - 8}
                             textAnchor="middle"
-                            className="fill-primary-800 text-xs font-bold"
+                            className="fill-action-hover text-xs font-bold"
                           >
                             {formatPercent(row.yieldOnCostPercent)}
                           </text>

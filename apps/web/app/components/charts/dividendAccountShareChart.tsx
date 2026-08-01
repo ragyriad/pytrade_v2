@@ -9,7 +9,12 @@ import {
 } from "recharts";
 import { formatMoney, formatPercent } from "../../lib/formatters";
 import type { DividendAccountShareGroupDto } from "../../lib/portfolioTypes";
-import { chartAccountShareColors, chartSeparatorColor } from "./chartColors";
+import {
+  chartAccountShareColors,
+  chartSeparatorColor,
+  chartTooltipContentStyle,
+  chartTooltipLabelStyle,
+} from "./chartColors";
 
 type DividendAccountShareChartProps = {
   groups: DividendAccountShareGroupDto[];
@@ -19,7 +24,7 @@ export function DividendAccountShareChart({ groups }: DividendAccountShareChartP
   return (
     <section className="app-panel p-4">
       <div className="border-b border-border pb-3 text-left">
-        <h2 className="text-base font-semibold text-primary-700">
+        <h2 className="text-base font-semibold text-action">
           Dividend share by account
         </h2>
       </div>
@@ -58,6 +63,8 @@ export function DividendAccountShareChart({ groups }: DividendAccountShareChartP
                       ))}
                     </Pie>
                     <Tooltip
+                      contentStyle={chartTooltipContentStyle}
+                      labelStyle={chartTooltipLabelStyle}
                       formatter={(value, _name, item) => {
                         const payload = item.payload as DividendAccountShareGroupDto["rows"][number];
 

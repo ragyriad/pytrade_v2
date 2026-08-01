@@ -28,7 +28,7 @@ export function AllocationList({ title, rows, currency }: AllocationListProps) {
               </div>
               <div className="mt-2 h-2 overflow-hidden rounded-sm bg-surface-muted">
                 <div
-                  className="h-full rounded-sm bg-primary-600"
+                  className="h-full rounded-sm bg-focus"
                   style={{ width: `${Math.min(row.percentage, 100)}%` }}
                 />
               </div>
