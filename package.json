@@ -9,6 +9,14 @@
     "build": "turbo run build",
     "build:api": "pnpm --filter @repo/api build",
     "build:web": "pnpm --filter web build",
+    "lint": "pnpm --filter web lint",
+    "test": "vitest run --config vitest.config.ts",
+    "test:watch": "vitest --config vitest.config.ts",
+    "test:unit": "vitest run --config vitest.config.ts --project node",
+    "test:components": "vitest run --config vitest.config.ts --project components",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:e2e": "playwright test --config playwright.config.ts --pass-with-no-tests",
+    "test:ci": "pnpm test && pnpm test:integration && pnpm test:e2e",
     "lint:theme": "node apps/web/scripts/checkThemeColors.mjs",
     "clean:web": "powershell -NoProfile -Command \"Remove-Item -Recurse -Force apps/web/.next -ErrorAction SilentlyContinue\"",
     "typecheck:api": "pnpm --filter @repo/api typecheck",
@@ -37,10 +45,15 @@
     "postgres": "3.4.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
     "dotenv-cli": "7.4.4",
-    "eslint": "^8.57.1",
+    "eslint": "^9.0.0",
+    "jsdom": "^30.0.1",
     "tsx": "^4.21.0",
     "turbo": "2.9.6",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
   }
 }

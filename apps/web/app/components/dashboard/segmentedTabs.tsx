@@ -18,7 +18,11 @@ export function SegmentedTabs<T extends string>({
   onChange,
 }: SegmentedTabsProps<T>) {
   return (
-    <div className="flex w-full flex-wrap rounded-md border border-border bg-surface-muted p-1 sm:inline-flex sm:w-auto">
+    <div
+      role="tablist"
+      aria-label="View options"
+      className="flex w-full flex-wrap rounded-md border border-border bg-surface-muted p-1 sm:inline-flex sm:w-auto"
+    >
       {options.map((option) => {
         const active = option.id === value;
 
@@ -26,6 +30,8 @@ export function SegmentedTabs<T extends string>({
           <button
             key={option.id}
             type="button"
+            role="tab"
+            aria-selected={active}
             onClick={() => onChange(option.id)}
             className={buttonClassName(
               "ghost",

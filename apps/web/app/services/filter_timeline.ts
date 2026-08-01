@@ -4,6 +4,21 @@ type TimelineTransaction = {
   tradeDate: string;
 };
 
+function subtractUtcMonths(value: Date, months: number): Date {
+  const result = new Date(value);
+  const originalDay = result.getUTCDate();
+
+  result.setUTCDate(1);
+  result.setUTCMonth(result.getUTCMonth() - months);
+
+  const lastDayOfTargetMonth = new Date(
+    Date.UTC(result.getUTCFullYear(), result.getUTCMonth() + 1, 0)
+  ).getUTCDate();
+  result.setUTCDate(Math.min(originalDay, lastDayOfTargetMonth));
+
+  return result;
+}
+
 export const timelineOptions: Array<{ value: TimelineRange; label: string }> = [
   { value: "3M", label: "3 months" },
   { value: "6M", label: "6 months" },
@@ -30,16 +45,16 @@ export function getTimelineStart<T extends TimelineTransaction>(
     );
   }
 
-  const start = new Date(latest);
+  const monthsByRange: Partial<Record<TimelineRange, number>> = {
+    "1M": 1,
+    "3M": 3,
+    "6M": 6,
+    "1Y": 12,
+    "2Y": 24,
+    "5Y": 60,
+  };
 
-  if (range === "1M") start.setMonth(start.getMonth() - 1);
-  if (range === "3M") start.setMonth(start.getMonth() - 3);
-  if (range === "6M") start.setMonth(start.getMonth() - 6);
-  if (range === "1Y") start.setFullYear(start.getFullYear() - 1);
-  if (range === "2Y") start.setFullYear(start.getFullYear() - 2);
-  if (range === "5Y") start.setFullYear(start.getFullYear() - 5);
-
-  return start;
+  return subtractUtcMonths(latest, monthsByRange[range] ?? 0);
 }
 
 export function filterTransactionsByTimeline<T extends TimelineTransaction>(
@@ -66,7 +81,10 @@ export function getMonthDivisor(transactions: TimelineTransaction[], range: Time
   const start = new Date(Math.min(...timestamps));
   const end = new Date(Math.max(...timestamps));
   const months =
-    (end.getFullYear() - start.getFullYear()) * 12 + end.getMonth() - start.getMonth() + 1;
+    (end.getUTCFullYear() - start.getUTCFullYear()) * 12 +
+    end.getUTCMonth() -
+    start.getUTCMonth() +
+    1;
 
   return Math.max(months, 1);
 }

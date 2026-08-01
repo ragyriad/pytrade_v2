@@ -1,10 +1,9 @@
-import assert from "node:assert/strict";
-import test from "node:test";
+import { assert, test } from "vitest";
 import type {
   MarketDataSecurity,
   ProviderCalendarEvent,
-} from "../shared/provider-types.js";
-import { buildCalendarEventCanonicalKey } from "./calendar-events.js";
+} from "../../../src/shared/provider-types.js";
+import { buildCalendarEventCanonicalKey } from "../../../src/persistence/calendar-events.js";
 
 const security: MarketDataSecurity = {
   id: "5a4ce604-89c1-4d4b-a1d7-3041be95283a",

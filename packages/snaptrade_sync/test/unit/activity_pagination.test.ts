@@ -1,9 +1,8 @@
-import assert from "node:assert/strict";
-import test from "node:test";
+import { assert, test } from "vitest";
 import {
   fetchAllActivityPages,
   SNAPTRADE_ACTIVITY_PAGE_SIZE,
-} from "./activity_pagination.ts";
+} from "../../src/activity_pagination.ts";
 
 test("continues beyond SnapTrade's 1,000 activity response limit", async () => {
   const source = Array.from({ length: 2_005 }, (_, index) => index);

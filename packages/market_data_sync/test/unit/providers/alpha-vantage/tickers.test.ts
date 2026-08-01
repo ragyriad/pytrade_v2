@@ -1,7 +1,6 @@
-import assert from "node:assert/strict";
-import test from "node:test";
-import type { MarketDataSecurity } from "../../shared/provider-types.js";
-import { getAlphaVantageTickerCandidates } from "./tickers.js";
+import { assert, test } from "vitest";
+import type { MarketDataSecurity } from "../../../../src/shared/provider-types.js";
+import { getAlphaVantageTickerCandidates } from "../../../../src/providers/alpha-vantage/tickers.js";
 
 function security(
   overrides: Partial<MarketDataSecurity>

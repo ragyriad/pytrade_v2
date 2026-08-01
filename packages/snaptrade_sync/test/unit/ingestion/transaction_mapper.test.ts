@@ -1,7 +1,6 @@
-import assert from "node:assert/strict";
-import test from "node:test";
+import { assert, test } from "vitest";
 import type { UniversalActivity } from "snaptrade-typescript-sdk";
-import { mapSnaptradeTransaction } from "./transaction_mapper.js";
+import { mapSnaptradeTransaction } from "../../../src/ingestion/transaction_mapper.js";
 
 function activity(type: string): UniversalActivity {
   return {

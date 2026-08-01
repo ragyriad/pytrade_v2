@@ -1,0 +1,174 @@
+PYTRADE TEST CATALOG
+====================
+
+Purpose
+-------
+This catalog records every automated test suite, its responsibility, and the
+command that runs it. Production source stays under src/ and app/; tests stay
+under each package or app's test/ directory so that related behavior is easy
+to find without mixing test code into production modules.
+
+Commands
+--------
+pnpm test              Run all unit, service, HTTP, and tRPC tests.
+pnpm test:watch        Run the same Vitest suites in watch mode.
+pnpm test:unit         Run the fast Node-only project.
+pnpm test:components   Run React component and server-page tests in jsdom.
+pnpm test:integration  Run database and multi-module integration tests.
+pnpm test:e2e          Run Playwright browser journeys against E2E_BASE_URL.
+pnpm test:ci           Run unit, integration, then browser suites.
+
+Individual packages also expose pnpm test (or pnpm test:unit for market-data)
+to run only that package's unit tests.
+
+Current automated coverage: 71 cases in 20 test files.
+
+UNIT TESTS
+==========
+
+packages/data_normalizer/test/unit/normalizer.test.ts
+  - Renamed symbol canonicalization, including source-scoped corrections.
+  - Option parsing from Questrade descriptions and malformed provider symbols.
+  - Separates the option contract's raw symbol from its underlying display
+    symbol.
+  - Security type/profile classification, including historical delistings.
+  - Transaction normalization and matching of symbol-less activity to an
+    existing security.
+
+packages/data_deduplicator/test/unit/deduplicator.test.ts
+  - Economic transaction identity across aliases, casing, date formats, and
+    unit signs.
+  - Deterministic security keeper selection.
+  - Exact SnapTrade cash activity removal while retaining genuine reversals.
+  - Duplicate planning respects account boundaries and source precedence.
+  - Option-underlying identities and source-specific legacy corrections.
+
+packages/market_data_sync/test/unit/persistence/calendar-events.test.ts
+  - Provider-independent canonical keys for earnings and dividend events.
+  - Earnings keys remain stable when a provider changes an expected date.
+
+packages/market_data_sync/test/unit/providers/alpha-vantage/csv.test.ts
+  - CSV parsing of quoted commas and escaped quotes.
+
+packages/market_data_sync/test/unit/providers/alpha-vantage/tickers.test.ts
+  - Correct Alpha Vantage ticker candidates for TSX, TSX Venture, and US
+    securities; Canadian listings never fall back to an unsafe US ticker.
+
+packages/questrade_statement_import/test/unit/parser.test.ts
+  - Recursive discovery of statements in nested report folders.
+  - Parsing of the slash-date transaction layout found in 2019 statements.
+
+packages/snaptrade_sync/test/unit/activity_pagination.test.ts
+  - Fetches all activity pages beyond SnapTrade's 1,000-result response limit.
+
+packages/snaptrade_sync/test/unit/mappers/account_balance_mapper.test.ts
+  - Maps a valid SnapTrade balance to a current-snapshot upsert shape.
+  - Rejects a balance that does not identify its currency.
+
+packages/snaptrade_sync/test/unit/ingestion/cash_reconciliation.test.ts
+  - Matches an exact Wealthsimple cash-to-card payment pair.
+  - Accepts provider timestamp differences below one second.
+  - Refuses matches when time, amount, currency, or transaction sign differs.
+
+packages/snaptrade_sync/test/unit/ingestion/options.test.ts
+  - Preserves an option contract ticker as rawSymbol while storing the
+    underlying equity symbol separately.
+
+packages/snaptrade_sync/test/unit/ingestion/transaction_mapper.test.ts
+  - Cash-account transactions and investment-account interest do not retain a
+    provider security link.
+  - Actual security trades retain their security links.
+
+apps/api/test/services/credit-card-balances.test.ts
+  - Calculates charges, reversals, payments, amount owing, and credit balance.
+  - Does not allocate an ambiguous payment to an arbitrary card.
+  - Infers a same-brokerage payment pair without double counting it.
+
+apps/web/test/unit/services/costs.test.ts
+  - Distinguishes withholding tax from fees, including descriptive tax labels.
+  - Prevents HST and zero-fee trades from being counted as fees incorrectly.
+  - Totals trade commissions and standalone fees without duplicate rows.
+  - Excludes dividends from cost views and creates separate currency chart
+    series.
+
+apps/web/test/unit/services/options.test.ts
+  - Rejects stock/dividend records misclassified as option activity.
+  - Accepts valid option trades that omit provider optionAction.
+  - Excludes expired contracts and nets open contracts per account.
+  - Groups normalized option history without rewriting symbols.
+
+apps/web/test/unit/services/portfolio.test.ts
+  - Groups market values by currency without converting or combining them.
+  - Calculates position returns and handles a zero cost basis safely.
+  - Aggregates allocation slices per symbol with stable descending output.
+  - Handles zero aggregate cost basis without producing an invalid percentage.
+
+apps/web/test/unit/services/filter_timeline.test.ts
+  - Anchors relative ranges on the newest transaction.
+  - Uses UTC calendar arithmetic and safely clamps month-end ranges.
+  - Defines ALL and NONE behavior deterministically.
+  - Calculates month divisors and annualization factors safely.
+
+COMPONENT AND PAGE TESTS
+========================
+
+apps/web/test/components/segmented-tabs.test.tsx
+  - Exposes tablist/tab semantics and the active selection to assistive tools.
+  - Reports a user's tab selection to the controlling component.
+
+apps/web/test/components/filter-bar.test.tsx
+  - Emits brokerage and timeline filter changes from user interactions.
+  - Renders and updates the optional costs-only filter.
+
+apps/web/test/components/data-table.test.tsx
+  - Filters rendered rows through the global search control.
+  - Clears the active search and restores the full row count.
+
+apps/web/test/pages/page-orchestration.test.tsx
+  - Verifies user scoping and successful data handoff for home, cash, and
+    securities server pages.
+  - Verifies that repository failures render useful page-specific errors.
+
+TEST LAYERS READY FOR ADDITION
+==============================
+
+packages/db/test/integration/
+  Fresh migrations, constraints, cascades, persistence upserts, archival, and
+  source-scoped uniqueness. These should use a disposable PostgreSQL database.
+
+packages/snaptrade_sync/test/integration/
+  Raw SnapTrade fixtures through mapping, normalization, deduplication, and
+  persistence. Re-running each fixture must be a no-op; overlap corrections
+  and replacement mode require dedicated cases.
+
+packages/questrade_statement_import/test/integration/
+  Sanitized statement fixture to workbook/database import. Verify balances,
+  positions, transactions, errors, and repeatability.
+
+packages/questrade_legacy_import/test/integration/
+  Representative SQLite fixture imported into an empty database without
+  modifying unrelated source data.
+
+apps/api/test/http/ and apps/api/test/trpc/
+  Fastify inject tests for REST validation/status contracts and tRPC ownership,
+  authentication, filtering, and destructive-action safeguards.
+
+apps/web/test/routes/
+  Next proxy-route error/query behavior.
+
+e2e/
+  Playwright journeys for portfolio, cash, dividends, options, costs,
+  securities, and calendar pages against a deterministic seeded environment.
+
+Conventions
+===========
+
+test/unit/         Pure logic: no database, network, filesystem, or live clock.
+test/integration/  Real database or multiple modules; clean up all data.
+test/fixtures/     Sanitized, static provider/import inputs only.
+apps/*/test/http/  HTTP contract tests using Fastify inject rather than ports.
+apps/*/test/trpc/  Authenticated router tests with two-user ownership fixtures.
+e2e/               Browser behavior only; keep it small and user-critical.
+
+Vitest is the default TypeScript runner. React Testing Library is reserved for
+component behavior, and Playwright is reserved for browser journeys.

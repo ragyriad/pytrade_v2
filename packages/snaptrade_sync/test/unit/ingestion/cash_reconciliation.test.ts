@@ -1,6 +1,5 @@
-import assert from "node:assert/strict";
-import test from "node:test";
-import { planSnaptradeCreditCardPaymentActions } from "./cash_reconciliation.js";
+import { assert, test } from "vitest";
+import { planSnaptradeCreditCardPaymentActions } from "../../../src/ingestion/cash_reconciliation.js";
 
 const accounts = [
   {

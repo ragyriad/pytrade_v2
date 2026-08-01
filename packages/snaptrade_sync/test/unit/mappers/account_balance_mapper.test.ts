@@ -1,7 +1,6 @@
-import assert from "node:assert/strict";
-import test from "node:test";
+import { assert, test } from "vitest";
 import type { Balance } from "snaptrade-typescript-sdk";
-import { mapSnaptradeBalance } from "./mappers/account_balance_mapper.js";
+import { mapSnaptradeBalance } from "../../../src/mappers/account_balance_mapper.js";
 
 test("maps a SnapTrade currency balance into an upsertable current snapshot", () => {
   const mapped = mapSnaptradeBalance(

@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "node --import tsx --test src/*.test.ts"
+    "test": "vitest run --root ../.. --config ../../vitest.config.ts packages/data_deduplicator/test/unit"
   },
   "dependencies": {
     "@repo/data-normalizer": "workspace:*"

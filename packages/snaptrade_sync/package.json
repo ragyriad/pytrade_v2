@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.snaptrade_sync.json",
-    "test": "node --import tsx --test src/*.test.ts src/ingestion/*.test.ts",
+    "test": "vitest run --root ../.. --config ../../vitest.config.ts packages/snaptrade_sync/test/unit",
     "sync": "dotenv -e ../../../.env -- tsx src/scripts/sync_snaptrade.ts"
   },
   "dependencies": {

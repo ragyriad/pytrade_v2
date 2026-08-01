@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
 import { MoneySpinner } from "../components/loading/pageLoading";
 import { Button } from "../components/ui/button";
@@ -222,6 +222,11 @@ export function SecuritiesPage({ securities, userId }: SecuritiesPageProps) {
           isRowExpanded={(security) => expandedSecurityIds.has(security.id)}
           renderExpandedRow={(security) => (
             <SecurityTransactionsSubTable
+              key={
+                transactionResponses[security.id]?.transactions
+                  .map((transaction) => transaction.id)
+                  .join("|") ?? security.id
+              }
               error={errorsBySecurityId[security.id] ?? null}
               isLoading={loadingSecurityIds.has(security.id)}
               transactions={transactionResponses[security.id]?.transactions ?? []}
@@ -244,10 +249,6 @@ function SecurityTransactionsSubTable({
 }) {
   const pageSize = 20;
   const [pageIndex, setPageIndex] = useState(0);
-
-  useEffect(() => {
-    setPageIndex(0);
-  }, [transactions]);
 
   const pageCount = Math.max(Math.ceil(transactions.length / pageSize), 1);
   const currentPageIndex = Math.min(pageIndex, pageCount - 1);

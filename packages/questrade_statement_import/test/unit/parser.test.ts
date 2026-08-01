@@ -1,13 +1,12 @@
-import assert from "node:assert/strict";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import test from "node:test";
+import { assert, test } from "vitest";
 import {
   findStatementPdfs,
   parseStatementTransactions,
   type StatementParsingContext,
-} from "./parser.js";
-import type { ExtractedPdfPage, PdfLine, PdfToken } from "./pdf.js";
+} from "../../src/parser.js";
+import type { ExtractedPdfPage, PdfLine, PdfToken } from "../../src/pdf.js";
 
 function token(text: string, x: number, y: number, width = 12): PdfToken {
   return { text, x, y, width };

@@ -1,6 +1,5 @@
-import assert from "node:assert/strict";
-import test from "node:test";
-import { parseCsv } from "./csv.js";
+import { assert, test } from "vitest";
+import { parseCsv } from "../../../../src/providers/alpha-vantage/csv.js";
 
 test("parseCsv handles quoted commas and escaped quotes", () => {
   const rows = parseCsv(

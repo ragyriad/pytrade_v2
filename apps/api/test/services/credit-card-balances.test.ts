@@ -1,10 +1,9 @@
-import assert from "node:assert/strict";
-import test from "node:test";
+import { assert, test } from "vitest";
 import {
   calculateCreditCardBalances,
   type CreditCardBalanceAccountInput,
   type CreditCardBalanceTransactionInput,
-} from "./credit-card-balances.js";
+} from "../../src/services/credit-card-balances.js";
 
 const cashAccount: CreditCardBalanceAccountInput = {
   id: "cash",

@@ -1,12 +1,11 @@
-import assert from "node:assert/strict";
-import test from "node:test";
+import { assert, test } from "vitest";
 import {
   deduplicateSnaptradeCashActivities,
   planExactProviderDuplicateArchives,
   planSecurityDuplicates,
   planStoredTransactionDuplicates,
   transactionEconomicKey,
-} from "./index.ts";
+} from "../../src/index.ts";
 
 test("economic identity ignores symbol aliases, type, and unit sign", () => {
   assert.equal(

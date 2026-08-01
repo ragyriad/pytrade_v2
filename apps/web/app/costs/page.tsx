@@ -6,13 +6,17 @@ export const dynamic = "force-dynamic";
 type PageProps = { searchParams?: { userId?: string } };
 
 export default async function Page({ searchParams }: PageProps) {
-  try {
-    const dashboard = await fetchPortfolioDashboardFromBackend(searchParams?.userId);
-    return <CostsPage dashboard={dashboard} />;
-  } catch (caught) {
-    const error = caught instanceof Error ? caught.message : "Unable to load costs.";
-    return <RouteError label="Costs unavailable" error={error} />;
+  const result = await fetchPortfolioDashboardFromBackend(searchParams?.userId)
+    .then((dashboard) => ({ dashboard }))
+    .catch((caught) => ({
+      error: caught instanceof Error ? caught.message : "Unable to load costs.",
+    }));
+
+  if ("error" in result) {
+    return <RouteError label="Costs unavailable" error={result.error} />;
   }
+
+  return <CostsPage dashboard={result.dashboard} />;
 }
 
 function RouteError({ label, error }: { label: string; error: string }) {

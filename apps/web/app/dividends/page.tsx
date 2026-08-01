@@ -7,16 +7,20 @@ export const dynamic = "force-dynamic";
 type PageProps = { searchParams?: { userId?: string } };
 
 export default async function Page({ searchParams }: PageProps) {
-  try {
-    const [dashboard, initialSummary] = await Promise.all([
+  const result = await Promise.all([
       fetchPortfolioDashboardFromBackend(searchParams?.userId),
       fetchDividendSummaryFromBackend({ userId: searchParams?.userId, timeline: "ALL" }),
-    ]);
-    return <DividendsPage dashboard={dashboard} initialSummary={initialSummary} userId={searchParams?.userId} />;
-  } catch (caught) {
-    const error = caught instanceof Error ? caught.message : "Unable to load dividends.";
-    return <RouteError label="Dividends unavailable" error={error} />;
+    ])
+    .then(([dashboard, initialSummary]) => ({ dashboard, initialSummary }))
+    .catch((caught) => ({
+      error: caught instanceof Error ? caught.message : "Unable to load dividends.",
+    }));
+
+  if ("error" in result) {
+    return <RouteError label="Dividends unavailable" error={result.error} />;
   }
+
+  return <DividendsPage dashboard={result.dashboard} initialSummary={result.initialSummary} userId={searchParams?.userId} />;
 }
 
 function RouteError({ label, error }: { label: string; error: string }) {

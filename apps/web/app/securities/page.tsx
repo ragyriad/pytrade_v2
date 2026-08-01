@@ -6,13 +6,17 @@ export const dynamic = "force-dynamic";
 type PageProps = { searchParams?: { userId?: string } };
 
 export default async function Page({ searchParams }: PageProps) {
-  try {
-    const { securities } = await fetchHistoricSecuritiesFromBackend(searchParams?.userId);
-    return <SecuritiesPage securities={securities} userId={searchParams?.userId} />;
-  } catch (caught) {
-    const error = caught instanceof Error ? caught.message : "Unable to load securities data.";
-    return <RouteError label="Securities unavailable" error={error} />;
+  const result = await fetchHistoricSecuritiesFromBackend(searchParams?.userId)
+    .then(({ securities }) => ({ securities }))
+    .catch((caught) => ({
+      error: caught instanceof Error ? caught.message : "Unable to load securities data.",
+    }));
+
+  if ("error" in result) {
+    return <RouteError label="Securities unavailable" error={result.error} />;
   }
+
+  return <SecuritiesPage securities={result.securities} userId={searchParams?.userId} />;
 }
 
 function RouteError({ label, error }: { label: string; error: string }) {

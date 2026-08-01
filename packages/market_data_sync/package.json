@@ -8,7 +8,7 @@
     "sync": "tsx src/scripts/sync.ts",
     "sync:all": "tsx src/scripts/sync-all.ts",
     "test": "tsx src/scripts/test_provider.ts",
-    "test:unit": "tsx --test src/**/*.test.ts"
+    "test:unit": "vitest run --root ../.. --config ../../vitest.config.ts packages/market_data_sync/test/unit"
   },
   "dependencies": {
     "@repo/db": "workspace:*",

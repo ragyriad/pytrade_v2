@@ -12,6 +12,9 @@ build/
 out/
 coverage/
 **/coverage/
+playwright-report/
+test-results/
+blob-report/
 
 # Turbo / TypeScript / framework caches
 .turbo/

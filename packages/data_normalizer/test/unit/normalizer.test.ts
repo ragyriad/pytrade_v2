@@ -1,5 +1,4 @@
-import assert from "node:assert/strict";
-import test from "node:test";
+import { assert, test } from "vitest";
 import {
   canonicalizeSymbol,
   normalizeSecurityIdentity,
@@ -9,7 +8,7 @@ import {
   optionUnderlyingDescription,
   parseOptionContract,
   resolveSecurityCandidate,
-} from "./index.ts";
+} from "../../src/index.ts";
 
 test("canonicalizes renamed symbols", () => {
   assert.equal(canonicalizeSymbol("SNE"), "SONY");

@@ -31,7 +31,6 @@ function AnimatedMoneyValue({ row }: { row: ChartRow }) {
       }
     };
 
-    setAmount(0);
     animationFrameId = window.requestAnimationFrame(tick);
 
     return () => window.cancelAnimationFrame(animationFrameId);
@@ -64,7 +63,7 @@ export function DividendTotalBarChart({ totals }: DividendTotalBarChartProps) {
                 <div className="flex items-baseline justify-between gap-4 text-sm">
                   <span className="font-semibold text-foreground">{row.currency}</span>
                   <span className="font-semibold text-foreground">
-                    <AnimatedMoneyValue row={row} />
+                    <AnimatedMoneyValue key={`${row.currency}-${row.amount}`} row={row} />
                   </span>
                 </div>
                 <div className="h-4 overflow-hidden rounded-full bg-surface-muted">

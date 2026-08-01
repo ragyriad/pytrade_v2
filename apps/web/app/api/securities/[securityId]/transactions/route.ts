@@ -2,18 +2,19 @@ import { NextResponse } from "next/server";
 import { fetchSecurityTransactionsFromBackend } from "../../../../repositories/securities";
 
 export type SecurityTransactionsRouteContext = {
-  params: {
+  params: Promise<{
     securityId: string;
-  };
+  }>;
 };
 
 export async function GET(request: Request, context: SecurityTransactionsRouteContext) {
   const url = new URL(request.url);
   const userId = url.searchParams.get("userId") ?? undefined;
+  const { securityId } = await context.params;
 
   try {
     const transactions = await fetchSecurityTransactionsFromBackend(
-      context.params.securityId,
+      securityId,
       userId
     );
     return NextResponse.json(transactions);

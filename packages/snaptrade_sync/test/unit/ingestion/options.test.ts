@@ -1,7 +1,6 @@
-import assert from "node:assert/strict";
-import test from "node:test";
-import { mapOptionFromActivity } from "./options.js";
-import type { SnapTradeActivityLike } from "./securities.js";
+import { assert, test } from "vitest";
+import { mapOptionFromActivity } from "../../../src/ingestion/options.js";
+import type { SnapTradeActivityLike } from "../../../src/ingestion/securities.js";
 
 test("stores an option contract ticker as rawSymbol and its underlying as symbol", () => {
   const mapped = mapOptionFromActivity({
