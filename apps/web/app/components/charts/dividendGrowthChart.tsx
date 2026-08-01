@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  Bar,
-  BarChart,
+  Area,
+  AreaChart,
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
@@ -11,19 +11,19 @@ import {
 } from "recharts";
 import { formatDate, formatMoney } from "../../lib/formatters";
 import type { TransactionDto } from "../../lib/portfolio-types";
-import { dividendCurrencyColor } from "./dividend-chart-colors";
-
-type DividendMonthlyGrowthChartProps = {
-  transactions: TransactionDto[];
-};
+import { dividendCurrencyColor } from "./dividendChartColors";
 
 type ChartRow = {
-  monthKey: string;
-  label: string;
+  date: string;
+  displayDate: string;
   [currency: string]: string | number;
 };
 
-function buildMonthlyRows(transactions: TransactionDto[]): {
+type DividendGrowthChartProps = {
+  transactions: TransactionDto[];
+};
+
+function buildChartRows(transactions: TransactionDto[]): {
   currencies: string[];
   rows: ChartRow[];
 } {
@@ -33,83 +33,76 @@ function buildMonthlyRows(transactions: TransactionDto[]): {
   const currencies = Array.from(
     new Set(sorted.map((transaction) => transaction.amount.currency))
   ).sort();
-  const rowsByMonth = new Map<string, ChartRow>();
+  const totals = new Map<string, number>();
 
-  for (const transaction of sorted) {
-    const date = new Date(transaction.tradeDate);
-    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    const currency = transaction.amount.currency;
-    const existing =
-      rowsByMonth.get(monthKey) ??
-      ({
-        monthKey,
-        label: formatDate(`${monthKey}-01`),
-      } as ChartRow);
+  return {
+    currencies,
+    rows: sorted.map((transaction) => {
+      const currency = transaction.amount.currency;
+      totals.set(currency, (totals.get(currency) ?? 0) + Math.abs(transaction.amount.amount));
 
-    existing[currency] =
-      Number(existing[currency] ?? 0) + Math.abs(transaction.amount.amount);
-    rowsByMonth.set(monthKey, existing);
-  }
+      const row: ChartRow = {
+        date: transaction.tradeDate,
+        displayDate: formatDate(transaction.tradeDate),
+      };
 
-  const rows = Array.from(rowsByMonth.values()).sort((a, b) =>
-    a.monthKey.localeCompare(b.monthKey)
-  );
+      for (const code of currencies) {
+        row[code] = totals.get(code) ?? 0;
+      }
 
-  for (const row of rows) {
-    for (const currency of currencies) {
-      row[currency] = Number(row[currency] ?? 0);
-    }
-  }
-
-  return { currencies, rows };
+      return row;
+    }),
+  };
 }
 
-export function DividendMonthlyGrowthChart({
-  transactions,
-}: DividendMonthlyGrowthChartProps) {
-  const { currencies, rows } = buildMonthlyRows(transactions);
+export function DividendGrowthChart({ transactions }: DividendGrowthChartProps) {
+  const { currencies, rows } = buildChartRows(transactions);
 
   return (
     <section className="app-panel p-5">
       <div className="border-b border-border pb-4 text-left">
         <p className="text-xs font-semibold uppercase tracking-normal text-primary-700">
-          Monthly growth
+          Dividend growth
         </p>
         <h2 className="mt-1 text-lg font-semibold text-foreground">
-          Dividend totals by month
+          Cumulative dividends
         </h2>
         <p className="mt-1 text-sm text-muted">
-          Grouped by currency over the selected timeline
+          Running dividend income based on the selected timeline
         </p>
       </div>
 
       <div className="mt-5 h-80">
         {rows.length === 0 ? (
           <div className="flex h-full items-center justify-center rounded-md border border-dashed border-border text-sm text-muted">
-            No monthly dividend history for this view.
+            No dividend history for this view.
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={rows} margin={{ left: 8, right: 24, top: 18, bottom: 0 }}>
-              <CartesianGrid stroke="#d8e1ea" strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 12 }} minTickGap={20} />
+            <AreaChart data={rows} margin={{ left: 8, right: 24, top: 18, bottom: 0 }}>
+              <CartesianGrid stroke="#d8e1ea" strokeDasharray="3 3" />
+              <XAxis dataKey="displayDate" tick={{ fontSize: 12 }} minTickGap={28} />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip
                 formatter={(value, name) =>
                   formatMoney({ amount: Number(value), currency: String(name) })
                 }
+                labelFormatter={(label) => String(label)}
               />
               {currencies.map((currency, index) => (
-                <Bar
+                <Area
                   key={currency}
+                  type="monotone"
                   dataKey={currency}
+                  stroke={dividendCurrencyColor(currency, index)}
                   fill={dividendCurrencyColor(currency, index)}
-                  radius={[4, 4, 0, 0]}
+                  fillOpacity={0.16}
+                  strokeWidth={2}
                   isAnimationActive
                   animationDuration={850}
                 />
               ))}
-            </BarChart>
+            </AreaChart>
           </ResponsiveContainer>
         )}
       </div>

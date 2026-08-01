@@ -2,13 +2,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import type { ReactNode } from "react";
 
-type StatCardProps = {
+interface StatCardProps {
   label: string;
   value: ReactNode;
   tone?: "neutral" | "positive" | "negative";
   icon?: IconDefinition;
   align?: "left" | "center";
-};
+}
 
 export function StatCard({
   label,

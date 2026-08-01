@@ -4,18 +4,18 @@ import { useMemo, useState } from "react";
 import {
   accountMatchesFilters,
   defaultFilterBarState,
-} from "../../lib/account-filters";
+} from "../lib/account-filters";
 import {
   formatDate,
   formatMoney,
   formatMoneyBreakdown,
   signedValueClassName,
-} from "../../lib/formatters";
+} from "../lib/formatters";
 import type {
   AccountDto,
   PortfolioDashboardDto,
   TransactionDto,
-} from "../../lib/portfolio-types";
+} from "../lib/portfolio-types";
 import {
   filterCostTransactions,
   getCostKinds,
@@ -28,14 +28,14 @@ import {
   isTaxTransaction,
   type CostKind,
   type CostView,
-} from "../../services/costs";
-import { filterTransactionsByTimeline } from "../../services/filter_timeline";
-import { DataTable, type TableColumn } from "../dashboard/data-table";
-import { FilterBar } from "../dashboard/filter-bar";
-import { StatCard } from "../dashboard/stat-card";
-import { CostsMonthlyChart } from "./costs-monthly-chart";
+} from "../services/costs";
+import { filterTransactionsByTimeline } from "../services/filter_timeline";
+import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
+import { FilterBar } from "../components/dashboard/filterBar";
+import { StatCard } from "../components/dashboard/statCard";
+import { CostsMonthlyChart } from "../components/charts/costsMonthlyChart";
 
-type CostsDashboardProps = {
+type CostsPageProps = {
   dashboard: PortfolioDashboardDto;
 };
 
@@ -61,7 +61,7 @@ function CostTypeBadge({ kind }: { kind: CostKind }) {
   );
 }
 
-export function CostsDashboard({ dashboard }: CostsDashboardProps) {
+export function CostsPage({ dashboard }: CostsPageProps) {
   const [filters, setFilters] = useState(defaultFilterBarState);
   const [costView, setCostView] = useState<CostView>("both");
 
@@ -182,8 +182,8 @@ export function CostsDashboard({ dashboard }: CostsDashboardProps) {
     <main className="app-main">
       <div className="app-page">
         <header className="mb-6">
-          <h1 className="text-2xl font-semibold text-foreground">Costs</h1>
-          <p className="mt-1 text-sm text-muted">
+          <h1 className="text-2xl font-semibold text-foreground sm:text-3xl">Costs</h1>
+          <p className="mt-2 max-w-3xl text-sm text-muted">
             Review fees and taxes from non-cash accounts.
           </p>
         </header>

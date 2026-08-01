@@ -16,7 +16,7 @@ import {
   faLayerGroup,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-import { DetailsDropdown } from "../ui/details-dropdown";
+import { DetailsDropdown } from "../ui/detailsDropdown";
 import { SelectField } from "../ui/select";
 import { timelineOptions } from "../../services/filter_timeline";
 

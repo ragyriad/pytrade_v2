@@ -3,7 +3,7 @@ import type { DividendCalendarEventDto } from "../../lib/portfolio-types";
 import {
   CalendarEventsCalendar,
   type CalendarDisplayEvent,
-} from "./calendar-events-calendar";
+} from "./calendarEventsCalendar";
 
 type DividendEventsCalendarProps = {
   events: DividendCalendarEventDto[];

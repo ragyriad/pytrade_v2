@@ -1,22 +1,22 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AllocationPie } from "../dashboard/allocation-pie";
-import { DataTable, type TableColumn } from "../dashboard/data-table";
-import { FilterBar } from "../dashboard/filter-bar";
-import { StatCard } from "../dashboard/stat-card";
+import { AllocationPie } from "../components/charts/allocationPie";
+import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
+import { FilterBar } from "../components/dashboard/filterBar";
+import { StatCard } from "../components/dashboard/statCard";
 import {
   accountMatchesFilters,
   defaultFilterBarState,
   isActiveAccount,
-} from "../../lib/account-filters";
+} from "../lib/account-filters";
 import {
   formatMoney,
   formatMoneyBreakdown,
   formatNumber,
   formatPercent,
   signedValueClassName,
-} from "../../lib/formatters";
+} from "../lib/formatters";
 import {
   getAggregateUnrealizedAmount,
   getAggregateUnrealizedPercent,
@@ -24,14 +24,14 @@ import {
   getTotalMarketValue,
   getTotalUnrealized,
   getUnrealizedReturnPercent,
-} from "../../services/portfolio";
-import type { PortfolioDashboardDto, PositionDto } from "../../lib/portfolio-types";
+} from "../services/portfolio";
+import type { PortfolioDashboardDto, PositionDto } from "../lib/portfolio-types";
 
-type PortfolioDashboardProps = {
+type HomePageProps = {
   dashboard: PortfolioDashboardDto;
 };
 
-export function PortfolioDashboard({ dashboard }: PortfolioDashboardProps) {
+export function HomePage({ dashboard }: HomePageProps) {
   const [filters, setFilters] = useState(defaultFilterBarState);
 
   const accountsById = useMemo(() => {

@@ -1,10 +1,9 @@
 import {
   CalendarEventsCalendar,
   type CalendarDisplayEvent,
-} from "../components/portfolio/calendar-events-calendar";
+} from "../components/portfolio/calendarEventsCalendar";
 import { formatDate, formatMoney, formatSource } from "../lib/formatters";
 import type { CalendarEventDto } from "../lib/portfolio-types";
-import { fetchCalendarEventsFromBackend } from "../repositories/calendar";
 
 function formatEps(value: number): string {
   return new Intl.NumberFormat("en-US", {
@@ -144,35 +143,11 @@ function toDisplayEvents(event: CalendarEventDto): CalendarDisplayEvent[] {
   ];
 }
 
-export async function CalendarPage() {
-  let events: CalendarEventDto[] = [];
-  let error: string | null = null;
+type CalendarPageProps = {
+  events: CalendarEventDto[];
+};
 
-  try {
-    events = await fetchCalendarEventsFromBackend();
-  } catch (caught) {
-    error =
-      caught instanceof Error
-        ? caught.message
-        : "Unable to load calendar events.";
-  }
-
-  if (error) {
-    return (
-      <main className="app-main p-6 sm:p-10">
-        <div className="app-panel mx-auto max-w-5xl border-negative p-6">
-          <p className="text-sm font-medium text-negative">
-            Calendar unavailable
-          </p>
-          <h1 className="mt-3 text-2xl font-semibold">
-            API data could not be loaded.
-          </h1>
-          <p className="mt-3 text-sm text-muted">{error}</p>
-        </div>
-      </main>
-    );
-  }
-
+export function CalendarPage({ events }: CalendarPageProps) {
   const displayEvents = events.flatMap(toDisplayEvents);
   const securityCount = new Set(
     events.map((event) => event.securityId).filter(Boolean)

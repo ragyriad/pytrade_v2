@@ -1,21 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { accountMatchesFilters, defaultFilterBarState } from "../../lib/account-filters";
+import { accountMatchesFilters, defaultFilterBarState } from "../lib/account-filters";
 import {
   formatDate,
   formatMoney,
   formatMoneyBreakdown,
   formatNumber,
   signedValueClassName,
-} from "../../lib/formatters";
+} from "../lib/formatters";
 import type {
   AccountDto,
   DashboardTab,
   MoneyDto,
   PortfolioDashboardDto,
   TransactionDto,
-} from "../../lib/portfolio-types";
+} from "../lib/portfolio-types";
 import {
   type OptionSecurityRow,
   buildOptionSecurityRows,
@@ -23,15 +23,15 @@ import {
   getOptionFees,
   getOptionPnl,
   isOptionTransaction,
-} from "../../services/options";
-import { filterTransactionsByTimeline } from "../../services/filter_timeline";
-import { Button } from "../ui/button";
-import { DataTable, type TableColumn } from "../dashboard/data-table";
-import { FilterBar } from "../dashboard/filter-bar";
-import { SegmentedTabs } from "../dashboard/segmented-tabs";
-import { StatCard } from "../dashboard/stat-card";
+} from "../services/options";
+import { filterTransactionsByTimeline } from "../services/filter_timeline";
+import { Button } from "../components/ui/button";
+import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
+import { FilterBar } from "../components/dashboard/filterBar";
+import { SegmentedTabs } from "../components/dashboard/segmentedTabs";
+import { StatCard } from "../components/dashboard/statCard";
 
-type OptionsDashboardProps = {
+type OptionsPageProps = {
   dashboard: PortfolioDashboardDto;
 };
 
@@ -43,7 +43,7 @@ function formatInteger(value: number): string {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);
 }
 
-export function OptionsDashboard({ dashboard }: OptionsDashboardProps) {
+export function OptionsPage({ dashboard }: OptionsPageProps) {
   const [filters, setFilters] = useState(defaultFilterBarState);
   const [activeTab, setActiveTab] = useState<DashboardTab>("transactions");
   const [selectedSecurityId, setSelectedSecurityId] = useState<string | null>(null);

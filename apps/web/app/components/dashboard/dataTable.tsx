@@ -29,7 +29,7 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "../ui/button";
-import { DetailsDropdown } from "../ui/details-dropdown";
+import { DetailsDropdown } from "../ui/detailsDropdown";
 
 export type TableColumn<T> = {
   key: string;

@@ -19,13 +19,13 @@ export type CalendarDisplayEvent = {
   providerSource: string;
 };
 
-type CalendarEventsCalendarProps = {
+interface CalendarEventsCalendarProps {
   events: CalendarDisplayEvent[];
   title: string;
   subtitle: string;
   emptyMessage: string;
   monthsAtOnce?: 1 | 2;
-};
+}
 
 type CalendarCell = {
   key: string;

@@ -5,25 +5,25 @@ import {
   accountMatchesFilters,
   defaultFilterBarState,
   type PortfolioFilterState,
-} from "../../lib/account-filters";
+} from "../lib/account-filters";
 import {
   formatDate,
   formatMoney,
   normalizeAccountType,
   signedValueClassName,
-} from "../../lib/formatters";
-import { filterTransactionsByTimeline } from "../../services/filter_timeline";
+} from "../lib/formatters";
+import { filterTransactionsByTimeline } from "../services/filter_timeline";
 import type {
   AccountDto,
   DashboardTab,
   PortfolioDashboardDto,
   TransactionDto,
-} from "../../lib/portfolio-types";
-import { DataTable, type TableColumn } from "../dashboard/data-table";
-import { FilterBar } from "../dashboard/filter-bar";
-import { SegmentedTabs } from "../dashboard/segmented-tabs";
+} from "../lib/portfolio-types";
+import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
+import { FilterBar } from "../components/dashboard/filterBar";
+import { SegmentedTabs } from "../components/dashboard/segmentedTabs";
 
-type DataExplorerProps = {
+type DataPageProps = {
   dashboard: PortfolioDashboardDto;
 };
 
@@ -75,7 +75,7 @@ function filterTransactionsByDateRange(
   });
 }
 
-export function DataExplorer({ dashboard }: DataExplorerProps) {
+export function DataPage({ dashboard }: DataPageProps) {
   const [activeTab, setActiveTab] = useState<DashboardTab>("transactions");
   const [filters, setFilters] = useState(defaultFilterBarState);
   const [dateRange, setDateRange] = useState({ from: "", to: "" });

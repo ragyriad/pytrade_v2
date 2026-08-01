@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { formatMoney } from "../../lib/formatters";
 import type { MoneyBreakdownDto } from "../../lib/portfolio-types";
-import { dividendCurrencyColor } from "./dividend-chart-colors";
+import { dividendCurrencyColor } from "./dividendChartColors";
 
 type DividendTotalBarChartProps = {
   totals: MoneyBreakdownDto[];

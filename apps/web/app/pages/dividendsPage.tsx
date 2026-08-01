@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   accountMatchesFilters,
   defaultFilterBarState,
-} from "../../lib/account-filters";
+} from "../lib/account-filters";
 import {
   formatDate,
   formatMoney,
@@ -12,7 +12,7 @@ import {
   formatPercent,
   normalizeAccountType,
   signedValueClassName,
-} from "../../lib/formatters";
+} from "../lib/formatters";
 import type {
   DividendDashboardSummaryDto,
   DividendYieldingPositionDto,
@@ -20,21 +20,21 @@ import type {
   PercentBreakdownDto,
   PortfolioDashboardDto,
   TransactionDto,
-} from "../../lib/portfolio-types";
-import { DataTable, type TableColumn } from "../dashboard/data-table";
-import { FilterBar } from "../dashboard/filter-bar";
-import { SegmentedTabs } from "../dashboard/segmented-tabs";
-import { StatCard } from "../dashboard/stat-card";
-import { DividendCurrentYearChart } from "./dividend-current-year-chart";
-import { DividendGrowthChart } from "./dividend-growth-chart";
-import { DividendMonthlyGrowthChart } from "./dividend-monthly-growth-chart";
-import { DividendTotalBarChart } from "./dividend-total-bar-chart";
-import { DividendAccountShareChart } from "./dividend-account-share-chart";
-import { DividendPositionYieldChart } from "./dividend-position-yield-chart";
-import { DividendEventsCalendar } from "./dividend-events-calendar";
-import { MetricValueList } from "../dashboard/metric-value-list";
+} from "../lib/portfolio-types";
+import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
+import { FilterBar } from "../components/dashboard/filterBar";
+import { SegmentedTabs } from "../components/dashboard/segmentedTabs";
+import { StatCard } from "../components/dashboard/statCard";
+import { DividendCurrentYearChart } from "../components/charts/dividendCurrentYearChart";
+import { DividendGrowthChart } from "../components/charts/dividendGrowthChart";
+import { DividendMonthlyGrowthChart } from "../components/charts/dividendMonthlyGrowthChart";
+import { DividendTotalBarChart } from "../components/charts/dividendTotalBarChart";
+import { DividendAccountShareChart } from "../components/charts/dividendAccountShareChart";
+import { DividendPositionYieldChart } from "../components/charts/dividendPositionYieldChart";
+import { DividendEventsCalendar } from "../components/portfolio/dividendEventsCalendar";
+import { MetricValueList } from "../components/dashboard/metricValueList";
 
-type DividendsDashboardProps = {
+type DividendsPageProps = {
   dashboard: PortfolioDashboardDto;
   initialSummary: DividendDashboardSummaryDto;
   userId?: string;
@@ -42,11 +42,11 @@ type DividendsDashboardProps = {
 
 type DividendTableTab = "positions" | "transactions" | "calendar";
 
-export function DividendsDashboard({
+export function DividendsPage({
   dashboard,
   initialSummary,
   userId,
-}: DividendsDashboardProps) {
+}: DividendsPageProps) {
   const [filters, setFilters] = useState(defaultFilterBarState);
   const [activeTableTab, setActiveTableTab] =
     useState<DividendTableTab>("positions");

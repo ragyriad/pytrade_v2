@@ -6,11 +6,11 @@ type TabOption<T extends string> = {
   count: number;
 };
 
-type SegmentedTabsProps<T extends string> = {
+interface SegmentedTabsProps<T extends string> {
   value: T;
   options: TabOption<T>[];
   onChange: (value: T) => void;
-};
+}
 
 export function SegmentedTabs<T extends string>({
   value,

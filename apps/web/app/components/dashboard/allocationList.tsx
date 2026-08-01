@@ -1,11 +1,11 @@
 import { formatMoney } from "../../lib/formatters";
 import type { AllocationDto } from "../../lib/portfolio-types";
 
-type AllocationListProps = {
+interface AllocationListProps {
   title: string;
   rows: AllocationDto[];
   currency: string;
-};
+}
 
 export function AllocationList({ title, rows, currency }: AllocationListProps) {
   return (

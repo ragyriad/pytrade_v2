@@ -13,32 +13,32 @@ import {
   faMoneyBillWave,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-import { DetailsDropdown } from "../ui/details-dropdown";
-import { DataTable, type TableColumn } from "../dashboard/data-table";
-import { MetricValueList } from "../dashboard/metric-value-list";
-import { StatCard } from "../dashboard/stat-card";
-import { SelectField } from "../ui/select";
+import { DetailsDropdown } from "../components/ui/detailsDropdown";
+import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
+import { MetricValueList } from "../components/dashboard/metricValueList";
+import { StatCard } from "../components/dashboard/statCard";
+import { SelectField } from "../components/ui/select";
 import {
   formatDate,
   formatMoney,
   formatNumber,
   formatPercent,
   signedValueClassName,
-} from "../../lib/formatters";
+} from "../lib/formatters";
 import {
   filterTransactionsByTimeline,
   timelineOptions,
   type TimelineRange,
-} from "../../services/filter_timeline";
+} from "../services/filter_timeline";
 import type {
   CalculatedCreditCardBalanceDto,
   CashAccountDto,
   CashDashboardDto,
   CashTransactionDto,
   MoneyDto,
-} from "../../lib/portfolio-types";
+} from "../lib/portfolio-types";
 
-type CashDashboardProps = {
+type CashPageProps = {
   dashboard: CashDashboardDto;
 };
 
@@ -542,7 +542,7 @@ function CashFilterBar({
   );
 }
 
-export function CashDashboard({ dashboard }: CashDashboardProps) {
+export function CashPage({ dashboard }: CashPageProps) {
   const [filters, setFilters] = useState(defaultFilters);
   const [showClosedBalances, setShowClosedBalances] = useState(false);
   const accountsById = useMemo(

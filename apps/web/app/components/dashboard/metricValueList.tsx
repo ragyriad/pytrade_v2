@@ -5,10 +5,10 @@ type MetricValueRow = {
   className?: string;
 };
 
-type MetricValueListProps = {
+interface MetricValueListProps {
   rows: MetricValueRow[];
   emptyValue?: string;
-};
+}
 
 export function MetricValueList({ rows, emptyValue = "-" }: MetricValueListProps) {
   if (rows.length === 0) {

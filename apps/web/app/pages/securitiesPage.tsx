@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { DataTable, type TableColumn } from "../dashboard/data-table";
-import { MoneySpinner } from "../loading/page-loading";
-import { Button } from "../ui/button";
+import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
+import { MoneySpinner } from "../components/loading/pageLoading";
+import { Button } from "../components/ui/button";
 import {
   formatDate,
   formatMoney,
@@ -11,14 +11,14 @@ import {
   formatPercent,
   formatSource,
   signedValueClassName,
-} from "../../lib/formatters";
+} from "../lib/formatters";
 import type {
   HistoricSecurityDto,
   SecurityTransactionsResponseDto,
   TransactionDto,
-} from "../../lib/portfolio-types";
+} from "../lib/portfolio-types";
 
-type SecuritiesDashboardProps = {
+type SecuritiesPageProps = {
   securities: HistoricSecurityDto[];
   userId?: string;
 };
@@ -38,7 +38,7 @@ async function fetchSecurityTransactions(
   return response.json();
 }
 
-export function SecuritiesDashboard({ securities, userId }: SecuritiesDashboardProps) {
+export function SecuritiesPage({ securities, userId }: SecuritiesPageProps) {
   const [expandedSecurityIds, setExpandedSecurityIds] = useState<Set<string>>(
     () => new Set()
   );

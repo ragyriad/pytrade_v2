@@ -11,7 +11,7 @@ import {
 } from "recharts";
 import { formatMoney } from "../../lib/formatters";
 import type { MoneyBreakdownDto, TransactionDto } from "../../lib/portfolio-types";
-import { dividendCurrencyColor } from "./dividend-chart-colors";
+import { dividendCurrencyColor } from "./dividendChartColors";
 
 type DividendCurrentYearChartProps = {
   transactions: TransactionDto[];
