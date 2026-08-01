@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { fetchDividendSummaryFromBackend } from "../../../repositories/dividends";
-import type { DividendTimelineRange } from "../../../lib/portfolio-types";
+import type { DividendTimelineRange } from "../../../lib/portfolioTypes";
 
 const timelineValues = new Set<DividendTimelineRange>([
   "NONE",

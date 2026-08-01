@@ -3,7 +3,7 @@ import {
   type CalendarDisplayEvent,
 } from "../components/portfolio/calendarEventsCalendar";
 import { formatDate, formatMoney, formatSource } from "../lib/formatters";
-import type { CalendarEventDto } from "../lib/portfolio-types";
+import type { CalendarEventDto } from "../lib/portfolioTypes";
 
 function formatEps(value: number): string {
   return new Intl.NumberFormat("en-US", {

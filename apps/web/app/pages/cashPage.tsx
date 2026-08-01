@@ -36,7 +36,7 @@ import type {
   CashDashboardDto,
   CashTransactionDto,
   MoneyDto,
-} from "../lib/portfolio-types";
+} from "../lib/portfolioTypes";
 
 type CashPageProps = {
   dashboard: CashDashboardDto;
@@ -439,7 +439,7 @@ function CashFilterMultiSelect({
                   <span
                     className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
                       checked
-                        ? "border-primary-700 bg-primary-700 text-white"
+                        ? "border-primary-700 bg-primary-700 text-on-primary"
                         : "border-border bg-surface"
                     }`}
                   >
@@ -644,7 +644,7 @@ export function CashPage({ dashboard }: CashPageProps) {
       header: "Description",
       value: (transaction) => transaction.description ?? "-",
       render: (transaction) => (
-        <span className="line-clamp-1 text-zinc-600">{transaction.description ?? "-"}</span>
+        <span className="line-clamp-1 text-content-secondary">{transaction.description ?? "-"}</span>
       ),
     },
     {
@@ -797,7 +797,7 @@ export function CashPage({ dashboard }: CashPageProps) {
         </section>
 
         {dashboard.unallocatedCreditCardPayments.length > 0 ? (
-          <section className="app-panel mt-6 border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+          <section className="app-panel mt-6 border-warning-border bg-warning-surface p-4 text-sm text-warning-text-strong">
             Some credit-card payments could not be assigned because more than
             one card shares the same institution and currency. Unallocated:{" "}
             {dashboard.unallocatedCreditCardPayments

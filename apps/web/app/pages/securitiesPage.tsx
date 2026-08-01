@@ -16,7 +16,7 @@ import type {
   HistoricSecurityDto,
   SecurityTransactionsResponseDto,
   TransactionDto,
-} from "../lib/portfolio-types";
+} from "../lib/portfolioTypes";
 
 type SecuritiesPageProps = {
   securities: HistoricSecurityDto[];
@@ -141,12 +141,12 @@ export function SecuritiesPage({ securities, userId }: SecuritiesPageProps) {
               {security.description ?? security.rawSymbol ?? security.symbol}
             </p>
             {security.listingStatus === "DELISTED" ? (
-              <span className="rounded bg-zinc-200 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-zinc-700">
+              <span className="rounded bg-inactive-surface px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-inactive-text">
                 Delisted
               </span>
             ) : null}
           </div>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-content-tertiary">
             {security.exchangeCode ?? security.exchangeMicCode ?? "Exchange unknown"}
             {security.delistedAt
               ? ` · Delisted ${formatDate(security.delistedAt)}`
@@ -186,10 +186,10 @@ export function SecuritiesPage({ securities, userId }: SecuritiesPageProps) {
       render: (security) =>
         security.status === "active" ? (
           <div className="inline-flex flex-col items-center gap-1">
-            <span className="rounded bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700">
+            <span className="rounded bg-warning-surface px-2 py-1 text-xs font-semibold text-warning-text">
               Open position
             </span>
-            <span className="text-xs text-zinc-500">Not realized</span>
+            <span className="text-xs text-content-tertiary">Not realized</span>
           </div>
         ) : (
           <span className={`font-medium ${signedValueClassName(security.totalGainLoss.amount)}`}>
@@ -271,7 +271,7 @@ function SecurityTransactionsSubTable({
 
   if (error) {
     return (
-      <div className="border-t border-rose-100 bg-rose-50 p-5 text-center text-sm text-rose-700">
+      <div className="border-t border-error-border-subtle bg-error-surface p-5 text-center text-sm text-error-text">
         {error}
       </div>
     );
@@ -319,7 +319,7 @@ function SecurityTransactionsSubTable({
                   <p className="font-medium text-foreground">
                     {transaction.accountName ?? transaction.accountId}
                   </p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-content-tertiary">
                     {[transaction.brokerageName, transaction.accountType]
                       .filter(Boolean)
                       .join(" / ")}

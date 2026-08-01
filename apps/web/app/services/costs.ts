@@ -2,7 +2,7 @@ import type {
   MoneyBreakdownDto,
   MoneyDto,
   TransactionDto,
-} from "../lib/portfolio-types";
+} from "../lib/portfolioTypes";
 import { absoluteMoney, groupMoney } from "./value_helpers";
 
 export type CostView = "fees" | "taxes" | "both";

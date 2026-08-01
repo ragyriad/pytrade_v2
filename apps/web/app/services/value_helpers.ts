@@ -1,4 +1,4 @@
-import type { MoneyBreakdownDto, MoneyDto } from "../lib/portfolio-types";
+import type { MoneyBreakdownDto, MoneyDto } from "../lib/portfolioTypes";
 
 export function groupMoney(values: MoneyDto[]): MoneyBreakdownDto[] {
   const totals = new Map<string, number>();

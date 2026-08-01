@@ -1,32 +1,13 @@
+@import "./theme.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --color-background: #f5f7fb;
-  --color-foreground: #111827;
-  --color-surface: #ffffff;
-  --color-surface-muted: #eef3f8;
-  --color-border: #d8e1ea;
-  --color-muted: #667085;
-  --color-primary-50: #eef6ff;
-  --color-primary-100: #d9eaff;
-  --color-primary-200: #b8d6f4;
-  --color-primary-500: #3f7fb5;
-  --color-primary-600: #2f6f9f;
-  --color-primary-700: #255a86;
-  --color-primary-800: #1c466b;
-  --color-primary-900: #163755;
-  --color-positive: #047857;
-  --color-negative: #be123c;
-  --color-warning: #b45309;
-  --shadow-panel: 0 14px 40px rgba(22, 55, 85, 0.08);
-}
-
 body {
   color: var(--color-foreground);
   background:
-    linear-gradient(180deg, rgba(238, 246, 255, 0.78) 0%, rgba(245, 247, 251, 0) 24rem),
+    linear-gradient(180deg, var(--color-page-glow) 0%, var(--color-page-glow-transparent) 24rem),
     var(--color-background);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
@@ -66,9 +47,9 @@ body {
 
   .metallic-primary-bar {
     background:
-      linear-gradient(105deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 28%),
+      linear-gradient(105deg, var(--color-primary-highlight), var(--color-primary-highlight-transparent) 28%),
       linear-gradient(180deg, var(--color-primary-500), var(--color-primary-800));
-    box-shadow: 0 12px 30px rgba(22, 55, 85, 0.28);
+    box-shadow: var(--shadow-primary-bar);
   }
 
   .nav-desktop-shell {
@@ -85,31 +66,31 @@ body {
 
   .nav-bar-button {
     @apply h-11 whitespace-nowrap px-2.5 text-sm duration-200 ease-out xl:px-3.5 xl:text-base;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--color-on-primary-muted);
   }
 
   .nav-bar-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
+    background: var(--color-on-primary-border);
+    color: var(--color-on-primary);
   }
 
   .nav-bar-button-active,
   .nav-bar-button-active:hover {
-    background: #ffffff;
+    background: var(--color-on-primary);
     color: var(--color-primary-800);
-    box-shadow: 0 8px 20px rgba(22, 55, 85, 0.16);
+    box-shadow: var(--shadow-primary-active);
   }
 
   .nav-user-button {
     @apply cursor-pointer list-none border;
-    border-color: rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.1);
-    color: #ffffff;
+    border-color: var(--color-on-primary-border);
+    background: var(--color-on-primary-surface);
+    color: var(--color-on-primary);
   }
 
   .nav-user-button:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
+    background: var(--color-on-primary-border);
+    color: var(--color-on-primary);
   }
 
   .nav-user-button-compact {
@@ -136,12 +117,24 @@ body {
   }
 
   .nav-tablet-button {
-    @apply flex h-9 items-center justify-center rounded-md text-white/80 transition hover:bg-white/20 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white;
+    @apply flex h-9 items-center justify-center rounded-md transition focus:outline-none focus-visible:ring-2;
+    color: var(--color-on-primary-muted);
+  }
+
+  .nav-tablet-button:hover {
+    background: var(--color-on-primary-border);
+    color: var(--color-on-primary);
+  }
+
+  .nav-tablet-button:focus-visible {
+    --tw-ring-color: var(--color-on-primary);
   }
 
   .nav-tablet-button-active,
   .nav-tablet-button-active:hover {
-    @apply bg-white text-primary-800 shadow-sm;
+    @apply shadow-sm;
+    color: var(--color-primary-800);
+    background: var(--color-on-primary);
   }
 
   .mobile-nav-button {
@@ -160,12 +153,24 @@ body {
   }
 
   .security-symbol-button {
-    @apply justify-start border border-amber-600 bg-amber-600 text-white hover:border-amber-700 hover:bg-amber-700 hover:text-white;
+    @apply justify-start border;
+    border-color: var(--color-security-action);
+    background: var(--color-security-action);
+    color: var(--color-on-primary);
+  }
+
+  .security-symbol-button:hover {
+    border-color: var(--color-security-action-hover);
+    background: var(--color-security-action-hover);
+    color: var(--color-on-primary);
   }
 
   .security-symbol-button-selected,
   .security-symbol-button-selected:hover {
-    @apply justify-start border border-amber-600 bg-white text-amber-700 shadow-sm;
+    @apply justify-start border shadow-sm;
+    border-color: var(--color-security-action);
+    background: var(--color-surface);
+    color: var(--color-security-action-hover);
   }
 }
 
@@ -176,7 +181,7 @@ body {
 
   .scrollbar-thick {
     scrollbar-width: auto;
-    scrollbar-color: #a1a1aa #f4f4f5;
+    scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
   }
 
   .scrollbar-thick::-webkit-scrollbar {
@@ -185,13 +190,13 @@ body {
   }
 
   .scrollbar-thick::-webkit-scrollbar-track {
-    background: #f4f4f5;
+    background: var(--color-scrollbar-track);
     border-radius: 999px;
   }
 
   .scrollbar-thick::-webkit-scrollbar-thumb {
-    background: #a1a1aa;
-    border: 3px solid #f4f4f5;
+    background: var(--color-scrollbar-thumb);
+    border: 3px solid var(--color-scrollbar-track);
     border-radius: 999px;
   }
 }

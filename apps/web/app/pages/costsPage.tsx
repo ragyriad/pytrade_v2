@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import {
   accountMatchesFilters,
   defaultFilterBarState,
-} from "../lib/account-filters";
+} from "../lib/accountFilters";
 import {
   formatDate,
   formatMoney,
@@ -15,7 +15,7 @@ import type {
   AccountDto,
   PortfolioDashboardDto,
   TransactionDto,
-} from "../lib/portfolio-types";
+} from "../lib/portfolioTypes";
 import {
   filterCostTransactions,
   getCostKinds,
@@ -51,8 +51,8 @@ function isNonCashAccount(account: AccountDto): boolean {
 function CostTypeBadge({ kind }: { kind: CostKind }) {
   const className =
     kind === "fee"
-      ? "border-rose-200 bg-rose-50 text-rose-700"
-      : "border-amber-200 bg-amber-50 text-amber-800";
+      ? "border-error-border bg-error-surface text-error-text"
+      : "border-warning-border-subtle bg-warning-surface text-warning-text-medium";
 
   return (
     <span className={`rounded-full border px-2 py-0.5 text-xs font-semibold ${className}`}>
@@ -166,7 +166,7 @@ export function CostsPage({ dashboard }: CostsPageProps) {
       header: "Description",
       value: (transaction) => transaction.description,
       render: (transaction) => (
-        <span className="line-clamp-2 text-zinc-600">{transaction.description ?? "-"}</span>
+        <span className="line-clamp-2 text-content-secondary">{transaction.description ?? "-"}</span>
       ),
     },
   ];

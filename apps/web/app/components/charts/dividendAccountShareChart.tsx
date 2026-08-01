@@ -8,26 +8,12 @@ import {
   Tooltip,
 } from "recharts";
 import { formatMoney, formatPercent } from "../../lib/formatters";
-import type { DividendAccountShareGroupDto } from "../../lib/portfolio-types";
+import type { DividendAccountShareGroupDto } from "../../lib/portfolioTypes";
+import { chartAccountShareColors, chartSeparatorColor } from "./chartColors";
 
 type DividendAccountShareChartProps = {
   groups: DividendAccountShareGroupDto[];
 };
-
-const colors = [
-  "#2f6f9f",
-  "#047857",
-  "#7c3aed",
-  "#be123c",
-  "#b45309",
-  "#0891b2",
-  "#4f46e5",
-  "#be185d",
-  "#16a34a",
-  "#ea580c",
-  "#0f766e",
-  "#4338ca",
-];
 
 export function DividendAccountShareChart({ groups }: DividendAccountShareChartProps) {
   return (
@@ -61,13 +47,13 @@ export function DividendAccountShareChart({ groups }: DividendAccountShareChartP
                       innerRadius={58}
                       outerRadius={92}
                       paddingAngle={1}
-                      stroke="#ffffff"
+                      stroke={chartSeparatorColor}
                       strokeWidth={2}
                     >
                       {group.rows.map((row, index) => (
                         <Cell
                           key={row.id}
-                          fill={colors[index % colors.length]}
+                          fill={chartAccountShareColors[index % chartAccountShareColors.length]}
                         />
                       ))}
                     </Pie>

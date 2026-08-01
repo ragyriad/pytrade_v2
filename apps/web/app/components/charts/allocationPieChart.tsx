@@ -8,6 +8,7 @@ import {
   Tooltip,
 } from "recharts";
 import { formatMoney } from "../../lib/formatters";
+import { chartSeparatorColor, chartSeriesColors } from "./chartColors";
 
 export type PieSlice = {
   label: string;
@@ -16,27 +17,12 @@ export type PieSlice = {
   currency: string;
 };
 
-const colors = [
-  "#2f6f9f",
-  "#047857",
-  "#b45309",
-  "#7c3aed",
-  "#be123c",
-  "#0891b2",
-  "#4f46e5",
-  "#be185d",
-  "#16a34a",
-  "#ea580c",
-  "#0f766e",
-  "#4338ca",
-];
-
-type AllocationPieProps = {
+type AllocationPieChartProps = {
   title: string;
   rows: PieSlice[];
 };
 
-export function AllocationPie({ title, rows }: AllocationPieProps) {
+export function AllocationPieChart({ title, rows }: AllocationPieChartProps) {
   return (
     <section className="app-panel p-5 text-center">
       <div className="flex items-center justify-center gap-4">
@@ -61,11 +47,11 @@ export function AllocationPie({ title, rows }: AllocationPieProps) {
                   innerRadius={72}
                   outerRadius={126}
                   paddingAngle={1}
-                  stroke="#ffffff"
+                  stroke={chartSeparatorColor}
                   strokeWidth={2}
                 >
                   {rows.map((row, index) => (
-                    <Cell key={row.label} fill={colors[index % colors.length]} />
+                    <Cell key={row.label} fill={chartSeriesColors[index % chartSeriesColors.length]} />
                   ))}
                 </Pie>
                 <Tooltip
@@ -94,7 +80,7 @@ export function AllocationPie({ title, rows }: AllocationPieProps) {
               >
                 <span
                   className="h-3 w-3 rounded-sm"
-                  style={{ backgroundColor: colors[index % colors.length] }}
+                  style={{ backgroundColor: chartSeriesColors[index % chartSeriesColors.length] }}
                 />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium text-foreground">{row.label}</p>

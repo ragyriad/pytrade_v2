@@ -89,7 +89,7 @@ export function TopNav() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 hidden border-b border-primary-900 text-white lg:block">
+      <header className="sticky top-0 z-30 hidden border-b border-primary-900 text-on-primary lg:block">
         <div className="metallic-primary-bar">
           <div className="nav-desktop-shell">
             <Link href="/" onClick={handleNavigate("/")} className="nav-brand">
@@ -119,7 +119,7 @@ export function TopNav() {
         </div>
       </header>
 
-      <header className="sticky top-0 z-30 hidden border-b border-primary-900 text-white md:block lg:hidden">
+      <header className="sticky top-0 z-30 hidden border-b border-primary-900 text-on-primary md:block lg:hidden">
         <div className="metallic-primary-bar">
           <div className="nav-tablet-shell">
             <Link href="/" onClick={handleNavigate("/")} className="nav-brand">
@@ -160,7 +160,7 @@ export function TopNav() {
         <UserMenu compact mobile />
       </header>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-primary-900 bg-surface px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-10px_30px_rgba(22,55,85,0.14)] md:hidden" aria-label="Primary navigation">
+      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-primary-900 bg-surface px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[var(--shadow-mobile-nav)] md:hidden" aria-label="Primary navigation">
         {mobileLinks.map((link) => (
           <Link
             key={link.href}

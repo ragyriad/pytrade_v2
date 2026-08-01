@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   accountMatchesFilters,
   defaultFilterBarState,
-} from "../lib/account-filters";
+} from "../lib/accountFilters";
 import {
   formatDate,
   formatMoney,
@@ -20,7 +20,7 @@ import type {
   PercentBreakdownDto,
   PortfolioDashboardDto,
   TransactionDto,
-} from "../lib/portfolio-types";
+} from "../lib/portfolioTypes";
 import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
 import { FilterBar } from "../components/dashboard/filterBar";
 import { SegmentedTabs } from "../components/dashboard/segmentedTabs";
@@ -158,7 +158,7 @@ export function DividendsPage({
       render: (position) => (
         <div>
           <p className="font-semibold text-foreground">{position.symbol}</p>
-          <p className="line-clamp-1 text-xs text-zinc-500">
+          <p className="line-clamp-1 text-xs text-content-tertiary">
             {position.description ?? "Dividend yielding security"}
           </p>
         </div>
@@ -175,7 +175,7 @@ export function DividendsPage({
         return (
           <div>
             <p className="font-medium text-foreground">{account?.name ?? "Unknown"}</p>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-content-tertiary">
               {[account?.institutionName, normalizeAccountType(account?.type ?? null)]
                 .filter(Boolean)
                 .join(" / ")}
@@ -284,13 +284,13 @@ export function DividendsPage({
       <div className="app-page">
 
         {summaryError ? (
-          <section className="mt-6 rounded-md border border-rose-200 bg-white p-4 text-sm text-rose-700 shadow-sm">
+          <section className="mt-6 rounded-md border border-error-border bg-surface p-4 text-sm text-error-text shadow-sm">
             {summaryError}
           </section>
         ) : null}
 
         {isSummaryLoading ? (
-          <div className="mt-4 text-sm font-medium text-zinc-500">
+          <div className="mt-4 text-sm font-medium text-content-tertiary">
             Updating dividend summary...
           </div>
         ) : null}

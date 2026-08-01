@@ -1,4 +1,4 @@
-import type { MoneyBreakdownDto, MoneyDto } from "./portfolio-types";
+import type { MoneyBreakdownDto, MoneyDto } from "./portfolioTypes";
 
 export function formatMoney(value: MoneyDto): string {
   const amount = new Intl.NumberFormat("en-US", {

@@ -1,4 +1,4 @@
-import type { CashDashboardDto } from "../lib/portfolio-types";
+import type { CashDashboardDto } from "../lib/portfolioTypes";
 import { backendApiBaseUrl, fetchJson } from "./http-client";
 
 export async function fetchCashDashboardFromBackend(

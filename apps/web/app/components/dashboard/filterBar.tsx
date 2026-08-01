@@ -4,8 +4,8 @@ import {
   getUniqueAccountTypes,
   getUniqueBrokerages,
   type PortfolioFilterState,
-} from "../../lib/account-filters";
-import type { AccountDto } from "../../lib/portfolio-types";
+} from "../../lib/accountFilters";
+import type { AccountDto } from "../../lib/portfolioTypes";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBuildingColumns,
@@ -145,7 +145,7 @@ function FilterBarMultiSelect({
                   <span
                     className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
                       checked
-                        ? "border-primary-700 bg-primary-700 text-white"
+                        ? "border-primary-700 bg-primary-700 text-on-primary"
                         : "border-border bg-surface"
                     }`}
                   >

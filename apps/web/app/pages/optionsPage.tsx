@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { accountMatchesFilters, defaultFilterBarState } from "../lib/account-filters";
+import { accountMatchesFilters, defaultFilterBarState } from "../lib/accountFilters";
 import {
   formatDate,
   formatMoney,
@@ -15,7 +15,7 @@ import type {
   MoneyDto,
   PortfolioDashboardDto,
   TransactionDto,
-} from "../lib/portfolio-types";
+} from "../lib/portfolioTypes";
 import {
   type OptionSecurityRow,
   buildOptionSecurityRows,
@@ -179,7 +179,7 @@ export function OptionsPage({ dashboard }: OptionsPageProps) {
       header: "Description",
       value: (transaction) => transaction.description ?? "-",
       render: (transaction) => (
-        <span className="line-clamp-1 text-zinc-600">{transaction.description ?? "-"}</span>
+        <span className="line-clamp-1 text-content-secondary">{transaction.description ?? "-"}</span>
       ),
     },
   ];

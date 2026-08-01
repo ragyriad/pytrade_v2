@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AllocationPie } from "../components/charts/allocationPie";
+import { AllocationPieChart } from "../components/charts/allocationPieChart";
 import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
 import { FilterBar } from "../components/dashboard/filterBar";
 import { StatCard } from "../components/dashboard/statCard";
@@ -9,7 +9,7 @@ import {
   accountMatchesFilters,
   defaultFilterBarState,
   isActiveAccount,
-} from "../lib/account-filters";
+} from "../lib/accountFilters";
 import {
   formatMoney,
   formatMoneyBreakdown,
@@ -25,7 +25,7 @@ import {
   getTotalUnrealized,
   getUnrealizedReturnPercent,
 } from "../services/portfolio";
-import type { PortfolioDashboardDto, PositionDto } from "../lib/portfolio-types";
+import type { PortfolioDashboardDto, PositionDto } from "../lib/portfolioTypes";
 
 type HomePageProps = {
   dashboard: PortfolioDashboardDto;
@@ -81,7 +81,7 @@ export function HomePage({ dashboard }: HomePageProps) {
       key: "description",
       header: "Description",
       render: (position) => (
-        <span className="line-clamp-1 text-zinc-600">
+        <span className="line-clamp-1 text-content-secondary">
           {position.description ?? position.assetType ?? "Position"}
         </span>
       ),
@@ -193,7 +193,7 @@ export function HomePage({ dashboard }: HomePageProps) {
         </section>
 
         <section className="mt-6">
-          <AllocationPie title="Position allocation" rows={pieSlices} />
+          <AllocationPieChart title="Position allocation" rows={pieSlices} />
         </section>
 
         <section className="mt-6">

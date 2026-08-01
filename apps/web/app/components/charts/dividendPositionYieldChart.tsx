@@ -11,7 +11,8 @@ import {
   YAxis,
 } from "recharts";
 import { formatMoney, formatPercent, normalizeAccountType } from "../../lib/formatters";
-import type { AccountDto, DividendPositionYieldDto } from "../../lib/portfolio-types";
+import type { AccountDto, DividendPositionYieldDto } from "../../lib/portfolioTypes";
+import { chartAccountColors, chartAxisColor, chartGridColor } from "./chartColors";
 
 type DividendPositionYieldChartProps = {
   rows: DividendPositionYieldDto[];
@@ -32,17 +33,6 @@ type YieldLabelProps = {
   value?: number | string | null;
   payload?: ChartRow;
 };
-
-const accountColors = [
-  "#2f6f9f",
-  "#059669",
-  "#eab308",
-  "#be123c",
-  "#7c3aed",
-  "#0891b2",
-  "#ea580c",
-  "#4f46e5",
-];
 
 function formatAxisMoney(value: number, currency: string): string {
   return `${new Intl.NumberFormat("en-US", {
@@ -82,7 +72,7 @@ export function DividendPositionYieldChart({
   const colorByAccount = new Map(
     visibleAccountIds.map((accountId, index) => [
       accountId,
-      accountColors[index % accountColors.length],
+      chartAccountColors[index % chartAccountColors.length],
     ])
   );
   const chartRows: ChartRow[] = rows.map((row) => ({
@@ -136,12 +126,12 @@ export function DividendPositionYieldChart({
               margin={{ left: 34, right: 28, top: 34, bottom: 30 }}
               barCategoryGap="22%"
             >
-              <CartesianGrid stroke="#d8e1ea" strokeDasharray="4 4" vertical={false} />
+              <CartesianGrid stroke={chartGridColor} strokeDasharray="4 4" vertical={false} />
               <XAxis
                 dataKey="label"
                 type="category"
-                axisLine={{ stroke: "#d8e1ea" }}
-                tick={{ fill: "#667085", fontSize: 12, fontWeight: 600 }}
+                axisLine={{ stroke: chartGridColor }}
+                tick={{ fill: chartAxisColor, fontSize: 12, fontWeight: 600 }}
                 tickLine={false}
                 tickMargin={14}
                 interval={0}
@@ -152,7 +142,7 @@ export function DividendPositionYieldChart({
                 type="number"
                 width={112}
                 axisLine={false}
-                tick={{ fill: "#667085", fontSize: 12 }}
+                tick={{ fill: chartAxisColor, fontSize: 12 }}
                 tickLine={false}
                 tickFormatter={(value) => formatAxisMoney(Number(value), currency)}
               />

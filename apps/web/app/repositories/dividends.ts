@@ -1,7 +1,7 @@
 import type {
   DividendDashboardSummaryDto,
   DividendTimelineRange,
-} from "../lib/portfolio-types";
+} from "../lib/portfolioTypes";
 import { backendApiBaseUrl, fetchJson } from "./http-client";
 
 type FetchDividendSummaryOptions = {

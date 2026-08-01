@@ -1,5 +1,5 @@
 import { groupMoney } from "./value_helpers";
-import type { MoneyBreakdownDto, PositionDto } from "../lib/portfolio-types";
+import type { MoneyBreakdownDto, PositionDto } from "../lib/portfolioTypes";
 
 export type PositionAllocationSlice = {
   label: string;

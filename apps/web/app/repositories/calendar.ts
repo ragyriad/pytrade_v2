@@ -1,4 +1,4 @@
-import type { CalendarEventDto } from "../lib/portfolio-types";
+import type { CalendarEventDto } from "../lib/portfolioTypes";
 import { backendApiBaseUrl, fetchJson } from "./http-client";
 
 type CalendarEventsResponse = {

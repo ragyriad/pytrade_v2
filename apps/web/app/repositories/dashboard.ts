@@ -1,4 +1,4 @@
-import type { PortfolioDashboardDto } from "../lib/portfolio-types";
+import type { PortfolioDashboardDto } from "../lib/portfolioTypes";
 import { backendApiBaseUrl, fetchJson } from "./http-client";
 
 export { backendApiBaseUrl };

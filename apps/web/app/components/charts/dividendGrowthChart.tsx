@@ -10,8 +10,8 @@ import {
   YAxis,
 } from "recharts";
 import { formatDate, formatMoney } from "../../lib/formatters";
-import type { TransactionDto } from "../../lib/portfolio-types";
-import { dividendCurrencyColor } from "./dividendChartColors";
+import type { TransactionDto } from "../../lib/portfolioTypes";
+import { chartGridColor, dividendCurrencyColor } from "./chartColors";
 
 type ChartRow = {
   date: string;
@@ -80,7 +80,7 @@ export function DividendGrowthChart({ transactions }: DividendGrowthChartProps) 
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={rows} margin={{ left: 8, right: 24, top: 18, bottom: 0 }}>
-              <CartesianGrid stroke="#d8e1ea" strokeDasharray="3 3" />
+              <CartesianGrid stroke={chartGridColor} strokeDasharray="3 3" />
               <XAxis dataKey="displayDate" tick={{ fontSize: 12 }} minTickGap={28} />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip

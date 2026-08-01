@@ -1,5 +1,5 @@
 import { normalizeAccountType } from "./formatters";
-import type { AccountDto } from "./portfolio-types";
+import type { AccountDto } from "./portfolioTypes";
 import type { TimelineRange } from "../services/filter_timeline";
 
 export type PortfolioFilterState = {

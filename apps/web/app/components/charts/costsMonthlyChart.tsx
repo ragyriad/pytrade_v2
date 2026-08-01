@@ -11,7 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import { formatMoney } from "../../lib/formatters";
-import type { TransactionDto } from "../../lib/portfolio-types";
+import type { TransactionDto } from "../../lib/portfolioTypes";
 import {
   buildMonthlyCostRows,
   type CostKind,
@@ -19,21 +19,17 @@ import {
   type MonthlyCostRow,
   type MonthlyCostSeries,
 } from "../../services/costs";
-
-const feeCurrencyColors: Record<string, string> = {
-  USD: "#166534",
-  CAD: "#dc2626",
-};
-const taxCurrencyColors: Record<string, string> = {
-  CAD: "#4682b4",
-  USD: "#eab308",
-};
-const fallbackColors = ["#7e22ce", "#0891b2", "#a16207", "#4f46e5"];
+import {
+  chartGridColor,
+  costFallbackColors,
+  costFeeCurrencyColors,
+  costTaxCurrencyColors,
+} from "./chartColors";
 
 function seriesColor(item: MonthlyCostSeries, index: number): string {
   const currency = item.currency.toUpperCase();
-  const colors = item.kind === "fee" ? feeCurrencyColors : taxCurrencyColors;
-  return colors[currency] ?? fallbackColors[index % fallbackColors.length];
+  const colors = item.kind === "fee" ? costFeeCurrencyColors : costTaxCurrencyColors;
+  return colors[currency] ?? costFallbackColors[index % costFallbackColors.length];
 }
 
 type CostsMonthlyChartProps = {
@@ -75,7 +71,7 @@ function CostChartPanel({ kind, rows, series }: CostChartPanelProps) {
               margin={{ left: 8, right: 24, top: 10, bottom: 0 }}
               barCategoryGap="20%"
             >
-              <CartesianGrid stroke="#d8e1ea" strokeDasharray="3 3" vertical={false} />
+              <CartesianGrid stroke={chartGridColor} strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="label" tick={{ fontSize: 12 }} minTickGap={20} />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip

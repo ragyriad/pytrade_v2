@@ -1,5 +1,5 @@
 import { formatMoney } from "../../lib/formatters";
-import type { AllocationDto } from "../../lib/portfolio-types";
+import type { AllocationDto } from "../../lib/portfolioTypes";
 
 interface AllocationListProps {
   title: string;

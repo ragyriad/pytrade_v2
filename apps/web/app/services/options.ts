@@ -1,4 +1,4 @@
-import type { MoneyBreakdownDto, TransactionDto } from "../lib/portfolio-types";
+import type { MoneyBreakdownDto, TransactionDto } from "../lib/portfolioTypes";
 import { groupMoney } from "./value_helpers";
 
 export type OptionSecurityRow = {

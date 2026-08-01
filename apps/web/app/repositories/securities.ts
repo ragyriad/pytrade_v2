@@ -1,7 +1,7 @@
 import type {
   SecuritiesHistoryResponseDto,
   SecurityTransactionsResponseDto,
-} from "../lib/portfolio-types";
+} from "../lib/portfolioTypes";
 import { backendApiBaseUrl, fetchJson } from "./http-client";
 
 export async function fetchHistoricSecuritiesFromBackend(

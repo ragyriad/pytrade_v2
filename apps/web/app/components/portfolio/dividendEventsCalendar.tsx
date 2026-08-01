@@ -1,5 +1,5 @@
 import { formatMoney } from "../../lib/formatters";
-import type { DividendCalendarEventDto } from "../../lib/portfolio-types";
+import type { DividendCalendarEventDto } from "../../lib/portfolioTypes";
 import {
   CalendarEventsCalendar,
   type CalendarDisplayEvent,

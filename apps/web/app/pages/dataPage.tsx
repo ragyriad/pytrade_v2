@@ -5,7 +5,7 @@ import {
   accountMatchesFilters,
   defaultFilterBarState,
   type PortfolioFilterState,
-} from "../lib/account-filters";
+} from "../lib/accountFilters";
 import {
   formatDate,
   formatMoney,
@@ -18,7 +18,7 @@ import type {
   DashboardTab,
   PortfolioDashboardDto,
   TransactionDto,
-} from "../lib/portfolio-types";
+} from "../lib/portfolioTypes";
 import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
 import { FilterBar } from "../components/dashboard/filterBar";
 import { SegmentedTabs } from "../components/dashboard/segmentedTabs";
@@ -204,7 +204,7 @@ export function DataPage({ dashboard }: DataPageProps) {
       header: "Description",
       value: (transaction) => transaction.description ?? "-",
       render: (transaction) => (
-        <span className="line-clamp-1 text-zinc-600">{transaction.description ?? "-"}</span>
+        <span className="line-clamp-1 text-content-secondary">{transaction.description ?? "-"}</span>
       ),
     },
     {
