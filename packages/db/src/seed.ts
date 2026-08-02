@@ -20,6 +20,8 @@ export async function createSeed(db: DB) {
     .values({
       id: ADMIN_ID,
       username: "admin",
+      role: "admin",
+      status: "active",
     })
     .returning();
 

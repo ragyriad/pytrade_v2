@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
 import { fetchCashDashboardFromBackend } from "../../../repositories/cash";
 
-export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const userId = url.searchParams.get("userId") ?? undefined;
-
+export async function GET() {
   try {
-    const dashboard = await fetchCashDashboardFromBackend(userId);
+    const dashboard = await fetchCashDashboardFromBackend();
     return NextResponse.json(dashboard);
   } catch (error) {
     const message =

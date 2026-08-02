@@ -5,7 +5,6 @@ import {
   eq,
   inArray,
   transactions,
-  users,
   type Account,
   type Transaction,
 } from "@repo/db";
@@ -82,16 +81,6 @@ function isFee(transaction: Transaction): boolean {
   return actionFor(transaction).includes("FEE");
 }
 
-async function resolveUser(requestedUserId?: string) {
-  if (requestedUserId) {
-    const rows = await db.select().from(users).where(eq(users.id, requestedUserId)).limit(1);
-    if (rows[0]) return rows[0];
-  }
-
-  const rows = await db.select().from(users).limit(1);
-  return rows[0] ?? null;
-}
-
 function getBucket(
   buckets: Map<string, GainBucket>,
   transaction: Transaction,
@@ -153,15 +142,12 @@ function consumeLots(
 }
 
 export async function getAnnualAccountGains(
-  requestedUserId?: string
+  requestedUserId: string
 ): Promise<AnnualAccountGainsResponseDto | null> {
-  const user = await resolveUser(requestedUserId);
-  if (!user) return null;
-
   const accountRows = await db
     .select()
     .from(accounts)
-    .where(and(eq(accounts.userId, user.id), eq(accounts.isArchived, false)));
+    .where(and(eq(accounts.userId, requestedUserId), eq(accounts.isArchived, false)));
   const accountIds = accountRows.map((account) => account.id);
   if (accountIds.length === 0) return { rows: [] };
 

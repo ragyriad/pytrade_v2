@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
 import { fetchPortfolioDashboardFromBackend } from "../../../repositories/dashboard";
 
-export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const userId = url.searchParams.get("userId") ?? undefined;
-
+export async function GET() {
   try {
-    const dashboard = await fetchPortfolioDashboardFromBackend(userId);
+    const dashboard = await fetchPortfolioDashboardFromBackend();
     return NextResponse.json(dashboard);
   } catch (error) {
     const message =

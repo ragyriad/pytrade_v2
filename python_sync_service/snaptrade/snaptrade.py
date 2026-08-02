@@ -1,4 +1,5 @@
 import sys, os
+from pathlib import Path
 from snaptrade_client import SnapTrade
 from datetime import datetime
 from sync_services.helper_functions import save_list_to_json, anonymise
@@ -6,7 +7,7 @@ from dotenv import load_dotenv
 import psycopg2
 
 
-load_dotenv(dotenv_path="../../.env")
+load_dotenv(dotenv_path=Path(__file__).resolve().parents[2] / ".env")
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 SNAPTRADE_CLIENT_ID = os.getenv("SNAPTRADE_CLIENT_ID")

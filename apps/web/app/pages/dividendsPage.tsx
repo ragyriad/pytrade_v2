@@ -37,7 +37,6 @@ import { MetricValueList } from "../components/dashboard/metricValueList";
 type DividendsPageProps = {
   dashboard: PortfolioDashboardDto;
   initialSummary: DividendDashboardSummaryDto;
-  userId?: string;
 };
 
 type DividendTableTab = "positions" | "transactions" | "calendar";
@@ -45,7 +44,6 @@ type DividendTableTab = "positions" | "transactions" | "calendar";
 export function DividendsPage({
   dashboard,
   initialSummary,
-  userId,
 }: DividendsPageProps) {
   const [filters, setFilters] = useState(defaultFilterBarState);
   const [activeTableTab, setActiveTableTab] =
@@ -88,7 +86,6 @@ export function DividendsPage({
 
     params.set("timeline", filters.timeline);
     params.set("accountIds", selectedAccountIdKey);
-    if (userId) params.set("userId", userId);
 
     setIsSummaryLoading(true);
     setSummaryError(null);
@@ -118,7 +115,7 @@ export function DividendsPage({
       });
 
     return () => controller.abort();
-  }, [filters.timeline, selectedAccountIdKey, userId]);
+  }, [filters.timeline, selectedAccountIdKey]);
 
   const formatMoneyMetricRows = (values: MoneyBreakdownDto[]) =>
     values.map((value) => ({

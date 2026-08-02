@@ -20,15 +20,12 @@ import type {
 
 type SecuritiesPageProps = {
   securities: HistoricSecurityDto[];
-  userId?: string;
 };
 
 async function fetchSecurityTransactions(
-  securityId: string,
-  userId?: string
+  securityId: string
 ): Promise<SecurityTransactionsResponseDto> {
-  const params = userId ? `?userId=${encodeURIComponent(userId)}` : "";
-  const response = await fetch(`/api/securities/${securityId}/transactions${params}`);
+  const response = await fetch(`/api/securities/${securityId}/transactions`);
 
   if (!response.ok) {
     const body = await response.json().catch(() => null);
@@ -38,7 +35,7 @@ async function fetchSecurityTransactions(
   return response.json();
 }
 
-export function SecuritiesPage({ securities, userId }: SecuritiesPageProps) {
+export function SecuritiesPage({ securities }: SecuritiesPageProps) {
   const [expandedSecurityIds, setExpandedSecurityIds] = useState<Set<string>>(
     () => new Set()
   );
@@ -72,7 +69,7 @@ export function SecuritiesPage({ securities, userId }: SecuritiesPageProps) {
     setLoadingSecurityIds((current) => new Set(current).add(security.id));
 
     try {
-      const response = await fetchSecurityTransactions(security.id, userId);
+      const response = await fetchSecurityTransactions(security.id);
       setTransactionResponses((current) => ({
         ...current,
         [security.id]: response,

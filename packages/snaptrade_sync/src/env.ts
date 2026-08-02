@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
-export function getWorkspaceParentEnvPath() {
+export function getWorkspaceEnvPath() {
   let currentDir = process.cwd();
 
   while (true) {
@@ -11,13 +11,13 @@ export function getWorkspaceParentEnvPath() {
       const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
 
       if (packageJson.name === "pytrade") {
-        return resolve(currentDir, "../.env");
+        return resolve(currentDir, ".env");
       }
     }
 
     const parentDir = dirname(currentDir);
     if (parentDir === currentDir) {
-      return resolve(process.cwd(), "../.env");
+      throw new Error("Unable to locate the PyTrade workspace root .env file.");
     }
 
     currentDir = parentDir;

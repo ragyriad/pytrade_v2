@@ -7,6 +7,11 @@ pnpm install
 ```
 
 Requires PostgreSQL and a root `.env` with `DATABASE_URL`.
+
+Authentication and invitation-only user management use Clerk. Follow
+[CLERK_SETUP.md](./CLERK_SETUP.md) to create the first administrator, configure
+both applications, and link the existing local administrator without changing
+portfolio ownership or financial data.
 Market data sync also uses `EODHD_TOKEN`, `TIINGO_API_TOKEN`, and
 `ALPHA_VANTAGE_API_KEY` for their respective providers.
 

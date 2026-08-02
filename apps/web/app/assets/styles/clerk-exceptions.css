@@ -1,0 +1,11 @@
+/*
+ * Clerk component exceptions
+ *
+ * Keep overrides scoped to Clerk's stable public class hooks. Avoid targeting
+ * generated cl-internal-* selectors because those may change between releases.
+ */
+
+.cl-userButtonPopoverFooter,
+.cl-userButtonPopoverCard .cl-footer {
+  display: none !important;
+}

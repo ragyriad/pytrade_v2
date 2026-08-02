@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
 import { fetchHistoricSecuritiesFromBackend } from "../../../repositories/securities";
 
-export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const userId = url.searchParams.get("userId") ?? undefined;
-
+export async function GET() {
   try {
-    const history = await fetchHistoricSecuritiesFromBackend(userId);
+    const history = await fetchHistoricSecuritiesFromBackend();
     return NextResponse.json(history);
   } catch (error) {
     const message =

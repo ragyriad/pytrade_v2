@@ -7,7 +7,6 @@ import {
   eq,
   inArray,
   transactions,
-  users,
   type Account,
   type AccountBalance,
   type Transaction,
@@ -465,26 +464,13 @@ function getCurrentInterestRates(
     .sort((a, b) => a.currency.localeCompare(b.currency));
 }
 
-async function resolveUserId(requestedUserId?: string) {
-  if (requestedUserId) {
-    const rows = await db.select().from(users).where(eq(users.id, requestedUserId)).limit(1);
-    if (rows[0]) return rows[0];
-  }
-
-  const rows = await db.select().from(users).limit(1);
-  return rows[0] ?? null;
-}
-
 export async function getCashDashboard(
-  requestedUserId?: string
+  requestedUserId: string
 ): Promise<CashDashboardDto | null> {
-  const user = await resolveUserId(requestedUserId);
-  if (!user) return null;
-
   const accountRows = await db
     .select()
     .from(accounts)
-    .where(and(eq(accounts.userId, user.id), eq(accounts.isArchived, false)));
+    .where(and(eq(accounts.userId, requestedUserId), eq(accounts.isArchived, false)));
   const scopedAccountRows = accountRows.filter(
     (account) => isCashAccount(account) || isCreditAccount(account)
   );

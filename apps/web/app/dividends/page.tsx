@@ -4,12 +4,10 @@ import { fetchDividendSummaryFromBackend } from "../repositories/dividends";
 
 export const dynamic = "force-dynamic";
 
-type PageProps = { searchParams?: { userId?: string } };
-
-export default async function Page({ searchParams }: PageProps) {
+export default async function Page() {
   const result = await Promise.all([
-      fetchPortfolioDashboardFromBackend(searchParams?.userId),
-      fetchDividendSummaryFromBackend({ userId: searchParams?.userId, timeline: "ALL" }),
+      fetchPortfolioDashboardFromBackend(),
+      fetchDividendSummaryFromBackend({ timeline: "ALL" }),
     ])
     .then(([dashboard, initialSummary]) => ({ dashboard, initialSummary }))
     .catch((caught) => ({
@@ -20,7 +18,7 @@ export default async function Page({ searchParams }: PageProps) {
     return <RouteError label="Dividends unavailable" error={result.error} />;
   }
 
-  return <DividendsPage dashboard={result.dashboard} initialSummary={result.initialSummary} userId={searchParams?.userId} />;
+  return <DividendsPage dashboard={result.dashboard} initialSummary={result.initialSummary} />;
 }
 
 function RouteError({ label, error }: { label: string; error: string }) {

@@ -3,15 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "dotenv -e ../../.env -- next dev",
+    "build": "dotenv -e ../../.env -- next build",
+    "start": "dotenv -e ../../.env -- next start",
     "test": "vitest run --root ../.. --config ../../vitest.config.ts apps/web/test",
     "test:components": "vitest run --root ../.. --config ../../vitest.config.ts --project components apps/web/test/components apps/web/test/pages",
     "lint": "eslint . && pnpm lint:theme",
     "lint:theme": "node scripts/checkThemeColors.mjs"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.6.1",
+    "@repo/db": "workspace:*",
     "@fortawesome/fontawesome-svg-core": "^7.2.0",
     "@fortawesome/free-solid-svg-icons": "^7.2.0",
     "@fortawesome/react-fontawesome": "^3.3.1",
@@ -19,7 +21,8 @@
     "next": "16.2.12",
     "react": "^18",
     "react-dom": "^18",
-    "recharts": "^3.9.0"
+    "recharts": "^3.9.0",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@types/node": "^20",

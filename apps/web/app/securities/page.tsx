@@ -3,10 +3,8 @@ import { fetchHistoricSecuritiesFromBackend } from "../repositories/securities";
 
 export const dynamic = "force-dynamic";
 
-type PageProps = { searchParams?: { userId?: string } };
-
-export default async function Page({ searchParams }: PageProps) {
-  const result = await fetchHistoricSecuritiesFromBackend(searchParams?.userId)
+export default async function Page() {
+  const result = await fetchHistoricSecuritiesFromBackend()
     .then(({ securities }) => ({ securities }))
     .catch((caught) => ({
       error: caught instanceof Error ? caught.message : "Unable to load securities data.",
@@ -16,7 +14,7 @@ export default async function Page({ searchParams }: PageProps) {
     return <RouteError label="Securities unavailable" error={result.error} />;
   }
 
-  return <SecuritiesPage securities={result.securities} userId={searchParams?.userId} />;
+  return <SecuritiesPage securities={result.securities} />;
 }
 
 function RouteError({ label, error }: { label: string; error: string }) {

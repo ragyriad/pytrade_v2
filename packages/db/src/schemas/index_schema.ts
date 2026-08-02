@@ -16,5 +16,5 @@ export { positions, Position, NewPosition } from "./positions_schema.js";
 export { holdings, Holding, NewHolding } from "./holdings_schema.js";
 export { accountBalances, AccountBalance, NewAccountBalance } from "./account_balances_schema.js";
 export { orders, Order, NewOrder } from "./orders_schema.js";
-export { users, User, NewUser, rolesEnum } from "./users_schema.js";
+export { users, User, NewUser, rolesEnum, userStatusEnum } from "./users_schema.js";
 export { usersRelations, accountsRelations, transactionsRelations, securitiesRelations, securityAliasesRelations, optionsRelations, calendarEventsRelations, positionsRelations, holdingsRelations, accountBalancesRelations, ordersRelations, securityPriceSnapshotsRelations } from "./relations.js";

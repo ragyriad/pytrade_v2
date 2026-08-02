@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "dotenv -e ../../.env -- tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "dotenv -e ../../.env -- node dist/src/server.js",
     "test": "vitest run --root ../.. --config ../../vitest.config.ts apps/api/test",
     "typecheck": "tsc --noEmit"
   },

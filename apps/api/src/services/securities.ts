@@ -7,7 +7,6 @@ import {
   getHistoricSecuritiesByAccounts,
   getSecurityById,
   getTransactionsBySecurity,
-  users,
   type DB,
   type HistoricSecurityRow,
   type Transaction,
@@ -161,29 +160,16 @@ function toTransactionDto(
   };
 }
 
-async function resolveUser(database: DB, requestedUserId?: string) {
-  if (requestedUserId) {
-    const rows = await database.select().from(users).where(eq(users.id, requestedUserId)).limit(1);
-    if (rows[0]) return rows[0];
-  }
-
-  const rows = await database.select().from(users).limit(1);
-  return rows[0] ?? null;
-}
-
-async function getUserAccounts(database: DB, requestedUserId?: string) {
-  const user = await resolveUser(database, requestedUserId);
-  if (!user) return null;
-
+async function getUserAccounts(database: DB, requestedUserId: string) {
   return database
     .select()
     .from(accounts)
-    .where(and(eq(accounts.userId, user.id), eq(accounts.isArchived, false)))
+    .where(and(eq(accounts.userId, requestedUserId), eq(accounts.isArchived, false)))
     .orderBy(desc(accounts.createdAt));
 }
 
 export async function getHistoricSecurities(
-  requestedUserId?: string,
+  requestedUserId: string,
   database: DB = db
 ): Promise<HistoricSecurityDto[] | null> {
   const accountRows = await getUserAccounts(database, requestedUserId);
@@ -199,7 +185,7 @@ export async function getHistoricSecurities(
 
 export async function getSecurityTransactions(
   securityId: string,
-  requestedUserId?: string,
+  requestedUserId: string,
   database: DB = db
 ): Promise<SecurityTransactionsResponseDto | null> {
   const accountRows = await getUserAccounts(database, requestedUserId);

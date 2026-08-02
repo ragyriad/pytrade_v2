@@ -22,6 +22,12 @@ export const rolesEnum = pgEnum("role", [
   "user"
 ]);
 
+export const userStatusEnum = pgEnum("user_status", [
+  "pending",
+  "active",
+  "disabled"
+]);
+
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
 
@@ -29,9 +35,13 @@ export const users = pgTable("users", {
     .notNull()
     .unique(),
 
+  clerkUserId: varchar("clerk_user_id", { length: 255 }),
+  email: varchar("email", { length: 320 }).unique(),
+  status: userStatusEnum().notNull().default("active"),
+
   snaptradeUserId: varchar("snaptrade_user_id", { length: 255 }).unique(),
   snaptradeUserSecret: varchar("snaptrade_user_secret", { length: 255 }),
-  role: rolesEnum().default("admin"),
+  role: rolesEnum().notNull().default("user"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .default(sql`now()`),
@@ -40,7 +50,7 @@ export const users = pgTable("users", {
     .notNull()
     .default(sql`now()`),
 }, (table) => [
-  uniqueIndex("users_clerk_user_id_idx").on(table.username),
+  uniqueIndex("users_clerk_user_id_idx").on(table.clerkUserId),
 
   index("users_snaptrade_user_id_idx").on(table.snaptradeUserId),
 ]);

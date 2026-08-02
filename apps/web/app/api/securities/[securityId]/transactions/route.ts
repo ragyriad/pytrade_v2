@@ -8,14 +8,11 @@ export type SecurityTransactionsRouteContext = {
 };
 
 export async function GET(request: Request, context: SecurityTransactionsRouteContext) {
-  const url = new URL(request.url);
-  const userId = url.searchParams.get("userId") ?? undefined;
   const { securityId } = await context.params;
 
   try {
     const transactions = await fetchSecurityTransactionsFromBackend(
-      securityId,
-      userId
+      securityId
     );
     return NextResponse.json(transactions);
   } catch (error) {

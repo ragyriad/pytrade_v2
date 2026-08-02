@@ -33,13 +33,9 @@ vi.mock("../../app/pages/cashPage", () => ({
 }));
 
 vi.mock("../../app/pages/securitiesPage", () => ({
-  SecuritiesPage: ({
-    securities,
-    userId,
-  }: {
-    securities: Array<{ symbol: string }>;
-    userId?: string;
-  }) => <div>Securities: {securities.map(({ symbol }) => symbol).join(", ")} / {userId}</div>,
+  SecuritiesPage: ({ securities }: { securities: Array<{ symbol: string }> }) => (
+    <div>Securities: {securities.map(({ symbol }) => symbol).join(", ")}</div>
+  ),
 }));
 
 import HomeRoute from "../../app/page";
@@ -53,19 +49,19 @@ describe("server page orchestration", () => {
     mocks.fetchHistoricSecurities.mockReset();
   });
 
-  test("the home page forwards the selected user and renders fetched data", async () => {
+  test("the home page renders data for the authenticated session", async () => {
     mocks.fetchPortfolioDashboard.mockResolvedValue({ marker: "portfolio" });
 
-    render(await HomeRoute({ searchParams: { userId: "user-1" } }));
+    render(await HomeRoute());
 
-    expect(mocks.fetchPortfolioDashboard).toHaveBeenCalledWith("user-1");
+    expect(mocks.fetchPortfolioDashboard).toHaveBeenCalledWith();
     expect(screen.getByText("Home dashboard: portfolio")).toBeInTheDocument();
   });
 
   test("the home page renders a useful backend error", async () => {
     mocks.fetchPortfolioDashboard.mockRejectedValue(new Error("Portfolio API unavailable"));
 
-    render(await HomeRoute({ searchParams: {} }));
+    render(await HomeRoute());
 
     expect(screen.getByText("Portfolio unavailable")).toBeInTheDocument();
     expect(screen.getByText("Portfolio API unavailable")).toBeInTheDocument();
@@ -75,36 +71,36 @@ describe("server page orchestration", () => {
   test("the cash page renders fetched dashboard data", async () => {
     mocks.fetchCashDashboard.mockResolvedValue({ marker: "cash" });
 
-    render(await CashRoute({ searchParams: { userId: "user-2" } }));
+    render(await CashRoute());
 
-    expect(mocks.fetchCashDashboard).toHaveBeenCalledWith("user-2");
+    expect(mocks.fetchCashDashboard).toHaveBeenCalledWith();
     expect(screen.getByText("Cash dashboard: cash")).toBeInTheDocument();
   });
 
   test("the cash page renders repository failures", async () => {
     mocks.fetchCashDashboard.mockRejectedValue(new Error("Cash API unavailable"));
 
-    render(await CashRoute({ searchParams: {} }));
+    render(await CashRoute());
 
     expect(screen.getByText("Cash unavailable")).toBeInTheDocument();
     expect(screen.getByText("Cash API unavailable")).toBeInTheDocument();
   });
 
-  test("the securities page forwards securities and user context", async () => {
+  test("the securities page renders authenticated user data", async () => {
     mocks.fetchHistoricSecurities.mockResolvedValue({
       securities: [{ symbol: "AAPL" }, { symbol: "SHOP" }],
     });
 
-    render(await SecuritiesRoute({ searchParams: { userId: "user-3" } }));
+    render(await SecuritiesRoute());
 
-    expect(mocks.fetchHistoricSecurities).toHaveBeenCalledWith("user-3");
-    expect(screen.getByText("Securities: AAPL, SHOP / user-3")).toBeInTheDocument();
+    expect(mocks.fetchHistoricSecurities).toHaveBeenCalledWith();
+    expect(screen.getByText("Securities: AAPL, SHOP")).toBeInTheDocument();
   });
 
   test("the securities page renders repository failures", async () => {
     mocks.fetchHistoricSecurities.mockRejectedValue(new Error("Securities API unavailable"));
 
-    render(await SecuritiesRoute({ searchParams: {} }));
+    render(await SecuritiesRoute());
 
     expect(screen.getByText("Securities unavailable")).toBeInTheDocument();
     expect(screen.getByText("Securities API unavailable")).toBeInTheDocument();

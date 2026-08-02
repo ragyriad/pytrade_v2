@@ -8,7 +8,6 @@ import {
   inArray,
   positions,
   securities,
-  users,
   type DividendEvent,
   type Position,
 } from "@repo/db";
@@ -72,16 +71,6 @@ export async function getStoredDividendEventsForSecurity(
   securityId: string
 ): Promise<DividendEvent[]> {
   return getDividendEventsBySecurity(db, securityId);
-}
-
-async function resolveUser(requestedUserId?: string) {
-  if (requestedUserId) {
-    const rows = await db.select().from(users).where(eq(users.id, requestedUserId)).limit(1);
-    if (rows[0]) return rows[0];
-  }
-
-  const rows = await db.select().from(users).limit(1);
-  return rows[0] ?? null;
 }
 
 function groupMoney(values: MoneyBreakdownDto[]): MoneyBreakdownDto[] {
@@ -168,15 +157,12 @@ function marketValueForPosition(position: Position): number {
 }
 
 export async function getDividendIncomeSummary(
-  requestedUserId?: string
+  requestedUserId: string
 ): Promise<DividendIncomeSummaryDto | null> {
-  const user = await resolveUser(requestedUserId);
-  if (!user) return null;
-
   const accountRows = await db
     .select()
     .from(accounts)
-    .where(and(eq(accounts.userId, user.id), eq(accounts.isArchived, false)));
+    .where(and(eq(accounts.userId, requestedUserId), eq(accounts.isArchived, false)));
   const accountIds = accountRows.map((account) => account.id);
   if (accountIds.length === 0) {
     return {

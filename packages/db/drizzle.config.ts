@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import * as dotenv from "dotenv";
 import type { Config } from "drizzle-kit";
 
-function getWorkspaceParentEnvPath() {
+function getWorkspaceEnvPath() {
   let currentDir = process.cwd();
 
   while (true) {
@@ -13,20 +13,20 @@ function getWorkspaceParentEnvPath() {
       const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
 
       if (packageJson.name === "pytrade") {
-        return resolve(currentDir, "../.env");
+        return resolve(currentDir, ".env");
       }
     }
 
     const parentDir = dirname(currentDir);
     if (parentDir === currentDir) {
-      return resolve(process.cwd(), "../.env");
+      throw new Error("Unable to locate the PyTrade workspace root .env file.");
     }
 
     currentDir = parentDir;
   }
 }
 
-dotenv.config({ path: getWorkspaceParentEnvPath() });
+dotenv.config({ path: getWorkspaceEnvPath() });
 
 process.on('uncaughtException', (err) => {
   console.error(err.stack);

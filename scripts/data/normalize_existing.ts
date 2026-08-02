@@ -12,7 +12,7 @@ import {
   type SecurityResolutionCandidate,
 } from "@repo/data-normalizer";
 
-dotenv.config({ path: resolve(process.cwd(), "../.env"), override: true });
+dotenv.config({ path: resolve(process.cwd(), ".env"), override: true });
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {

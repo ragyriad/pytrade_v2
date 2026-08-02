@@ -9,6 +9,7 @@ export default defineConfig({
           include: [
             "apps/*/test/unit/**/*.test.{ts,tsx}",
             "apps/*/test/services/**/*.test.{ts,tsx}",
+            "apps/*/test/auth/**/*.test.{ts,tsx}",
             "apps/*/test/http/**/*.test.{ts,tsx}",
             "apps/*/test/trpc/**/*.test.{ts,tsx}",
             "packages/*/test/unit/**/*.test.{ts,tsx}",

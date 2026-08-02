@@ -3,10 +3,8 @@ import { fetchPortfolioDashboardFromBackend } from "../repositories/dashboard";
 
 export const dynamic = "force-dynamic";
 
-type PageProps = { searchParams?: { userId?: string } };
-
-export default async function Page({ searchParams }: PageProps) {
-  const result = await fetchPortfolioDashboardFromBackend(searchParams?.userId)
+export default async function Page() {
+  const result = await fetchPortfolioDashboardFromBackend()
     .then((dashboard) => ({ dashboard }))
     .catch((caught) => ({
       error: caught instanceof Error ? caught.message : "Unable to load portfolio data.",

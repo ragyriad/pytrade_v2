@@ -1,10 +1,10 @@
 import { Snaptrade } from "snaptrade-typescript-sdk";
 import type { UniversalActivity } from "snaptrade-typescript-sdk";
 import * as dotenv from "dotenv";
-import { getWorkspaceParentEnvPath } from "./env.js";
+import { getWorkspaceEnvPath } from "./env.js";
 import { fetchAllActivityPages } from "./activity_pagination.js";
 
-dotenv.config({ path: getWorkspaceParentEnvPath() });
+dotenv.config({ path: getWorkspaceEnvPath() });
 
 function requireEnv(key: string): string {
   const value = process.env[key];

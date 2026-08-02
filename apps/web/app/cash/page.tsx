@@ -3,10 +3,8 @@ import { fetchCashDashboardFromBackend } from "../repositories/cash";
 
 export const dynamic = "force-dynamic";
 
-type PageProps = { searchParams?: { userId?: string } };
-
-export default async function Page({ searchParams }: PageProps) {
-  const result = await fetchCashDashboardFromBackend(searchParams?.userId)
+export default async function Page() {
+  const result = await fetchCashDashboardFromBackend()
     .then((dashboard) => ({ dashboard }))
     .catch((caught) => ({
       error: caught instanceof Error ? caught.message : "Unable to load cash data.",

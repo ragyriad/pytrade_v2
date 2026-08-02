@@ -3,21 +3,20 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
+import { UserButton, useUser } from "@clerk/nextjs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBars,
   faCalendarDays,
   faChartLine,
   faChartPie,
-  faChevronDown,
-  faGear,
   faMoneyBillWave,
   faReceipt,
   faTable,
-  faUser,
+  faUsers,
   faWallet,
 } from "@fortawesome/free-solid-svg-icons";
-import { buttonClassName, ButtonLink } from "../ui/button";
+import { ButtonLink } from "../ui/button";
 import { DetailsDropdown } from "../ui/detailsDropdown";
 
 const links = [
@@ -45,30 +44,33 @@ function isActivePath(pathname: string, href: string): boolean {
 }
 
 function UserMenu({ compact = false, mobile = false }: { compact?: boolean; mobile?: boolean }) {
-  const className = [
-    "nav-user-button",
-    compact ? "nav-user-button-compact" : "",
-    mobile ? "nav-user-button-mobile" : "",
-  ].filter(Boolean).join(" ");
+  const { user, isLoaded } = useUser();
+  const isAdmin = user?.publicMetadata.role === "admin";
 
   return (
-    <DetailsDropdown className="relative text-right">
-      <summary
-        className={buttonClassName("plain", className)}
-        aria-label="Open user menu"
+    <div className={mobile ? "nav-user-button-mobile" : "nav-user-button"}>
+      <UserButton
+        showName={isLoaded && !compact}
+        userProfileMode="modal"
+        appearance={{
+          elements: {
+            userButtonTrigger: "nav-user-button-trigger",
+            userButtonBox: "nav-user-button-content",
+            userButtonOuterIdentifier: "nav-user-button-name",
+          },
+        }}
       >
-        <FontAwesomeIcon icon={faUser} className="h-4 w-4" />
-        {!compact ? <FontAwesomeIcon icon={faChevronDown} className="h-3 w-3" /> : null}
-      </summary>
-      <div className="absolute right-0 z-50 mt-2 w-44 rounded-md border border-border bg-surface p-2 text-left text-foreground shadow-lg">
-        <button className={buttonClassName("ghost", "w-full justify-start")}>
-          <FontAwesomeIcon icon={faUser} className="h-4 w-4" /> Demo user
-        </button>
-        <button className={buttonClassName("ghost", "w-full justify-start")}>
-          <FontAwesomeIcon icon={faGear} className="h-4 w-4" /> Settings
-        </button>
-      </div>
-    </DetailsDropdown>
+        {isAdmin ? (
+          <UserButton.MenuItems>
+            <UserButton.Link
+              label="Manage users"
+              labelIcon={<FontAwesomeIcon icon={faUsers} className="h-4 w-4" />}
+              href="/admin/users"
+            />
+          </UserButton.MenuItems>
+        ) : null}
+      </UserButton>
+    </div>
   );
 }
 

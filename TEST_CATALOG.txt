@@ -21,7 +21,7 @@ pnpm test:ci           Run unit, integration, then browser suites.
 Individual packages also expose pnpm test (or pnpm test:unit for market-data)
 to run only that package's unit tests.
 
-Current automated coverage: 71 cases in 20 test files.
+Current automated coverage: 78 cases in 22 test files.
 
 UNIT TESTS
 ==========
@@ -84,6 +84,14 @@ apps/api/test/services/credit-card-balances.test.ts
   - Does not allocate an ambiguous payment to an arbitrary card.
   - Infers a same-brokerage payment pair without double counting it.
 
+apps/api/test/auth/application-user.test.ts
+  - Resolves an active Clerk identity to its linked local application user.
+  - Rejects locally disabled users without making an unnecessary Clerk call.
+  - Activates an invited user using the exact pending application UUID carried
+    in Clerk invitation metadata, preserving existing ownership relationships.
+  - Refuses to provision an unrelated Clerk identity without a pending local
+    application user.
+
 apps/web/test/unit/services/costs.test.ts
   - Distinguishes withholding tax from fees, including descriptive tax labels.
   - Prevents HST and zero-fee trades from being counted as fees incorrectly.
@@ -124,9 +132,15 @@ apps/web/test/components/data-table.test.tsx
   - Filters rendered rows through the global search control.
   - Clears the active search and restores the full row count.
 
+apps/web/test/components/user-management.test.tsx
+  - Displays linked users, roles, enabled state, and pending invitations.
+  - Sends an administrator-created invitation with email, username, and role,
+    then refreshes the management view.
+  - Soft-disables another user through the protected management endpoint.
+
 apps/web/test/pages/page-orchestration.test.tsx
-  - Verifies user scoping and successful data handoff for home, cash, and
-    securities server pages.
+  - Verifies authenticated repository handoff for home, cash, and securities
+    server pages without accepting a caller-supplied user identifier.
   - Verifies that repository failures render useful page-specific errors.
 
 TEST LAYERS READY FOR ADDITION
@@ -167,6 +181,7 @@ test/unit/         Pure logic: no database, network, filesystem, or live clock.
 test/integration/  Real database or multiple modules; clean up all data.
 test/fixtures/     Sanitized, static provider/import inputs only.
 apps/*/test/http/  HTTP contract tests using Fastify inject rather than ports.
+apps/*/test/auth/  Authentication-to-application-identity boundary tests.
 apps/*/test/trpc/  Authenticated router tests with two-user ownership fixtures.
 e2e/               Browser behavior only; keep it small and user-critical.
 

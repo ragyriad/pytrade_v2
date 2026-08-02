@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.snaptrade_sync.json",
     "test": "vitest run --root ../.. --config ../../vitest.config.ts packages/snaptrade_sync/test/unit",
-    "sync": "dotenv -e ../../../.env -- tsx src/scripts/sync_snaptrade.ts"
+    "sync": "dotenv -e ../../.env -- tsx src/scripts/sync_snaptrade.ts"
   },
   "dependencies": {
     "dotenv": "^16.0.0",

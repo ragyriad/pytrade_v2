@@ -21,14 +21,12 @@ function parseTimeline(value: string | null): DividendTimelineRange {
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const userId = url.searchParams.get("userId") ?? undefined;
   const accountIdsParam = url.searchParams.get("accountIds");
   const accountIds =
     accountIdsParam == null ? undefined : accountIdsParam.split(",").filter(Boolean);
 
   try {
     const summary = await fetchDividendSummaryFromBackend({
-      userId,
       timeline: parseTimeline(url.searchParams.get("timeline")),
       accountIds,
     });

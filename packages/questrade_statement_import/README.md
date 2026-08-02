@@ -16,8 +16,8 @@ is the maintained application implementation.
 
 ## Excel review
 
-Set `QESTRADE_REPORTS_DIR` in the project-root `.env_v2` file. The file is
-ignored by Git and denied to Codex by the project permission profile.
+Set `QESTRADE_REPORTS_DIR` in the project-root `.env` file. The file is
+ignored by Git.
 
 Then, from the repository root:
 

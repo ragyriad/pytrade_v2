@@ -1,4 +1,5 @@
 @import "./theme.css";
+@import "./clerk-exceptions.css";
 
 @tailwind base;
 @tailwind components;
@@ -82,30 +83,105 @@ body {
   }
 
   .nav-user-button {
-    @apply cursor-pointer list-none border;
-    border-color: var(--color-navigation-border);
-    background: var(--color-navigation-surface);
+    @apply flex shrink-0 items-center;
     color: var(--color-on-action);
   }
 
-  .nav-user-button:hover {
+  .nav-user-button-trigger {
+    @apply flex min-h-10 cursor-pointer items-center rounded-lg border px-2.5 py-1.5 transition duration-200 ease-out focus:outline-none focus-visible:ring-2;
+    border-color: var(--color-navigation-border);
+    background: var(--color-navigation-surface);
+    color: var(--color-on-action);
+    --tw-ring-color: var(--color-interactive-border);
+  }
+
+  .nav-user-button-trigger:hover,
+  .nav-user-button-trigger[aria-expanded="true"] {
+    border-color: var(--color-interactive-border);
     background: var(--color-navigation-border);
     color: var(--color-on-action);
   }
 
-  .nav-user-button-compact {
-    @apply h-9 w-9 px-0;
+  .nav-user-button-content {
+    @apply flex items-center gap-2;
   }
 
-  .nav-user-button-mobile,
-  .nav-user-button-mobile:hover {
+  .nav-user-button-name {
+    @apply text-sm font-semibold;
+    color: currentColor;
+  }
+
+  .nav-user-button-trigger::after {
+    content: "";
+    width: 0.48rem;
+    height: 0.48rem;
+    margin: 0 0.15rem 0.2rem 0.55rem;
+    flex: none;
+    border-right: 2.25px solid currentColor;
+    border-bottom: 2.25px solid currentColor;
+    opacity: 0.95;
+    transform: rotate(45deg);
+    transition: transform 160ms ease;
+  }
+
+  .nav-user-button-trigger[aria-expanded="true"]::after {
+    margin-bottom: -0.2rem;
+    transform: rotate(225deg);
+  }
+
+  .nav-user-button-mobile {
+    @apply flex shrink-0 items-center;
+    color: var(--color-action-hover);
+  }
+
+  .nav-user-button-mobile .nav-user-button-trigger {
     border-color: var(--color-border);
     background: var(--color-surface);
     color: var(--color-action-hover);
   }
 
-  .nav-user-button-mobile:hover {
+  .nav-user-button-mobile .nav-user-button-trigger:hover,
+  .nav-user-button-mobile .nav-user-button-trigger[aria-expanded="true"] {
+    border-color: var(--color-interactive-border);
     background: var(--color-interactive-surface);
+  }
+
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .nav-user-button-trigger {
+      min-height: 2.5rem;
+      padding: 0.3rem 0.65rem;
+      border-radius: 0.625rem;
+    }
+
+    .nav-user-button-trigger::after {
+      margin-left: 0.5rem;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .nav-user-button-mobile .nav-user-button-trigger {
+      min-height: 2.75rem;
+      padding: 0.375rem 0.7rem;
+      border-radius: 0.75rem;
+    }
+
+    .nav-user-button-mobile .nav-user-button-trigger::after {
+      margin-left: 0.5rem;
+    }
+  }
+
+  /* iPhone 13 Pro baseline: 390 x 844 CSS pixels in portrait. */
+  @media (max-width: 390px) {
+    .nav-user-button-mobile .nav-user-button-trigger {
+      min-height: 2.75rem;
+      padding-inline: 0.625rem;
+    }
+
+    .nav-user-button-mobile .nav-user-button-trigger::after {
+      width: 0.46rem;
+      height: 0.46rem;
+      margin-left: 0.5rem;
+    }
   }
 
   .nav-tablet-shell {

@@ -4,19 +4,14 @@ import type {
 } from "../lib/portfolioTypes";
 import { backendApiBaseUrl, fetchJson } from "./http-client";
 
-export async function fetchHistoricSecuritiesFromBackend(
-  userId?: string
-): Promise<SecuritiesHistoryResponseDto> {
-  const params = userId ? `?userId=${encodeURIComponent(userId)}` : "";
-  return fetchJson(`${backendApiBaseUrl}/api/securities/history${params}`);
+export async function fetchHistoricSecuritiesFromBackend(): Promise<SecuritiesHistoryResponseDto> {
+  return fetchJson(`${backendApiBaseUrl}/api/securities/history`);
 }
 
 export async function fetchSecurityTransactionsFromBackend(
-  securityId: string,
-  userId?: string
+  securityId: string
 ): Promise<SecurityTransactionsResponseDto> {
-  const params = userId ? `?userId=${encodeURIComponent(userId)}` : "";
   return fetchJson(
-    `${backendApiBaseUrl}/api/securities/${securityId}/transactions${params}`
+    `${backendApiBaseUrl}/api/securities/${securityId}/transactions`
   );
 }

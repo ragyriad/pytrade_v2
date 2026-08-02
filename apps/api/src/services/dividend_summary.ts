@@ -108,7 +108,7 @@ export type DividendDashboardSummaryDto = {
 };
 
 export type DividendSummaryOptions = {
-  userId?: string;
+  userId: string;
   accountIds?: string[];
   timeline: DividendTimelineRange;
 };

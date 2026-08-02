@@ -1,9 +1,9 @@
 import { drizzle, PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import * as dotenv from "dotenv";
-import { getWorkspaceParentEnvPath } from "./env.js";
+import { getWorkspaceEnvPath } from "./env.js";
 import * as schema from "./schemas/index_schema.js";
 
-dotenv.config({ path: getWorkspaceParentEnvPath() });
+dotenv.config({ path: getWorkspaceEnvPath() });
 
 const connectionString = process.env.DATABASE_URL!;
 export const db = drizzle(connectionString, { schema: schema });

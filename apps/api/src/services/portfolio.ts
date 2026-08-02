@@ -370,26 +370,21 @@ function buildFeeSummary(transactions: TransactionDto[]): FeeSummaryDto {
   };
 }
 
-async function resolveUserId(requestedUserId?: string) {
-  if (requestedUserId) {
-    const rows = await db.select().from(users).where(eq(users.id, requestedUserId)).limit(1);
-    if (rows[0]) return rows[0];
-  }
-
-  const rows = await db.select().from(users).limit(1);
-  return rows[0] ?? null;
-}
-
 export async function getPortfolioDashboard(
-  requestedUserId?: string
+  requestedUserId: string
 ): Promise<PortfolioDashboardDto | null> {
-  const user = await resolveUserId(requestedUserId);
+  const userRows = await db
+    .select({ id: users.id, username: users.username })
+    .from(users)
+    .where(eq(users.id, requestedUserId))
+    .limit(1);
+  const user = userRows[0];
   if (!user) return null;
 
   const accountRows = await db
     .select()
     .from(accounts)
-    .where(and(eq(accounts.userId, user.id), eq(accounts.isArchived, false)));
+    .where(and(eq(accounts.userId, requestedUserId), eq(accounts.isArchived, false)));
   const accountIds = accountRows.map((account) => account.id);
 
   const positionRows =
