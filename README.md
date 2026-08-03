@@ -1,6 +1,17 @@
 # PyTrade
 TypeScript investment aggregation app.
 
+## Continuous Integration
+
+GitHub Actions runs on every push and pull request. It installs the exact
+locked dependencies, lints the web app, type-checks the API, builds every
+package, and runs `pnpm test:ci`. That test command includes the Vitest unit
+and component suites, integration suite, and Playwright browser suite.
+
+Playwright failure reports are retained as GitHub Actions artifacts for seven
+days. Browser and integration tests currently have no specs, but the workflow
+is ready to run them as they are added.
+
 ## Setup
 ```powershell
 pnpm install
