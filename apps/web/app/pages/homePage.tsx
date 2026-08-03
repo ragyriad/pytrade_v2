@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { AllocationPieChart } from "../components/charts/allocationPieChart";
+import { PerformanceChart } from "../components/charts/performanceChart";
 import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
 import { FilterBar } from "../components/dashboard/filterBar";
 import { StatCard } from "../components/dashboard/statCard";
@@ -190,6 +191,10 @@ export function HomePage({ dashboard }: HomePageProps) {
             }
           />
           <StatCard label="Active positions" value={String(activePositions.length)} />
+        </section>
+
+        <section className="mt-6">
+          <PerformanceChart performance={dashboard.performance} />
         </section>
 
         <section className="mt-6">

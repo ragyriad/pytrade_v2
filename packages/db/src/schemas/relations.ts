@@ -1,6 +1,7 @@
 import { defineRelations } from "drizzle-orm";
 import { accounts } from "./accounts_schema.js";
 import { accountBalances } from "./account_balances_schema.js";
+import { accountValueHistory } from "./account_value_history_schema.js";
 import { calendarEvents } from "./calendar_events_schema.js";
 import { holdings } from "./holdings_schema.js";
 import { options } from "./options_schema.js";
@@ -25,7 +26,7 @@ export const usersRelations = defineRelations(
 );
 
 export const accountsRelations = defineRelations(
-  { accounts, transactions, users, positions, holdings, accountBalances, orders },
+  { accounts, transactions, users, positions, holdings, accountBalances, accountValueHistory, orders },
   (r) => ({
     accounts: {
       transactions: r.many.transactions({
@@ -43,6 +44,10 @@ export const accountsRelations = defineRelations(
       balances: r.many.accountBalances({
         from: r.accounts.id,
         to: r.accountBalances.accountId,
+      }),
+      valueHistory: r.many.accountValueHistory({
+        from: r.accounts.id,
+        to: r.accountValueHistory.accountId,
       }),
       orders: r.many.orders({
         from: r.accounts.id,
@@ -186,6 +191,18 @@ export const accountBalancesRelations = defineRelations(
     accountBalances: {
       account: r.one.accounts({
         from: r.accountBalances.accountId,
+        to: r.accounts.id,
+      }),
+    },
+  })
+);
+
+export const accountValueHistoryRelations = defineRelations(
+  { accountValueHistory, accounts },
+  (r) => ({
+    accountValueHistory: {
+      account: r.one.accounts({
+        from: r.accountValueHistory.accountId,
         to: r.accounts.id,
       }),
     },

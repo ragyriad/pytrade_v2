@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+ws-api-python/
 **/node_modules/
 
 # Build output

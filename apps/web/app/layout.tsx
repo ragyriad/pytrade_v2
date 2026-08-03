@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { ClerkProvider } from "@clerk/nextjs";
 import { TopNav } from "./components/navigation/topNav";
+import { getCurrentApplicationUser } from "./lib/clerkAdmin";
 import "./assets/styles/globals.css";
 
 const geistSans = localFont({
@@ -20,18 +21,22 @@ export const metadata: Metadata = {
   description: "Portfolio dashboard",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const currentUser = await getCurrentApplicationUser();
+  const isAdmin = currentUser?.localUser?.role === "admin"
+    && currentUser.localUser.status === "active";
+
   return (
     <ClerkProvider>
       <html lang="en">
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <TopNav />
+          <TopNav isAdmin={isAdmin} />
           {children}
         </body>
       </html>

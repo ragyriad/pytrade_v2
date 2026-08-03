@@ -19,7 +19,7 @@ import {
 import { ButtonLink } from "../ui/button";
 import { DetailsDropdown } from "../ui/detailsDropdown";
 
-const links = [
+const applicationLinks = [
   { href: "/", label: "Portfolio", icon: faChartPie },
   { href: "/securities", label: "Securities", icon: faChartLine },
   { href: "/dividends", label: "Dividends", icon: faWallet },
@@ -30,8 +30,7 @@ const links = [
   { href: "/cash", label: "Cash", icon: faMoneyBillWave },
 ];
 
-const mobileLinks = links.slice(0, 4);
-const moreLinks = links.slice(4);
+const adminLink = { href: "/admin/users", label: "Users", icon: faUsers };
 
 type ViewTransitionDocument = Document & {
   startViewTransition?: (callback: () => void) => void;
@@ -43,9 +42,16 @@ function isActivePath(pathname: string, href: string): boolean {
     : pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function UserMenu({ compact = false, mobile = false }: { compact?: boolean; mobile?: boolean }) {
-  const { user, isLoaded } = useUser();
-  const isAdmin = user?.publicMetadata.role === "admin";
+function UserMenu({
+  isAdmin,
+  compact = false,
+  mobile = false,
+}: {
+  isAdmin: boolean;
+  compact?: boolean;
+  mobile?: boolean;
+}) {
+  const { isLoaded } = useUser();
 
   return (
     <div className={mobile ? "nav-user-button-mobile" : "nav-user-button"}>
@@ -74,9 +80,12 @@ function UserMenu({ compact = false, mobile = false }: { compact?: boolean; mobi
   );
 }
 
-export function TopNav() {
+export function TopNav({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
+  const links = isAdmin ? [...applicationLinks, adminLink] : applicationLinks;
+  const mobileLinks = links.slice(0, 4);
+  const moreLinks = links.slice(4);
   const activeHref = links.find((link) => isActivePath(pathname, link.href))?.href ?? "/";
   const isMoreActive = moreLinks.some((link) => link.href === activeHref);
 
@@ -116,7 +125,7 @@ export function TopNav() {
                 </ButtonLink>
               ))}
             </nav>
-            <UserMenu />
+            <UserMenu isAdmin={isAdmin} />
           </div>
         </div>
       </header>
@@ -146,7 +155,7 @@ export function TopNav() {
                 </Link>
               ))}
             </nav>
-            <UserMenu compact />
+            <UserMenu isAdmin={isAdmin} compact />
           </div>
         </div>
       </header>
@@ -159,7 +168,7 @@ export function TopNav() {
         >
           PyTrade
         </Link>
-        <UserMenu compact mobile />
+        <UserMenu isAdmin={isAdmin} compact mobile />
       </header>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-action-strong bg-surface px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[var(--shadow-mobile-nav)] md:hidden" aria-label="Primary navigation">

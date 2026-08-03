@@ -1,5 +1,6 @@
 import {
   getSnaptradeBalancesByAccount,
+  getSnaptradeAccountValueHistory,
   getSnaptradeOrdersByAccount,
   getSnaptradeTransactionsByAccountId,
   getSnaptradeUserAccounts,
@@ -12,6 +13,7 @@ import {
   getLatestSnaptradeTransactionDate,
   markAccountSynced,
   upsertAccountBalances,
+  upsertAccountValueHistory,
   reconcileAccountPositions,
   upsertAccountOrders,
   upsertAccount,
@@ -22,6 +24,7 @@ import { mapSnaptradePositionsWithSecurities } from "./position_securities.js";
 import { mapSnaptradeOrdersWithSecurities } from "./order_securities.js";
 import { mapSnaptradeAccount } from "./mappers/account_mapper.js";
 import { mapSnaptradeBalance } from "./mappers/account_balance_mapper.js";
+import { mapSnaptradeAccountValueHistory } from "./mappers/account_value_history_mapper.js";
 
 export const DEFAULT_SNAPTRADE_ACTIVITY_START_DATE = "2019-01-01";
 export const SNAPTRADE_ACTIVITY_OVERLAP_DAYS = 7;
@@ -152,6 +155,19 @@ export async function syncBalancesByAccount(
   await upsertAccountBalances(db, dbAccountId, mappedBalances);
   console.log(`  Synced ${mappedBalances.length} balances for account: ${accountName}`);
   return mappedBalances;
+}
+
+export async function syncAccountValueHistoryByAccount(
+  db: DB,
+  snaptradeAccountId: string,
+  dbAccountId: string,
+  accountName: string
+) {
+  const rawHistory = await getSnaptradeAccountValueHistory(snaptradeAccountId);
+  const mappedHistory = mapSnaptradeAccountValueHistory(rawHistory, dbAccountId);
+  await upsertAccountValueHistory(db, dbAccountId, mappedHistory);
+  console.log(`  Synced ${mappedHistory.length} daily value records for account: ${accountName}`);
+  return mappedHistory;
 }
 
 export async function syncOrdersByAccount(

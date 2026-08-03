@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { db, eq, users } from "@repo/db";
 import {
@@ -6,10 +7,22 @@ import {
   requireApplicationAdmin,
 } from "../../../lib/clerkAdmin";
 
-const inviteSchema = z.object({
-  email: z.string().trim().email().transform((email) => email.toLowerCase()),
-  username: z.string().trim().min(1).max(64),
+const createUserSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .min(1)
+    .max(64)
+    .transform((username) => username.toLowerCase()),
+  password: z.string().min(1),
+  email: z
+    .union([z.literal(""), z.string().trim().email().max(320)])
+    .default("")
+    .transform((email) => email ? email.toLowerCase() : null),
+  firstName: z.string().trim().max(64).default(""),
+  lastName: z.string().trim().max(64).default(""),
   role: z.enum(["admin", "user"]).default("user"),
+  requirePasswordReset: z.boolean().default(true),
 });
 
 const updateSchema = z.discriminatedUnion("action", [
@@ -40,7 +53,6 @@ export async function GET() {
   if (!authorization.ok) {
     return NextResponse.json({ error: authorization.error }, { status: authorization.status });
   }
-
   return NextResponse.json(await listApplicationUsers(authorization.client));
 }
 
@@ -49,47 +61,126 @@ export async function POST(request: Request) {
   if (!authorization.ok) {
     return NextResponse.json({ error: authorization.error }, { status: authorization.status });
   }
+  const client = authorization.client;
 
-  const input = inviteSchema.safeParse(await request.json().catch(() => null));
+  const input = createUserSchema.safeParse(await request.json().catch(() => null));
   if (!input.success) {
     return NextResponse.json(
-      { error: "Enter a valid email and role.", issues: input.error.flatten().fieldErrors },
+      { error: "Check the user information and try again.", issues: input.error.flatten().fieldErrors },
       { status: 400 }
     );
   }
 
+  let existingUsernameId: string | undefined;
+  let existingEmailId: string | undefined;
   try {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin;
-    const insertedRows = await db
-      .insert(users)
-      .values({
-        email: input.data.email,
-        username: input.data.username,
-        role: input.data.role,
-        status: "pending",
-      })
-      .returning({ id: users.id });
-    const localUserId = insertedRows[0].id;
+    const [matchingUsername] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.username, input.data.username))
+      .limit(1);
+    existingUsernameId = matchingUsername?.id;
 
-    let invitation;
-    try {
-      invitation = await authorization.client.invitations.createInvitation({
-        emailAddress: input.data.email,
-        redirectUrl: `${appUrl}/sign-up`,
-        publicMetadata: {
-          role: input.data.role,
-          applicationUserId: localUserId,
-        },
-        notify: true,
-      });
-    } catch (error) {
-      await db.delete(users).where(eq(users.id, localUserId));
-      throw error;
+    if (input.data.email) {
+      const [matchingEmail] = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, input.data.email))
+        .limit(1);
+      existingEmailId = matchingEmail?.id;
     }
-    return NextResponse.json({ id: invitation.id }, { status: 201 });
+  } catch {
+    return NextResponse.json(
+      { error: "PyTrade could not validate the local user information." },
+      { status: 500 }
+    );
+  }
+
+  if (existingUsernameId) {
+    return NextResponse.json({ error: "That username is already in use." }, { status: 409 });
+  }
+  if (existingEmailId) {
+    return NextResponse.json({ error: "That email address is already in use." }, { status: 409 });
+  }
+
+  const applicationUserId = randomUUID();
+  let clerkUser: Awaited<ReturnType<typeof client.users.createUser>>;
+  try {
+    clerkUser = await client.users.createUser({
+      username: input.data.username,
+      password: input.data.password,
+      skipPasswordChecks: true,
+      emailAddress: input.data.email ? [input.data.email] : undefined,
+      firstName: input.data.firstName || undefined,
+      lastName: input.data.lastName || undefined,
+      externalId: applicationUserId,
+      publicMetadata: {
+        role: input.data.role,
+        applicationUserId,
+      },
+    });
   } catch (error) {
     return NextResponse.json({ error: clerkErrorMessage(error) }, { status: 409 });
   }
+
+  async function rollbackClerkUser(): Promise<boolean> {
+    try {
+      await client.users.deleteUser(clerkUser.id);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  if (input.data.requirePasswordReset) {
+    try {
+      await client.users.setPasswordCompromised(clerkUser.id, {
+        revokeAllSessions: true,
+      });
+    } catch (error) {
+      const rolledBack = await rollbackClerkUser();
+      return NextResponse.json(
+        rolledBack
+          ? { error: clerkErrorMessage(error) }
+          : {
+              error: "Clerk created the user, but password-reset setup and rollback failed. Reconcile the Clerk user before retrying.",
+              clerkUserId: clerkUser.id,
+            },
+        { status: rolledBack ? 502 : 500 }
+      );
+    }
+  }
+
+  try {
+    await db.insert(users).values({
+      id: applicationUserId,
+      clerkUserId: clerkUser.id,
+      email: input.data.email,
+      username: input.data.username,
+      role: input.data.role,
+      status: "active",
+    });
+  } catch {
+    const rolledBack = await rollbackClerkUser();
+    return NextResponse.json(
+      rolledBack
+        ? { error: "PyTrade could not create the local account. The new Clerk user was rolled back." }
+        : {
+            error: "Clerk created the user, but PyTrade could not persist or roll it back. Reconcile the Clerk user before retrying.",
+            clerkUserId: clerkUser.id,
+          },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json(
+    {
+      applicationUserId,
+      clerkUserId: clerkUser.id,
+      message: "User created successfully in Clerk and PyTrade.",
+    },
+    { status: 201, headers: { "Cache-Control": "no-store" } }
+  );
 }
 
 export async function PATCH(request: Request) {
@@ -145,7 +236,7 @@ export async function PATCH(request: Request) {
         .set({ role: input.data.role, updatedAt: new Date() })
         .where(eq(users.id, localUser.id));
     }
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, message: "User updated successfully." });
   } catch (error) {
     return NextResponse.json({ error: clerkErrorMessage(error) }, { status: 400 });
   }

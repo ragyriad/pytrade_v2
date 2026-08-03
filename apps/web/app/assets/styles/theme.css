@@ -31,6 +31,9 @@
   --color-error-border-subtle: #ffe4e6;
   --color-error-border: #fecdd3;
   --color-error-text: var(--color-negative);
+  --color-success-surface: #ecfdf5;
+  --color-success-border: #a7f3d0;
+  --color-success-text: var(--color-positive);
   --color-warning-surface: #fffbeb;
   --color-warning-border-subtle: #fde68a;
   --color-warning-border: #fcd34d;

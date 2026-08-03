@@ -21,10 +21,21 @@ pnpm test:ci           Run unit, integration, then browser suites.
 Individual packages also expose pnpm test (or pnpm test:unit for market-data)
 to run only that package's unit tests.
 
-Current automated coverage: 78 cases in 22 test files.
+Current automated coverage: 111 cases in 31 test files.
 
 UNIT TESTS
 ==========
+
+packages/db/test/unit/demo-scenario.test.ts
+  - Produces identical demo data for the same user, seed, and as-of date.
+  - Uses 26 unique underlying securities without an industry data field.
+  - Populates investment, cash, credit, dividend, cost, option, calendar,
+    price, and performance views with a substantial two-year profile.
+  - Gives every demo account both CAD and USD dividend history and a complete
+    daily valuation series ending at its current balance.
+  - Covers open, closed, and expired option contracts.
+  - Marks replaceable account, transaction, and event rows for one demo owner.
+  - Changes randomized values, but not profile shape, when the seed changes.
 
 packages/data_normalizer/test/unit/normalizer.test.ts
   - Renamed symbol canonicalization, including source-scoped corrections.
@@ -111,6 +122,11 @@ apps/web/test/unit/services/portfolio.test.ts
   - Aggregates allocation slices per symbol with stable descending output.
   - Handles zero aggregate cost basis without producing an invalid percentage.
 
+apps/web/test/unit/services/performance.test.ts
+  - Shows portfolio gains after excluding net deposits and withdrawals.
+  - Includes deposits in the value change only when requested.
+  - Calculates the annualized gain or loss percentage from the displayed gain.
+
 apps/web/test/unit/services/filter_timeline.test.ts
   - Anchors relative ranges on the newest transaction.
   - Uses UTC calendar arithmetic and safely clamps month-end ranges.
@@ -132,16 +148,50 @@ apps/web/test/components/data-table.test.tsx
   - Filters rendered rows through the global search control.
   - Clears the active search and restores the full row count.
 
-apps/web/test/components/user-management.test.tsx
-  - Displays linked users, roles, enabled state, and pending invitations.
-  - Sends an administrator-created invitation with email, username, and role,
-    then refreshes the management view.
+apps/web/test/components/top-nav.test.tsx
+  - Shows the Users navigation and management menu entry to application admins.
+  - Hides all user-management navigation from non-admin users.
+
+apps/web/test/components/dismissible-alert.test.tsx
+  - Announces API failures as errors and invokes explicit dismissal.
+  - Announces successful API messages as non-error status updates.
+
+apps/web/test/components/performance-chart.test.tsx
+  - Separates CAD and USD gains, annualizes them, and includes deposits only on request.
+  - Omits time-weighted, money-weighted, and SPY return metrics.
+
+apps/web/test/pages/user-management.test.tsx
+  - Displays linked identities and unmatched Clerk-only records.
+  - Links administrators to the dedicated create-user page.
+  - Filters the directory by username.
   - Soft-disables another user through the protected management endpoint.
+
+apps/web/test/pages/admin-users-page.test.tsx
+  - Renders the protected user directory for an active administrator.
+  - Denies the protected user directory to a regular user.
+
+apps/web/test/pages/new-user.test.tsx
+  - Collects the Clerk identity fields and local PyTrade role.
+  - Rejects mismatched passwords without sending a provisioning request.
+  - Waits for Clerk-plus-application success and displays both linked IDs.
 
 apps/web/test/pages/page-orchestration.test.tsx
   - Verifies authenticated repository handoff for home, cash, and securities
     server pages without accepting a caller-supplied user identifier.
   - Verifies that repository failures render useful page-specific errors.
+
+HTTP CONTRACT TESTS
+===================
+
+apps/web/test/http/admin-users-route.test.ts
+  - Allows only administrators to fetch the user directory, disable users, and
+    edit user roles.
+  - Creates the Clerk identity before inserting the linked application user.
+  - Optionally marks the initial password for replacement at next sign-in.
+  - Rolls back the new Clerk identity if local persistence fails.
+  - Avoids local writes when Clerk rejects the identity.
+  - Rejects non-admin callers before fetching, validation, provisioning,
+    disabling, or role edits begin.
 
 TEST LAYERS READY FOR ADDITION
 ==============================

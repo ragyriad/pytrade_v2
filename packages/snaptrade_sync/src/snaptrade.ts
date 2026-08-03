@@ -1,5 +1,6 @@
 import { Snaptrade } from "snaptrade-typescript-sdk";
 import type { UniversalActivity } from "snaptrade-typescript-sdk";
+import type { AccountValueHistoryResponse } from "snaptrade-typescript-sdk";
 import * as dotenv from "dotenv";
 import { getWorkspaceEnvPath } from "./env.js";
 import { fetchAllActivityPages } from "./activity_pagination.js";
@@ -54,6 +55,22 @@ export async function getSnaptradeBalancesByAccount(accountId: string) {
 }
 
 export const getSnaptradeBalance = getSnaptradeBalancesByAccount;
+
+/**
+ * SnapTrade's experimental daily total-account-value series. Availability is
+ * brokerage dependent and the provider currently limits its lookback to one
+ * year, so callers should treat an unavailable response as optional data.
+ */
+export async function getSnaptradeAccountValueHistory(
+  accountId: string
+): Promise<AccountValueHistoryResponse> {
+  const res = await snaptrade.experimentalEndpoints.getAccountBalanceHistory({
+    accountId,
+    userId: SNAPTRADE_USER_ID,
+    userSecret: USER_SECRET,
+  });
+  return res.data;
+}
 
 export async function getSnaptradeOrdersByAccount(
   accountId: string,

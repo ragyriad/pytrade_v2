@@ -1,6 +1,16 @@
 import {
+  accounts,
+  and,
+  asc,
+  calendarEvents,
   db,
-  getAllCalendarEvents,
+  eq,
+  inArray,
+  like,
+  ne,
+  or,
+  positions,
+  transactions,
   type CalendarEvent,
 } from "@repo/db";
 
@@ -71,7 +81,42 @@ function toCalendarEventDto(event: CalendarEvent): CalendarEventDto {
   };
 }
 
-export async function getCalendarEvents(): Promise<CalendarEventDto[]> {
-  const events = await getAllCalendarEvents(db);
+export async function getCalendarEvents(userId: string): Promise<CalendarEventDto[]> {
+  const ownedAccounts = await db
+    .select({ id: accounts.id })
+    .from(accounts)
+    .where(and(eq(accounts.userId, userId), eq(accounts.isArchived, false)));
+  const accountIds = ownedAccounts.map((account) => account.id);
+  if (accountIds.length === 0) return [];
+
+  const [heldSecurities, tradedSecurities] = await Promise.all([
+    db
+      .select({ securityId: positions.securityId })
+      .from(positions)
+      .where(inArray(positions.accountId, accountIds)),
+    db
+      .select({ securityId: transactions.securityId, underlyingSecurityId: transactions.underlyingSecurityId })
+      .from(transactions)
+      .where(inArray(transactions.accountId, accountIds)),
+  ]);
+  const securityIds = [...new Set([
+    ...heldSecurities.map((row) => row.securityId),
+    ...tradedSecurities.flatMap((row) => [row.securityId, row.underlyingSecurityId]),
+  ].filter((value): value is string => Boolean(value)))];
+  if (securityIds.length === 0) return [];
+
+  const events: CalendarEvent[] = await db
+    .select()
+    .from(calendarEvents)
+    .where(
+      and(
+        inArray(calendarEvents.securityId, securityIds),
+        or(
+          ne(calendarEvents.providerSource, "DEMO"),
+          like(calendarEvents.providerEventId, `${userId}:%`)
+        )
+      )
+    )
+    .orderBy(asc(calendarEvents.eventDate), asc(calendarEvents.symbol));
   return events.map(toCalendarEventDto);
 }

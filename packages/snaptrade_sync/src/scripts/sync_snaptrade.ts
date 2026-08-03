@@ -12,20 +12,23 @@ import {
   deleteSnaptradeTransactionsByAccount,
   markAccountSynced,
   upsertAccountBalances,
+  upsertAccountValueHistory,
   reconcileAccountPositions,
   upsertAccountOrders,
 } from "@repo/db";
-import type { NewAccountBalance, NewOrder, NewPosition } from "@repo/db";
+import type { NewAccountBalance, NewAccountValueHistory, NewOrder, NewPosition } from "@repo/db";
 import { db, createSeed } from "@repo/db";
 import {
   getSnaptradeTransactionsByAccountId,
   getSnaptradeBalancesByAccount,
+  getSnaptradeAccountValueHistory,
   getSnaptradeOrdersByAccount,
   getSnaptradePositionsByAccount,
 } from "../snaptrade.js";
 import { mapSnaptradePositionsWithSecurities } from "../position_securities.js";
 import { mapSnaptradeOrdersWithSecurities } from "../order_securities.js";
 import { mapSnaptradeBalance } from "../mappers/account_balance_mapper.js";
+import { mapSnaptradeAccountValueHistory } from "../mappers/account_value_history_mapper.js";
 
 async function closeDatabase() {
   const client = (db as typeof db & { $client?: { end?: () => Promise<void> } }).$client;
@@ -114,6 +117,11 @@ async function main() {
       accountName: string;
       rawOrders: Awaited<ReturnType<typeof getSnaptradeOrdersByAccount>>;
     }> = [];
+    const allRawValueHistoryByAccount: Array<{
+      dbAccountId: string;
+      accountName: string;
+      rawHistory: Awaited<ReturnType<typeof getSnaptradeAccountValueHistory>>;
+    }> = [];
 
     for (const {
       snaptradeAccountId,
@@ -172,6 +180,16 @@ async function main() {
       const rawOrders = await getSnaptradeOrdersByAccount(snaptradeAccountId, 90);
       allRawOrdersByAccount.push({ dbAccountId, accountName, rawOrders });
       console.log(`  Fetched ${rawOrders.length} recent orders`);
+
+      try {
+        const rawHistory = await getSnaptradeAccountValueHistory(snaptradeAccountId);
+        allRawValueHistoryByAccount.push({ dbAccountId, accountName, rawHistory });
+        console.log(`  Fetched ${rawHistory.history?.length ?? 0} daily total-value records`);
+      } catch {
+        // This beta endpoint is not enabled for every brokerage. A normal
+        // account sync must still complete when history is unavailable.
+        console.warn(`  Account value history unavailable for ${accountName}; continuing without it.`);
+      }
     }
 
     // ------------------------------------------------------------------
@@ -302,6 +320,11 @@ async function main() {
       console.log(`  Mapped ${mappedOrders.length} recent orders for: ${accountName}`);
     }
 
+    const allMappedValueHistory: NewAccountValueHistory[] = allRawValueHistoryByAccount.flatMap(
+      ({ dbAccountId, rawHistory }) =>
+        mapSnaptradeAccountValueHistory(rawHistory, dbAccountId)
+    );
+
     for (const { dbAccountId, accountName } of resolvedAccounts) {
       const accountPositions = allMappedPositions.filter(
         (position) => position.accountId === dbAccountId
@@ -320,6 +343,12 @@ async function main() {
       );
       await upsertAccountOrders(db, dbAccountId, accountOrders);
       console.log(`  Upserted ${accountOrders.length} recent orders for: ${accountName}`);
+
+      const accountValueHistory = allMappedValueHistory.filter(
+        (value) => value.accountId === dbAccountId
+      );
+      await upsertAccountValueHistory(db, dbAccountId, accountValueHistory);
+      console.log(`  Upserted ${accountValueHistory.length} daily value records for: ${accountName}`);
     }
 
     // ------------------------------------------------------------------

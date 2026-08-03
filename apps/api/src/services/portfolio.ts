@@ -15,6 +15,10 @@ import {
   type Transaction,
 } from "@repo/db";
 import type { MoneyBreakdownDto, MoneyDto } from "../shared/money.js";
+import {
+  getPerformanceSummary,
+  type PerformanceSummaryDto,
+} from "./account_performance.js";
 
 export type AccountDto = {
   id: string;
@@ -122,6 +126,7 @@ export type PortfolioDashboardDto = {
   allocationByAccount: AllocationDto[];
   dividends: DividendSummaryDto;
   fees: FeeSummaryDto;
+  performance: PerformanceSummaryDto | null;
 };
 
 function toNumber(value: string | number | null | undefined): number {
@@ -470,6 +475,8 @@ export async function getPortfolioDashboard(
     .filter((value): value is string => Boolean(value))
     .sort();
 
+  const performance = await getPerformanceSummary(requestedUserId);
+
   return {
     summary: {
       user: {
@@ -505,5 +512,6 @@ export async function getPortfolioDashboard(
     ),
     dividends: buildDividendSummary(dividendTransactions, accountDtos),
     fees: buildFeeSummary(transactionDtos),
+    performance,
   };
 }

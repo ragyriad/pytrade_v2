@@ -11,7 +11,7 @@ import {
   getDividendDashboardSummary,
   type DividendTimelineRange,
 } from "./services/dividend_summary.js";
-import { getAnnualAccountGains } from "./services/account_performance.js";
+import { getAnnualAccountGains, getPerformanceSummary } from "./services/account_performance.js";
 import { getCashDashboard } from "./services/cash.js";
 import { getCalendarEvents } from "./services/calendar.js";
 import { getPortfolioDashboard } from "./services/portfolio.js";
@@ -210,8 +210,7 @@ fastify.get("/api/dividends/summary", async (request, reply) => {
 });
 
 fastify.get("/api/calendar/events", async (request) => {
-  authenticatedUserId(request);
-  return { events: await getCalendarEvents() };
+  return { events: await getCalendarEvents(authenticatedUserId(request)) };
 });
 
 fastify.get("/api/performance/annual-account-gains", async (request, reply) => {
@@ -220,6 +219,14 @@ fastify.get("/api/performance/annual-account-gains", async (request, reply) => {
     return reply.status(404).send({ error: "No performance data found for this user." });
   }
   return gains;
+});
+
+fastify.get("/api/performance", async (request, reply) => {
+  const performance = await getPerformanceSummary(authenticatedUserId(request));
+  if (!performance) {
+    return reply.status(404).send({ error: "No value history found for this user." });
+  }
+  return performance;
 });
 
 try {

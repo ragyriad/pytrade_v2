@@ -29,6 +29,8 @@
     "db:generate": "turbo run db:generate --filter=@repo/db",
     "db:migrate": "turbo run db:migrate --filter=@repo/db",
     "auth:link-admin": "dotenv -e .env -- tsx packages/db/src/scripts/link_existing_admin.ts",
+    "demo:seed": "dotenv -e .env -- tsx packages/db/src/demo/cli.ts seed",
+    "demo:reset": "dotenv -e .env -- tsx packages/db/src/demo/cli.ts reset",
     "data:normalizer:test": "pnpm --filter @repo/data-normalizer test",
     "data:deduplicator:test": "pnpm --filter @repo/data-deduplicator test",
     "data:normalize-existing": "tsx scripts/data/normalize_existing.ts",

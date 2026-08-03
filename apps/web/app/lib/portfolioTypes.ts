@@ -210,6 +210,21 @@ export type FeeSummaryDto = {
   transactions: TransactionDto[];
 };
 
+export type PerformancePointDto = {
+  date: string;
+  totalValue: number;
+  netExternalCashFlow: number;
+};
+
+export type PerformanceSeriesDto = {
+  currency: string;
+  points: PerformancePointDto[];
+};
+
+export type PerformanceSummaryDto = {
+  series: PerformanceSeriesDto[];
+};
+
 export type PortfolioDashboardDto = {
   summary: {
     user: {
@@ -233,6 +248,7 @@ export type PortfolioDashboardDto = {
   allocationByAccount: AllocationDto[];
   dividends: DividendSummaryDto;
   fees: FeeSummaryDto;
+  performance: PerformanceSummaryDto | null;
 };
 
 export type DashboardTab = "accounts" | "securities" | "transactions";
