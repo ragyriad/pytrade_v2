@@ -18,6 +18,11 @@ jobs:
     name: Verify
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    # The production build imports database modules while collecting route
+    # metadata. postgres-js validates this URL during module initialization,
+    # but no CI build step connects to it.
+    env:
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/pytrade_ci
 
     steps:
       - name: Check out source
