@@ -25,6 +25,8 @@ type SecuritiesPageProps = {
   securities: HistoricSecurityDto[];
 };
 
+const EMPTY_TRANSACTIONS: TransactionDto[] = [];
+
 async function fetchSecurityTransactions(
   securityId: string
 ): Promise<SecurityTransactionsResponseDto> {
@@ -207,8 +209,7 @@ function SecurityTransactionsSubTable({
     enabled: isExpanded,
     staleTime: 5 * 60 * 1000,
   });
-  const transactions: TransactionDto[] =
-    transactionsQuery.data?.transactions ?? [];
+  const transactions = transactionsQuery.data?.transactions ?? EMPTY_TRANSACTIONS;
   const isLoading = transactionsQuery.isPending;
   const error = transactionsQuery.error instanceof Error
     ? transactionsQuery.error.message

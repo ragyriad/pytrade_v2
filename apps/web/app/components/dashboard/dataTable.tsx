@@ -158,6 +158,9 @@ export function DataTable<T>({
   }));
   const alignByColumnId = new Map(columns.map((column) => [column.key, column.align]));
 
+  // TanStack Table returns mutable table APIs, so React Compiler correctly
+  // opts this component out of memoization. The table remains safe to use.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: rows,
     columns: columnDefs,

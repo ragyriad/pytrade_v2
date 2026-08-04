@@ -82,13 +82,15 @@ export function useSessionState<T>(
   initialValue: T | (() => T)
 ): [T, Dispatch<SetStateAction<T>>] {
   const { isReady, sessionId } = useContext(SessionStateScopeContext);
-  const initialValueRef = useRef(initialValue);
+  // Keep the initial fallback for this hook instance without reading a ref
+  // during render. React's compiler treats ref reads during render as unsafe.
+  const [initialValueSnapshot] = useState<T | (() => T)>(() => initialValue);
   const storageKey = isReady && sessionId && key
     ? uiStorageKey(sessionId, key)
     : null;
 
   const readValue = useCallback(() => {
-    const fallback = resolveInitialValue(initialValueRef.current);
+    const fallback = resolveInitialValue(initialValueSnapshot);
     if (!storageKey || typeof window === "undefined") return fallback;
 
     try {
@@ -98,7 +100,7 @@ export function useSessionState<T>(
       window.sessionStorage.removeItem(storageKey);
       return fallback;
     }
-  }, [storageKey]);
+  }, [initialValueSnapshot, storageKey]);
 
   const [value, setValue] = useState<T>(readValue);
   const previousStorageKeyRef = useRef(storageKey);
