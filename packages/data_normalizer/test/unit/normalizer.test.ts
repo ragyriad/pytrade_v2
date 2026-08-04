@@ -149,6 +149,25 @@ test("treats buy and sell activity with an untyped security as stock", () => {
   );
 });
 
+test("classifies cash funding, investment contributions, and institutional transfers distinctly", () => {
+  assert.deepEqual(
+    normalizeTransaction({ type: "DEPOSIT", amount: "100" }, null, {
+      accountType: "CASH",
+    }),
+    { action: "DEPOSIT", assetType: "CASH" }
+  );
+  assert.deepEqual(
+    normalizeTransaction({ type: "DEPOSIT", amount: "100" }, null, {
+      accountType: "TFSA",
+    }),
+    { action: "CONTRIBUTION", assetType: "CASH" }
+  );
+  assert.deepEqual(
+    normalizeTransaction({ type: "INSTITUTIONAL TRANSFER", amount: "100" }),
+    { action: "INSTITUTIONAL_TRANSFER", assetType: "CASH" }
+  );
+});
+
 test("resolves a symbol-less activity using an existing company description", () => {
   const match = resolveSecurityCandidate(
     {

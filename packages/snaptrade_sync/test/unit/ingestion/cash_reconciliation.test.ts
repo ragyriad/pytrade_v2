@@ -1,5 +1,8 @@
 import { assert, test } from "vitest";
-import { planSnaptradeCreditCardPaymentActions } from "../../../src/ingestion/cash_reconciliation.js";
+import {
+  planSnaptradeCreditCardPaymentActions,
+  planSnaptradeInvestmentTransferActions,
+} from "../../../src/ingestion/cash_reconciliation.js";
 
 const accounts = [
   {
@@ -22,6 +25,19 @@ const accounts = [
   },
 ];
 
+const accountsWithInvestment = [
+  ...accounts,
+  {
+    id: "tfsa",
+    brokerageName: "Wealthsimple Trade",
+    type: "TFSA",
+    rawType: null,
+    snaptradeMetaType: "REGISTERED",
+    snaptradeUnifiedAccountType: "TFSA",
+    name: "Wealthsimple TFSA",
+  },
+];
+
 function transaction(
   id: string,
   accountId: string,
@@ -30,6 +46,7 @@ function transaction(
     action: string;
     tradeDate: Date;
     currencyCode: string;
+    externalTransactionId: string | null;
   }> = {}
 ) {
   return {
@@ -39,6 +56,7 @@ function transaction(
     type: "CASH",
     amount,
     currencyCode: overrides.currencyCode ?? "CAD",
+    externalTransactionId: overrides.externalTransactionId ?? null,
     tradeDate:
       overrides.tradeDate ?? new Date("2026-07-01T12:00:00.000Z"),
   };
@@ -53,6 +71,63 @@ test("matches an exact Wealthsimple cash-to-card payment pair", () => {
   assert.deepEqual(plan, {
     sentTransactionIds: ["cash-payment"],
     receivedTransactionIds: ["card-receipt"],
+  });
+});
+
+test("matches a Wealthsimple cash withdrawal to an investment contribution", () => {
+  const plan = planSnaptradeInvestmentTransferActions(accountsWithInvestment, [
+    transaction("cash-withdrawal", "cash", "-500.00", {
+      action: "WITHDRAWAL",
+    }),
+    transaction("tfsa-deposit", "tfsa", "500.00", {
+      action: "CONTRIBUTION",
+      tradeDate: new Date("2026-07-01T12:00:30.000Z"),
+    }),
+  ]);
+
+  assert.deepEqual(plan, {
+    sentTransactionIds: ["cash-withdrawal"],
+    receivedTransactionIds: ["tfsa-deposit"],
+  });
+});
+
+test("uses a shared external reference for delayed investment settlement", () => {
+  const plan = planSnaptradeInvestmentTransferActions(accountsWithInvestment, [
+    transaction("cash-withdrawal", "cash", "-500.00", {
+      action: "WITHDRAWAL",
+      externalTransactionId: "movement-123",
+    }),
+    transaction("tfsa-deposit", "tfsa", "500.00", {
+      action: "DEPOSIT",
+      externalTransactionId: "movement-123",
+      tradeDate: new Date("2026-07-02T11:59:00.000Z"),
+    }),
+  ]);
+
+  assert.deepEqual(plan, {
+    sentTransactionIds: ["cash-withdrawal"],
+    receivedTransactionIds: ["tfsa-deposit"],
+  });
+});
+
+test("leaves an ambiguous cash-to-investment movement unchanged", () => {
+  const plan = planSnaptradeInvestmentTransferActions(accountsWithInvestment, [
+    transaction("cash-withdrawal", "cash", "-500.00", {
+      action: "WITHDRAWAL",
+    }),
+    transaction("tfsa-one", "tfsa", "500.00", {
+      action: "DEPOSIT",
+      tradeDate: new Date("2026-07-01T12:00:30.000Z"),
+    }),
+    transaction("tfsa-two", "tfsa", "500.00", {
+      action: "CONTRIBUTION",
+      tradeDate: new Date("2026-07-01T12:00:45.000Z"),
+    }),
+  ]);
+
+  assert.deepEqual(plan, {
+    sentTransactionIds: [],
+    receivedTransactionIds: [],
   });
 });
 

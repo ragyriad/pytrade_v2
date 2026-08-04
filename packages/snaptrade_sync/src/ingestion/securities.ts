@@ -131,7 +131,7 @@ function isCashFlowActivity(activity: SnapTradeActivityLike): boolean {
   const units = toNumber(activity.units);
 
   if (type === "INTEREST" || description === "INTEREST") return true;
-  if (["DEPOSIT", "WITHDRAWAL", "CONTRIBUTION", "FEE", "P2P_PAYMENT", "REFUND"].includes(type)) {
+  if (["DEPOSIT", "WITHDRAWAL", "CONTRIBUTION", "INSTITUTIONAL_TRANSFER", "FEE", "P2P_PAYMENT", "REFUND"].includes(type)) {
     return true;
   }
 

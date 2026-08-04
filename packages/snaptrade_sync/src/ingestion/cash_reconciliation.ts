@@ -7,6 +7,10 @@ import {
   transactions,
   type DB,
 } from "@repo/db";
+import { planSnaptradeInvestmentTransferActions } from "./wealthsimple_transfer_matching.js";
+
+export { planSnaptradeInvestmentTransferActions } from "./wealthsimple_transfer_matching.js";
+export type { InvestmentTransferActionPlan } from "./wealthsimple_transfer_matching.js";
 
 type PaymentAccount = {
   id: string;
@@ -306,6 +310,74 @@ export async function normalizeSnaptradeCreditCardPayments(
     const rows = await db
       .update(transactions)
       .set({ action: "CREDIT_CARD_PAYMENT_RECEIVED" })
+      .where(inArray(transactions.id, plan.receivedTransactionIds))
+      .returning({ id: transactions.id });
+    updated += rows.length;
+  }
+
+  return updated;
+}
+
+/**
+ * Reconciles cash-to-investment transfers after all accounts have completed
+ * ingestion. It intentionally runs at the user level because the receiving
+ * investment account is different from the account currently being synced.
+ * The investment-side entry remains a CONTRIBUTION so it stays visible in the
+ * investment account's data table and performance cash-flow calculation.
+ */
+export async function normalizeSnaptradeInvestmentTransfers(
+  db: DB,
+  syncedAccountId: string
+): Promise<number> {
+  const ownerRows = await db
+    .select({ userId: accounts.userId })
+    .from(accounts)
+    .where(eq(accounts.id, syncedAccountId))
+    .limit(1);
+  const userId = ownerRows[0]?.userId;
+  if (!userId) return 0;
+
+  const accountRows = await db
+    .select()
+    .from(accounts)
+    .where(and(eq(accounts.userId, userId), eq(accounts.isArchived, false)));
+  const accountIds = accountRows.map((account) => account.id);
+  if (accountIds.length === 0) return 0;
+
+  const transactionRows = await db
+    .select({
+      id: transactions.id,
+      accountId: transactions.accountId,
+      action: transactions.action,
+      type: transactions.type,
+      amount: transactions.amount,
+      currencyCode: transactions.currencyCode,
+      tradeDate: transactions.tradeDate,
+      externalTransactionId: transactions.externalTransactionId,
+    })
+    .from(transactions)
+    .where(
+      and(
+        inArray(transactions.accountId, accountIds),
+        eq(transactions.source, "SNAPTRADE"),
+        eq(transactions.isArchived, false)
+      )
+    );
+  const plan = planSnaptradeInvestmentTransferActions(accountRows, transactionRows);
+
+  let updated = 0;
+  if (plan.sentTransactionIds.length > 0) {
+    const rows = await db
+      .update(transactions)
+      .set({ action: "TRANSFER_OUT" })
+      .where(inArray(transactions.id, plan.sentTransactionIds))
+      .returning({ id: transactions.id });
+    updated += rows.length;
+  }
+  if (plan.receivedTransactionIds.length > 0) {
+    const rows = await db
+      .update(transactions)
+      .set({ action: "CONTRIBUTION" })
       .where(inArray(transactions.id, plan.receivedTransactionIds))
       .returning({ id: transactions.id });
     updated += rows.length;

@@ -1,15 +1,16 @@
 import {
   DEFAULT_SNAPTRADE_ACTIVITY_START_DATE,
+  FULL_SNAPTRADE_ACTIVITY_START_DATE,
   getTransactionSyncStartDate,
   syncAccounts,
 } from "../sync_functions.js";
 import {
   normalizeSnaptradeCreditCardPayments,
+  normalizeSnaptradeInvestmentTransfers,
   processAccountActivities,
 } from "../ingestion/index.js";
 import {
   getAccountBySnaptradeId,
-  deleteSnaptradeTransactionsByAccount,
   markAccountSynced,
   upsertAccountBalances,
   upsertAccountValueHistory,
@@ -37,20 +38,31 @@ async function closeDatabase() {
 
 async function main() {
   try {
-    const replaceSnaptradeData =
+    const fullHistoryUpsert =
+      process.argv.includes("--upsert-all") ||
+      process.argv.includes("--full-history");
+    const incrementalOnly = process.argv.includes("--incremental");
+    if (fullHistoryUpsert && incrementalOnly) {
+      throw new Error("Choose either --incremental or --upsert-all, not both.");
+    }
+    if (
       process.argv.includes("--replace-snaptrade-data") ||
-      process.argv.includes("--replace");
-    if (replaceSnaptradeData) {
-      console.warn(
-        "\nReplace mode enabled: existing SnapTrade transactions will be deleted " +
-        "only after all account data has been fetched successfully. Statement and " +
-        "legacy transactions will be preserved."
+      process.argv.includes("--replace")
+    ) {
+      throw new Error(
+        "Replace mode has been removed. Use --upsert-all to re-fetch and update all SnapTrade records without deleting data."
       );
     }
+    console.log(
+      fullHistoryUpsert
+        ? "\nFull-history upsert mode: fetching every SnapTrade activity and updating matching rows; no data will be deleted."
+        : "\nIncremental mode: fetching activity since each account's latest sync watermark."
+    );
 
     const adminUser = await createSeed(db);
 
     const fallbackStartDate = DEFAULT_SNAPTRADE_ACTIVITY_START_DATE;
+    const fullHistoryStartDate = FULL_SNAPTRADE_ACTIVITY_START_DATE;
     const endDate = new Date().toISOString().split("T")[0];
 
     // ------------------------------------------------------------------
@@ -132,8 +144,8 @@ async function main() {
     } of resolvedAccounts) {
       console.log(`Fetching data for: ${accountName}`);
 
-      const startDate = replaceSnaptradeData
-        ? fallbackStartDate
+      const startDate = fullHistoryUpsert
+        ? fullHistoryStartDate
         : await getTransactionSyncStartDate(
             db,
             dbAccountId,
@@ -202,7 +214,6 @@ async function main() {
     let skippedDuplicateActivityCount = 0;
     let normalizedCashTransactionCount = 0;
     let archivedDuplicateTransactionCount = 0;
-    let deletedSnaptradeTransactionCount = 0;
 
     for (const {
       dbAccountId,
@@ -211,33 +222,14 @@ async function main() {
       providerName,
       rawTransactions,
     } of allRawTransactionsByAccount) {
-      let result: Awaited<ReturnType<typeof processAccountActivities>>;
-      if (replaceSnaptradeData) {
-        const replacement = await db.transaction(async (tx) => {
-          const deleted = await deleteSnaptradeTransactionsByAccount(
-            tx,
-            dbAccountId
-          );
-          const processed = await processAccountActivities({
-            db: tx,
-            accountId: dbAccountId,
-            accountType,
-            providerName,
-            activities: rawTransactions,
-          });
-          return { deleted, processed };
-        });
-        deletedSnaptradeTransactionCount += replacement.deleted;
-        result = replacement.processed;
-      } else {
-        result = await processAccountActivities({
-          db,
-          accountId: dbAccountId,
-          accountType,
-          providerName,
-          activities: rawTransactions,
-        });
-      }
+      const result = await processAccountActivities({
+        db,
+        accountId: dbAccountId,
+        accountType,
+        providerName,
+        reconcileProviderDuplicates: !fullHistoryUpsert,
+        activities: rawTransactions,
+      });
       persistedTransactionCount += result.transactionsProcessed;
       persistedSecurityCount += result.securitiesProcessed;
       skippedDuplicateActivityCount += result.duplicateActivitiesSkipped;
@@ -265,20 +257,27 @@ async function main() {
             resolvedAccounts[0].dbAccountId
           )
         : 0;
+    const normalizedInvestmentTransferCount =
+      resolvedAccounts.length > 0
+        ? await normalizeSnaptradeInvestmentTransfers(
+            db,
+            resolvedAccounts[0].dbAccountId
+          )
+        : 0;
     if (normalizedCreditCardPaymentCount > 0) {
       console.log(
         `  Normalized ${normalizedCreditCardPaymentCount} credit-card payment rows`
+      );
+    }
+    if (normalizedInvestmentTransferCount > 0) {
+      console.log(
+        `  Normalized ${normalizedInvestmentTransferCount} cash-to-investment transfer rows`
       );
     }
 
     console.log(
       `  Persisted ${persistedTransactionCount} transactions and ${persistedSecurityCount} securities total`
     );
-    if (replaceSnaptradeData) {
-      console.log(
-        `  Deleted ${deletedSnaptradeTransactionCount} existing SnapTrade transactions before replacement`
-      );
-    }
     if (
       skippedDuplicateActivityCount > 0 ||
       normalizedCashTransactionCount > 0 ||

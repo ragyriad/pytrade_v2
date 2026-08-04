@@ -87,6 +87,7 @@ export type ProcessAccountActivitiesParams<TActivity extends SnapTradeActivityLi
   accountId: string;
   accountType?: string | null;
   providerName?: string | null;
+  reconcileProviderDuplicates?: boolean;
   activities: TActivity[];
   dependencies?: ActivityProcessorDependencies<TActivity>;
 };
@@ -151,6 +152,7 @@ export async function processAccountActivities<
   accountId,
   accountType,
   providerName,
+  reconcileProviderDuplicates = true,
   activities,
   dependencies = {},
 }: ProcessAccountActivitiesParams<TActivity>): Promise<ActivityProcessingResult> {
@@ -387,7 +389,7 @@ export async function processAccountActivities<
     ? await normalizeCashTransactionRows(db, accountId)
     : 0;
   let duplicateTransactionsArchived = 0;
-  if (deduplicationEnabled) {
+  if (deduplicationEnabled && reconcileProviderDuplicates) {
     const storedRows = await getStoredTransactionRows(db, accountId);
     const duplicateIds = planExactProviderDuplicateArchives(
       storedRows

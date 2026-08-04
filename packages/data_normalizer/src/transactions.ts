@@ -100,13 +100,25 @@ export function normalizeTransaction(
   else if (sourceActionText === "ADR" || hasAnyTerm(combined, ["FEE", "COMMISSION"])) action = "FEE";
   else if (hasTerm(combined, "PROMOTION")) action = "PROMOTION";
   else if (hasTerm(combined, "SPEND")) action = "SPEND";
-  else if (hasTerm(combined, "CONTRIBUTION")) action = "CONTRIBUTION";
+  else if (
+    [
+      "EXTERNAL ASSET TRANSFER OUT",
+      "EXTERNAL ASSET TRANSFER IN",
+      "INSTITUTIONAL TRANSFER",
+    ].includes(sourceActionText) ||
+    hasTerm(combined, "INSTITUTIONAL TRANSFER")
+  ) {
+    action = "INSTITUTIONAL_TRANSFER";
+  } else if (hasTerm(combined, "CONTRIBUTION")) {
+    action = cashAccount ? "DEPOSIT" : "CONTRIBUTION";
+  }
   else if (hasAnyTerm(combined, ["WITHDRAW", "WITHDRAWAL"])) action = "WITHDRAWAL";
-  else if (hasTerm(combined, "DEPOSIT")) action = "DEPOSIT";
+  else if (hasTerm(combined, "DEPOSIT")) {
+    action = cashAccount ? "DEPOSIT" : "CONTRIBUTION";
+  }
   else if (
     hasTerm(combined, "TRANSFER") ||
-    hasTerm(combined, "P2P") ||
-    ["EXTERNAL ASSET TRANSFER OUT", "EXTERNAL ASSET TRANSFER IN", "INSTITUTIONAL TRANSFER"].includes(sourceActionText)
+    hasTerm(combined, "P2P")
   ) {
     action = "TRANSFER";
   } else if (
@@ -152,7 +164,7 @@ export function normalizeTransaction(
   ) {
     assetType = "STOCK";
   } else if (normalizedSecurityType) assetType = normalizedSecurityType;
-  else if (["DEPOSIT", "WITHDRAWAL", "CONTRIBUTION", "TRANSFER", "FEE", "FUNDS_CONVERSION"].includes(action)) assetType = "CASH";
+  else if (["DEPOSIT", "WITHDRAWAL", "CONTRIBUTION", "TRANSFER", "INSTITUTIONAL_TRANSFER", "FEE", "FUNDS_CONVERSION"].includes(action)) assetType = "CASH";
   else if (action === "DIVIDEND") assetType = security ? "STOCK" : "DIVIDEND";
 
   return { action, assetType };

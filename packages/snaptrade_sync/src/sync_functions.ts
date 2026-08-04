@@ -7,6 +7,7 @@ import {
 } from "./snaptrade.js";
 import {
   normalizeSnaptradeCreditCardPayments,
+  normalizeSnaptradeInvestmentTransfers,
   processAccountActivities,
 } from "./ingestion/index.js";
 import {
@@ -27,7 +28,10 @@ import { mapSnaptradeBalance } from "./mappers/account_balance_mapper.js";
 import { mapSnaptradeAccountValueHistory } from "./mappers/account_value_history_mapper.js";
 
 export const DEFAULT_SNAPTRADE_ACTIVITY_START_DATE = "2019-01-01";
+/** Earliest practical date for a user-requested full-history provider upsert. */
+export const FULL_SNAPTRADE_ACTIVITY_START_DATE = "2000-01-01";
 export const SNAPTRADE_ACTIVITY_OVERLAP_DAYS = 7;
+export type SnaptradeTransactionSyncMode = "incremental" | "upsert-all";
 
 function toDateOnly(value: Date): string {
   return value.toISOString().slice(0, 10);
@@ -68,16 +72,16 @@ export async function syncTransactionsByAccount(
     accountName: string,
     startDate: string,
     endDate: string,
-    accountType?: string | null
+    accountType?: string | null,
+    mode: SnaptradeTransactionSyncMode = "incremental"
   ) {
-    const incrementalStartDate = await getTransactionSyncStartDate(
-      db,
-      dbAccountId,
-      startDate
-    );
+    const syncStartDate =
+      mode === "upsert-all"
+        ? startDate
+        : await getTransactionSyncStartDate(db, dbAccountId, startDate);
     const rawTransactions = await getSnaptradeTransactionsByAccountId(
       snaptradeAccountId,
-      incrementalStartDate,
+      syncStartDate,
       endDate
     );
 
@@ -92,9 +96,11 @@ export async function syncTransactionsByAccount(
       accountId: dbAccountId,
       accountType,
       providerName: accountName,
+      reconcileProviderDuplicates: mode !== "upsert-all",
       activities: rawTransactions,
     });
     await normalizeSnaptradeCreditCardPayments(db, dbAccountId);
+    await normalizeSnaptradeInvestmentTransfers(db, dbAccountId);
     await markAccountSynced(db, dbAccountId, { transactions: true });
 
     console.log(
