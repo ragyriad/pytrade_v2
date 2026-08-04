@@ -41,11 +41,13 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Type-check API
-        run: pnpm typecheck:api
-
       - name: Build all packages
         run: pnpm build
+
+      # The API imports workspace packages whose type declarations are created
+      # by the build above.
+      - name: Type-check API
+        run: pnpm typecheck:api
 
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
