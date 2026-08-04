@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { accountMatchesFilters, defaultFilterBarState } from "../lib/accountFilters";
 import {
   formatDate,
@@ -24,6 +24,7 @@ import {
   getOptionPnl,
   isOptionTransaction,
 } from "../services/options";
+import { useSessionState } from "../state/sessionState";
 import { filterTransactionsByTimeline } from "../services/filter_timeline";
 import { Button } from "../components/ui/button";
 import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
@@ -44,9 +45,17 @@ function formatInteger(value: number): string {
 }
 
 export function OptionsPage({ dashboard }: OptionsPageProps) {
-  const [filters, setFilters] = useState(defaultFilterBarState);
-  const [activeTab, setActiveTab] = useState<DashboardTab>("transactions");
-  const [selectedSecurityId, setSelectedSecurityId] = useState<string | null>(null);
+  const [filters, setFilters] = useSessionState(
+    "options:filters",
+    defaultFilterBarState
+  );
+  const [activeTab, setActiveTab] = useSessionState<DashboardTab>(
+    "options:active-tab",
+    "transactions"
+  );
+  const [selectedSecurityId, setSelectedSecurityId] = useSessionState<
+    string | null
+  >("options:selected-security", null);
 
   const accountsById = useMemo(() => {
     return new Map(dashboard.accounts.map((account) => [account.id, account]));
@@ -316,6 +325,7 @@ export function OptionsPage({ dashboard }: OptionsPageProps) {
           {activeTab === "transactions" ? (
             <DataTable
               title="Option transactions"
+              stateKey="options:transactions"
               rows={filteredOptionTransactions}
               columns={transactionColumns}
               getRowKey={(transaction) => transaction.id}
@@ -324,6 +334,7 @@ export function OptionsPage({ dashboard }: OptionsPageProps) {
           ) : (
             <DataTable
               title="Securities with option activity"
+              stateKey="options:securities"
               rows={optionSecurityRows}
               columns={securityColumns}
               getRowKey={(security) => security.id}

@@ -183,6 +183,7 @@ export function CalendarPage({ events }: CalendarPageProps) {
           subtitle="Event details are shown directly in each day—no hover required."
           emptyMessage="No calendar events have been imported."
           monthsAtOnce={1}
+          stateKey="all-events"
         />
       </div>
     </main>

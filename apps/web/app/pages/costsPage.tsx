@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   accountMatchesFilters,
   defaultFilterBarState,
@@ -34,6 +34,7 @@ import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
 import { FilterBar } from "../components/dashboard/filterBar";
 import { StatCard } from "../components/dashboard/statCard";
 import { CostsMonthlyChart } from "../components/charts/costsMonthlyChart";
+import { useSessionState } from "../state/sessionState";
 
 type CostsPageProps = {
   dashboard: PortfolioDashboardDto;
@@ -62,8 +63,14 @@ function CostTypeBadge({ kind }: { kind: CostKind }) {
 }
 
 export function CostsPage({ dashboard }: CostsPageProps) {
-  const [filters, setFilters] = useState(defaultFilterBarState);
-  const [costView, setCostView] = useState<CostView>("both");
+  const [filters, setFilters] = useSessionState(
+    "costs:filters",
+    defaultFilterBarState
+  );
+  const [costView, setCostView] = useSessionState<CostView>(
+    "costs:view",
+    "both"
+  );
 
   const nonCashAccounts = useMemo(
     () => dashboard.accounts.filter(isNonCashAccount),
@@ -229,6 +236,7 @@ export function CostsPage({ dashboard }: CostsPageProps) {
         <section className="mt-6">
           <DataTable
             title={tableTitle}
+            stateKey="costs:transactions"
             rows={visibleTransactions}
             columns={columns}
             getRowKey={(transaction) => transaction.id}

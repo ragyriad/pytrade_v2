@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -24,13 +23,17 @@ import {
   chartTooltipContentStyle,
   chartTooltipLabelStyle,
 } from "./chartColors";
+import { useSessionState } from "../../state/sessionState";
 
 type PerformanceChartProps = {
   performance: PerformanceSummaryDto | null;
 };
 
 export function PerformanceChart({ performance }: PerformanceChartProps) {
-  const [includeDeposits, setIncludeDeposits] = useState(false);
+  const [includeDeposits, setIncludeDeposits] = useSessionState(
+    "portfolio:performance:include-deposits",
+    false
+  );
   const availableSeries = performance?.series.filter((series) => series.points.length >= 2) ?? [];
 
   if (availableSeries.length === 0) {

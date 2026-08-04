@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   accountMatchesFilters,
   defaultFilterBarState,
@@ -33,6 +34,8 @@ import { DividendAccountShareChart } from "../components/charts/dividendAccountS
 import { DividendPositionYieldChart } from "../components/charts/dividendPositionYieldChart";
 import { DividendEventsCalendar } from "../components/portfolio/dividendEventsCalendar";
 import { MetricValueList } from "../components/dashboard/metricValueList";
+import { useSessionState } from "../state/sessionState";
+import { queryKeys } from "../state/queryKeys";
 
 type DividendsPageProps = {
   dashboard: PortfolioDashboardDto;
@@ -41,17 +44,33 @@ type DividendsPageProps = {
 
 type DividendTableTab = "positions" | "transactions" | "calendar";
 
+async function fetchDividendSummary(
+  timeline: string,
+  accountIds: string[]
+): Promise<DividendDashboardSummaryDto> {
+  const params = new URLSearchParams();
+  params.set("timeline", timeline);
+  params.set("accountIds", accountIds.join(","));
+
+  const response = await fetch(`/api/dividends/summary?${params.toString()}`);
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.error ?? "Unable to load dividend summary.");
+  }
+
+  return response.json() as Promise<DividendDashboardSummaryDto>;
+}
+
 export function DividendsPage({
   dashboard,
   initialSummary,
 }: DividendsPageProps) {
-  const [filters, setFilters] = useState(defaultFilterBarState);
+  const [filters, setFilters] = useSessionState(
+    "dividends:filters",
+    defaultFilterBarState
+  );
   const [activeTableTab, setActiveTableTab] =
-    useState<DividendTableTab>("positions");
-  const [summary, setSummary] = useState(initialSummary);
-  const [summaryError, setSummaryError] = useState<string | null>(null);
-  const [isSummaryLoading, setIsSummaryLoading] = useState(false);
-  const didHydrate = useRef(false);
+    useSessionState<DividendTableTab>("dividends:active-tab", "positions");
 
   const accountsById = useMemo(() => {
     return new Map(dashboard.accounts.map((account) => [account.id, account]));
@@ -64,7 +83,6 @@ export function DividendsPage({
       .sort();
   }, [dashboard.accounts, filters]);
 
-  const selectedAccountIdKey = selectedAccountIds.join(",");
   const selectedAccountIdSet = useMemo(
     () => new Set(selectedAccountIds),
     [selectedAccountIds]
@@ -75,47 +93,25 @@ export function DividendsPage({
     );
   }, [dashboard.dividends.transactions, selectedAccountIdSet]);
 
-  useEffect(() => {
-    if (!didHydrate.current) {
-      didHydrate.current = true;
-      return;
-    }
-
-    const controller = new AbortController();
-    const params = new URLSearchParams();
-
-    params.set("timeline", filters.timeline);
-    params.set("accountIds", selectedAccountIdKey);
-
-    setIsSummaryLoading(true);
-    setSummaryError(null);
-
-    fetch(`/api/dividends/summary?${params.toString()}`, {
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        if (!response.ok) {
-          const body = await response.json().catch(() => null);
-          throw new Error(body?.error ?? "Unable to load dividend summary.");
-        }
-
-        return response.json() as Promise<DividendDashboardSummaryDto>;
-      })
-      .then(setSummary)
-      .catch((error) => {
-        if (error instanceof DOMException && error.name === "AbortError") return;
-        setSummaryError(
-          error instanceof Error ? error.message : "Unable to load dividend summary."
-        );
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) {
-          setIsSummaryLoading(false);
-        }
-      });
-
-    return () => controller.abort();
-  }, [filters.timeline, selectedAccountIdKey]);
+  const usesInitialSummary =
+    filters.timeline === "ALL" &&
+    filters.accountIds.length === 0 &&
+    filters.accountTypes.length === 0 &&
+    filters.brokerages.length === 0;
+  const summaryQuery = useQuery({
+    queryKey: queryKeys.dividendSummary(filters.timeline, selectedAccountIds),
+    queryFn: () => fetchDividendSummary(filters.timeline, selectedAccountIds),
+    initialData: usesInitialSummary ? initialSummary : undefined,
+    placeholderData: (previousSummary: DividendDashboardSummaryDto | undefined) =>
+      previousSummary ?? initialSummary,
+  });
+  const summary = summaryQuery.data ?? initialSummary;
+  const summaryError = summaryQuery.error instanceof Error
+    ? summaryQuery.error.message
+    : summaryQuery.error
+      ? "Unable to load dividend summary."
+      : null;
+  const isSummaryLoading = summaryQuery.isFetching;
 
   const formatMoneyMetricRows = (values: MoneyBreakdownDto[]) =>
     values.map((value) => ({
@@ -381,6 +377,7 @@ export function DividendsPage({
           {activeTableTab === "positions" ? (
             <DataTable
               title="Dividend yielding positions"
+              stateKey="dividends:positions"
               rows={summary.positionRows}
               columns={positionColumns}
               getRowKey={(position) => position.id}
@@ -391,6 +388,7 @@ export function DividendsPage({
           {activeTableTab === "transactions" ? (
             <DataTable
               title="Dividend transactions"
+              stateKey="dividends:transactions"
               rows={summary.transactions}
               columns={transactionColumns}
               getRowKey={(transaction) => transaction.id}

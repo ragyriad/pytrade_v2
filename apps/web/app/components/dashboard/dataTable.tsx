@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, type ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -30,6 +30,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "../ui/button";
 import { DetailsDropdown } from "../ui/detailsDropdown";
+import { useSessionState } from "../../state/sessionState";
 
 export type TableColumn<T> = {
   key: string;
@@ -43,6 +44,7 @@ export type TableColumn<T> = {
 
 type DataTableProps<T> = {
   title: string;
+  stateKey?: string;
   titleAccessory?: ReactNode;
   rows: T[];
   columns: TableColumn<T>[];
@@ -67,6 +69,7 @@ function TableSearch({ value, onChange }: TableSearchProps) {
       />
       <input
         type="search"
+        aria-label="Search rows"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="Search rows"
@@ -88,6 +91,7 @@ function TableSearch({ value, onChange }: TableSearchProps) {
 
 export function DataTable<T>({
   title,
+  stateKey,
   titleAccessory,
   rows,
   columns,
@@ -96,13 +100,25 @@ export function DataTable<T>({
   isRowExpanded,
   renderExpandedRow,
 }: DataTableProps<T>) {
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 20,
-  });
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [pagination, setPagination] = useSessionState<PaginationState>(
+    stateKey ? `table:${stateKey}:pagination` : null,
+    {
+      pageIndex: 0,
+      pageSize: 20,
+    }
+  );
+  const [sorting, setSorting] = useSessionState<SortingState>(
+    stateKey ? `table:${stateKey}:sorting` : null,
+    []
+  );
+  const [columnFilters, setColumnFilters] = useSessionState<ColumnFiltersState>(
+    stateKey ? `table:${stateKey}:column-filters` : null,
+    []
+  );
+  const [globalFilter, setGlobalFilter] = useSessionState(
+    stateKey ? `table:${stateKey}:search` : null,
+    ""
+  );
 
   const getColumnValue = (column: TableColumn<T>, row: T) => {
     const value = column.value?.(row) ?? column.render(row);
@@ -165,10 +181,14 @@ export function DataTable<T>({
   });
 
   const filteredRowCount = table.getFilteredRowModel().rows.length;
+  const previousFilteredRowCount = useRef(filteredRowCount);
 
   useEffect(() => {
-    setPagination((current) => ({ ...current, pageIndex: 0 }));
-  }, [filteredRowCount]);
+    if (previousFilteredRowCount.current !== filteredRowCount) {
+      previousFilteredRowCount.current = filteredRowCount;
+      setPagination((current) => ({ ...current, pageIndex: 0 }));
+    }
+  }, [filteredRowCount, setPagination]);
 
   const alignClassName = (align?: "left" | "center" | "right") => {
     if (align === "right") return "text-right";

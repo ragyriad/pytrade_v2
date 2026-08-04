@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBuildingColumns,
@@ -37,6 +37,7 @@ import type {
   CashTransactionDto,
   MoneyDto,
 } from "../lib/portfolioTypes";
+import { useSessionState } from "../state/sessionState";
 
 type CashPageProps = {
   dashboard: CashDashboardDto;
@@ -543,8 +544,11 @@ function CashFilterBar({
 }
 
 export function CashPage({ dashboard }: CashPageProps) {
-  const [filters, setFilters] = useState(defaultFilters);
-  const [showClosedBalances, setShowClosedBalances] = useState(false);
+  const [filters, setFilters] = useSessionState("cash:filters", defaultFilters);
+  const [showClosedBalances, setShowClosedBalances] = useSessionState(
+    "cash:show-closed-balances",
+    false
+  );
   const accountsById = useMemo(
     () => new Map(dashboard.accounts.map((account) => [account.id, account])),
     [dashboard.accounts]
@@ -809,6 +813,7 @@ export function CashPage({ dashboard }: CashPageProps) {
         <section className="mt-6">
           <DataTable
             title="Account Balances"
+            stateKey="cash:account-balances"
             titleAccessory={
               <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-muted">
                 <input
@@ -830,6 +835,7 @@ export function CashPage({ dashboard }: CashPageProps) {
         <section className="mt-6">
           <DataTable
             title="Cash transactions"
+            stateKey="cash:transactions"
             rows={cashTransactions}
             columns={transactionColumns}
             getRowKey={(transaction) => transaction.id}
@@ -840,6 +846,7 @@ export function CashPage({ dashboard }: CashPageProps) {
         <section className="mt-6">
           <DataTable
             title="Total Expenses"
+            stateKey="cash:expenses"
             rows={expenses}
             columns={transactionColumns}
             getRowKey={(transaction) => transaction.id}

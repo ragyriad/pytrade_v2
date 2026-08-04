@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { DismissibleAlert } from "../components/ui/dismissibleAlert";
 import type { ReactNode } from "react";
 import type { ManagedUser } from "../lib/clerkAdmin";
+import { useSessionState } from "../state/sessionState";
+import { queryKeys } from "../state/queryKeys";
 
 type UserPageProps = {
   initialUsers: ManagedUser[];
@@ -40,11 +43,61 @@ function StatusPill({ children }: { children: ReactNode }) {
   );
 }
 
+async function fetchAdminUsers(): Promise<ManagedUser[]> {
+  const response = await fetch("/api/admin/users", { cache: "no-store" });
+  const body = await response.json();
+  if (!response.ok) throw new Error(body.error ?? "Unable to refresh users.");
+  return body.users as ManagedUser[];
+}
+
+async function patchAdminUser({
+  payload,
+  userId,
+}: {
+  payload: Record<string, string>;
+  userId: string;
+}): Promise<{ message?: string }> {
+  const response = await fetch("/api/admin/users", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...payload, userId }),
+  });
+  const body = await response.json();
+  if (!response.ok) throw new Error(body.error ?? "Unable to update user.");
+  return body;
+}
+
 export function UserPage({ initialUsers, currentUserId }: UserPageProps) {
-  const [users, setUsers] = useState(initialUsers);
-  const [query, setQuery] = useState("");
+  const queryClient = useQueryClient();
+  const usersQuery = useQuery({
+    queryKey: queryKeys.adminUsers,
+    queryFn: fetchAdminUsers,
+    initialData: initialUsers,
+    meta: { persist: false },
+    staleTime: 60_000,
+  });
+  const users: ManagedUser[] = usersQuery.data;
+  const [query, setQuery] = useSessionState("admin-users:search", "");
   const [notice, setNotice] = useState<UserNotice | null>(null);
-  const [busyUserId, setBusyUserId] = useState<string | null>(null);
+  const updateUserMutation = useMutation({
+    mutationFn: patchAdminUser,
+    onSuccess: async (body: { message?: string }) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers });
+      setNotice({
+        message: body.message ?? "User updated successfully.",
+        tone: "success",
+      });
+    },
+    onError: (error: unknown) => {
+      setNotice({
+        message: error instanceof Error ? error.message : "Unable to update user.",
+        tone: "error",
+      });
+    },
+  });
+  const busyUserId = updateUserMutation.isPending
+    ? updateUserMutation.variables?.userId ?? null
+    : null;
 
   const filteredUsers = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -59,37 +112,9 @@ export function UserPage({ initialUsers, currentUserId }: UserPageProps) {
   const linkedCount = users.filter((user) => user.connection === "linked").length;
   const attentionCount = users.length - linkedCount;
 
-  async function refresh() {
-    const response = await fetch("/api/admin/users", { cache: "no-store" });
-    const body = await response.json();
-    if (!response.ok) throw new Error(body.error ?? "Unable to refresh users.");
-    setUsers(body.users);
-  }
-
-  async function updateUser(userId: string, payload: Record<string, string>) {
-    setBusyUserId(userId);
+  function updateUser(userId: string, payload: Record<string, string>) {
     setNotice(null);
-    try {
-      const response = await fetch("/api/admin/users", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...payload, userId }),
-      });
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.error ?? "Unable to update user.");
-      await refresh();
-      setNotice({
-        message: body.message ?? "User updated successfully.",
-        tone: "success",
-      });
-    } catch (error) {
-      setNotice({
-        message: error instanceof Error ? error.message : "Unable to update user.",
-        tone: "error",
-      });
-    } finally {
-      setBusyUserId(null);
-    }
+    updateUserMutation.mutate({ payload, userId });
   }
 
   return (

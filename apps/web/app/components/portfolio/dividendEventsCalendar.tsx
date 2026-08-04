@@ -59,6 +59,7 @@ export function DividendEventsCalendar({
       subtitle="Stored dividend ex-date and payment events"
       emptyMessage="No dividend events match this view."
       monthsAtOnce={1}
+      stateKey="dividends"
     />
   );
 }

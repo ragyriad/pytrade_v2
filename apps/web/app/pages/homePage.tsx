@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { AllocationPieChart } from "../components/charts/allocationPieChart";
 import { PerformanceChart } from "../components/charts/performanceChart";
 import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
@@ -27,13 +27,17 @@ import {
   getUnrealizedReturnPercent,
 } from "../services/portfolio";
 import type { PortfolioDashboardDto, PositionDto } from "../lib/portfolioTypes";
+import { useSessionState } from "../state/sessionState";
 
 type HomePageProps = {
   dashboard: PortfolioDashboardDto;
 };
 
 export function HomePage({ dashboard }: HomePageProps) {
-  const [filters, setFilters] = useState(defaultFilterBarState);
+  const [filters, setFilters] = useSessionState(
+    "portfolio:filters",
+    defaultFilterBarState
+  );
 
   const accountsById = useMemo(() => {
     return new Map(dashboard.accounts.map((account) => [account.id, account]));
@@ -204,6 +208,7 @@ export function HomePage({ dashboard }: HomePageProps) {
         <section className="mt-6">
           <DataTable
             title="Active positions"
+            stateKey="portfolio:active-positions"
             rows={activePositions}
             columns={positionColumns}
             getRowKey={(position) => position.id}

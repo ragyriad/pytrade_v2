@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { UserPage } from "../../app/pages/userPage";
 
@@ -53,11 +54,22 @@ const users = [
   },
 ];
 
+function renderUserPage() {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <UserPage initialUsers={users} currentUserId="user_admin" />
+    </QueryClientProvider>
+  );
+}
+
 describe("admin user directory", () => {
   afterEach(() => vi.unstubAllGlobals());
 
   test("shows linked and unmatched identities with an add-user route", () => {
-    render(<UserPage initialUsers={users} currentUserId="user_admin" />);
+    renderUserPage();
 
     expect(screen.getAllByText("Admin User (you)").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Member User").length).toBeGreaterThan(0);
@@ -70,7 +82,7 @@ describe("admin user directory", () => {
   });
 
   test("filters identities by username", () => {
-    render(<UserPage initialUsers={users} currentUserId="user_admin" />);
+    renderUserPage();
     fireEvent.change(screen.getByLabelText("Search users"), {
       target: { value: "clerk_only" },
     });
@@ -94,7 +106,7 @@ describe("admin user directory", () => {
       .mockResolvedValueOnce({ ok: true, json: async () => ({ users: updatedUsers }) });
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<UserPage initialUsers={users} currentUserId="user_admin" />);
+    renderUserPage();
     const enabledDisableButton = screen
       .getAllByRole("button", { name: "Disable" })
       .find((button) => !button.hasAttribute("disabled"));

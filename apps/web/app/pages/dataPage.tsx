@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   accountMatchesFilters,
   defaultFilterBarState,
@@ -19,6 +19,7 @@ import type {
   PortfolioDashboardDto,
   TransactionDto,
 } from "../lib/portfolioTypes";
+import { useSessionState } from "../state/sessionState";
 import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
 import { FilterBar } from "../components/dashboard/filterBar";
 import { SegmentedTabs } from "../components/dashboard/segmentedTabs";
@@ -76,9 +77,18 @@ function filterTransactionsByDateRange(
 }
 
 export function DataPage({ dashboard }: DataPageProps) {
-  const [activeTab, setActiveTab] = useState<DashboardTab>("transactions");
-  const [filters, setFilters] = useState(defaultFilterBarState);
-  const [dateRange, setDateRange] = useState({ from: "", to: "" });
+  const [activeTab, setActiveTab] = useSessionState<DashboardTab>(
+    "data:active-tab",
+    "transactions"
+  );
+  const [filters, setFilters] = useSessionState(
+    "data:filters",
+    defaultFilterBarState
+  );
+  const [dateRange, setDateRange] = useSessionState("data:date-range", {
+    from: "",
+    to: "",
+  });
 
   const accountsById = useMemo(() => {
     return new Map(dashboard.accounts.map((account) => [account.id, account]));
@@ -269,6 +279,7 @@ export function DataPage({ dashboard }: DataPageProps) {
           {activeTab === "accounts" && (
             <DataTable
               title="Brokerage accounts"
+              stateKey="data:accounts"
               rows={filteredAccounts}
               columns={accountColumns}
               getRowKey={(account) => account.id}
@@ -278,6 +289,7 @@ export function DataPage({ dashboard }: DataPageProps) {
           {activeTab === "transactions" && (
             <DataTable
               title="Transactions"
+              stateKey="data:transactions"
               rows={filteredTransactions}
               columns={transactionColumns}
               getRowKey={(transaction) => transaction.id}

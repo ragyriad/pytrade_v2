@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronLeft,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "../ui/button";
+import { useSessionState } from "../../state/sessionState";
 
 export type CalendarDisplayEvent = {
   id: string;
@@ -25,6 +26,7 @@ interface CalendarEventsCalendarProps {
   subtitle: string;
   emptyMessage: string;
   monthsAtOnce?: 1 | 2;
+  stateKey?: string;
 }
 
 type CalendarCell = {
@@ -147,8 +149,12 @@ export function CalendarEventsCalendar({
   subtitle,
   emptyMessage,
   monthsAtOnce = 2,
+  stateKey,
 }: CalendarEventsCalendarProps) {
-  const [visibleStartMonth, setVisibleStartMonth] = useState(currentMonthKey);
+  const [visibleStartMonth, setVisibleStartMonth] = useSessionState(
+    stateKey ? `calendar:${stateKey}:visible-month` : null,
+    currentMonthKey
+  );
   const eventsByDate = useMemo(() => {
     const grouped = new Map<string, CalendarDisplayEvent[]>();
     for (const event of events) {

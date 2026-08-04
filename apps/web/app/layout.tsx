@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { ClerkProvider } from "@clerk/nextjs";
 import { TopNav } from "./components/navigation/topNav";
 import { getCurrentApplicationUser } from "./lib/clerkAdmin";
+import { AppStateProvider } from "./state/appStateProvider";
 import "./assets/styles/globals.css";
 
 const geistSans = localFont({
@@ -36,8 +37,10 @@ export default async function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <TopNav isAdmin={isAdmin} />
-          {children}
+          <AppStateProvider>
+            <TopNav isAdmin={isAdmin} />
+            {children}
+          </AppStateProvider>
         </body>
       </html>
     </ClerkProvider>

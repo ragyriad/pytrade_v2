@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
 import { MoneySpinner } from "../components/loading/pageLoading";
 import { Button } from "../components/ui/button";
@@ -17,6 +18,8 @@ import type {
   SecurityTransactionsResponseDto,
   TransactionDto,
 } from "../lib/portfolioTypes";
+import { queryKeys } from "../state/queryKeys";
+import { useSessionState } from "../state/sessionState";
 
 type SecuritiesPageProps = {
   securities: HistoricSecurityDto[];
@@ -39,54 +42,14 @@ export function SecuritiesPage({ securities }: SecuritiesPageProps) {
   const [expandedSecurityIds, setExpandedSecurityIds] = useState<Set<string>>(
     () => new Set()
   );
-  const [transactionResponses, setTransactionResponses] = useState<
-    Record<string, SecurityTransactionsResponseDto>
-  >({});
-  const [loadingSecurityIds, setLoadingSecurityIds] = useState<Set<string>>(
-    () => new Set()
-  );
-  const [errorsBySecurityId, setErrorsBySecurityId] = useState<Record<string, string>>({});
 
-  async function selectSecurity(security: HistoricSecurityDto) {
-    const nextExpanded = new Set(expandedSecurityIds);
-
-    if (nextExpanded.has(security.id)) {
-      nextExpanded.delete(security.id);
-      setExpandedSecurityIds(nextExpanded);
-      return;
-    }
-
-    nextExpanded.add(security.id);
-    setExpandedSecurityIds(nextExpanded);
-    setErrorsBySecurityId((current) => {
-      const next = { ...current };
-      delete next[security.id];
+  function selectSecurity(security: HistoricSecurityDto) {
+    setExpandedSecurityIds((current) => {
+      const next = new Set(current);
+      if (next.has(security.id)) next.delete(security.id);
+      else next.add(security.id);
       return next;
     });
-
-    if (transactionResponses[security.id]) return;
-
-    setLoadingSecurityIds((current) => new Set(current).add(security.id));
-
-    try {
-      const response = await fetchSecurityTransactions(security.id);
-      setTransactionResponses((current) => ({
-        ...current,
-        [security.id]: response,
-      }));
-    } catch (caught) {
-      setErrorsBySecurityId((current) => ({
-        ...current,
-        [security.id]:
-          caught instanceof Error ? caught.message : "Unable to load transactions.",
-      }));
-    } finally {
-      setLoadingSecurityIds((current) => {
-        const next = new Set(current);
-        next.delete(security.id);
-        return next;
-      });
-    }
   }
 
   const securityColumns: TableColumn<HistoricSecurityDto>[] = [
@@ -212,6 +175,7 @@ export function SecuritiesPage({ securities }: SecuritiesPageProps) {
       <div className="app-page flex flex-col gap-6">
         <DataTable
           title="Historic Securities"
+          stateKey="securities:history"
           rows={securities}
           columns={securityColumns}
           getRowKey={(security) => security.id}
@@ -219,14 +183,9 @@ export function SecuritiesPage({ securities }: SecuritiesPageProps) {
           isRowExpanded={(security) => expandedSecurityIds.has(security.id)}
           renderExpandedRow={(security) => (
             <SecurityTransactionsSubTable
-              key={
-                transactionResponses[security.id]?.transactions
-                  .map((transaction) => transaction.id)
-                  .join("|") ?? security.id
-              }
-              error={errorsBySecurityId[security.id] ?? null}
-              isLoading={loadingSecurityIds.has(security.id)}
-              transactions={transactionResponses[security.id]?.transactions ?? []}
+              key={security.id}
+              isExpanded={expandedSecurityIds.has(security.id)}
+              securityId={security.id}
             />
           )}
         />
@@ -236,16 +195,31 @@ export function SecuritiesPage({ securities }: SecuritiesPageProps) {
 }
 
 function SecurityTransactionsSubTable({
-  transactions,
-  isLoading,
-  error,
+  isExpanded,
+  securityId,
 }: {
-  transactions: TransactionDto[];
-  isLoading: boolean;
-  error: string | null;
+  isExpanded: boolean;
+  securityId: string;
 }) {
+  const transactionsQuery = useQuery({
+    queryKey: queryKeys.securityTransactions(securityId),
+    queryFn: () => fetchSecurityTransactions(securityId),
+    enabled: isExpanded,
+    staleTime: 5 * 60 * 1000,
+  });
+  const transactions: TransactionDto[] =
+    transactionsQuery.data?.transactions ?? [];
+  const isLoading = transactionsQuery.isPending;
+  const error = transactionsQuery.error instanceof Error
+    ? transactionsQuery.error.message
+    : transactionsQuery.error
+      ? "Unable to load transactions."
+      : null;
   const pageSize = 20;
-  const [pageIndex, setPageIndex] = useState(0);
+  const [pageIndex, setPageIndex] = useSessionState(
+    `securities:${securityId}:transactions-page`,
+    0
+  );
 
   const pageCount = Math.max(Math.ceil(transactions.length / pageSize), 1);
   const currentPageIndex = Math.min(pageIndex, pageCount - 1);
