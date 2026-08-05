@@ -47,6 +47,7 @@ export type PerformancePointDto = {
 };
 
 export type PerformanceSeriesDto = {
+  accountId: string;
   currency: string;
   points: PerformancePointDto[];
 };
@@ -104,7 +105,8 @@ export async function getPerformanceSummary(
     .select()
     .from(accounts)
     .where(and(eq(accounts.userId, requestedUserId), eq(accounts.isArchived, false)));
-  const accountIds = accountRows.filter(isInvestmentAccount).map((account) => account.id);
+  const investmentAccounts = accountRows.filter(isInvestmentAccount);
+  const accountIds = investmentAccounts.map((account) => account.id);
   if (accountIds.length === 0) return null;
 
   const historyRows = await db
@@ -118,24 +120,16 @@ export async function getPerformanceSummary(
     .select()
     .from(transactions)
     .where(and(inArray(transactions.accountId, accountIds), eq(transactions.isArchived, false)));
-  const currencies = [...new Set(historyRows.map((row) => row.currencyCode))]
-    .filter((currency) => currency === "CAD" || currency === "USD")
-    .sort((left, right) => left.localeCompare(right));
-
-  const series = currencies.flatMap((currency): PerformanceSeriesDto[] => {
-    const totalByDate = new Map<string, number>();
-    for (const row of historyRows) {
-      if (row.currencyCode !== currency) continue;
-      totalByDate.set(row.valueDate, (totalByDate.get(row.valueDate) ?? 0) + toNumber(row.totalValue));
-    }
-    const values = [...totalByDate.entries()]
-      .map(([date, totalValue]) => ({ date, totalValue }))
+  const series = investmentAccounts.map((account): PerformanceSeriesDto => {
+    const accountHistory = historyRows.filter((row) => row.accountId === account.id);
+    const currency = account.accountCurrency ?? accountHistory[0]?.currencyCode ?? "USD";
+    const values = accountHistory
+      .filter((row) => row.currencyCode === currency)
+      .map((row) => ({ date: row.valueDate, totalValue: toNumber(row.totalValue) }))
       .sort((left, right) => left.date.localeCompare(right.date));
-    if (values.length < 2 || values[0].totalValue <= 0) return [];
-
     const cashFlowsByDate = new Map<string, number>();
     for (const transaction of transactionRows) {
-      if (transaction.currencyCode !== currency) continue;
+      if (transaction.accountId !== account.id || transaction.currencyCode !== currency) continue;
       const flow = externalCashFlow(transaction);
       if (flow == null) continue;
       const date = toDateOnly(transaction.tradeDate);
@@ -147,10 +141,12 @@ export async function getPerformanceSummary(
       if (index > 0) netExternalCashFlow += cashFlowsByDate.get(value.date) ?? 0;
       return { ...value, netExternalCashFlow };
     });
-    return [{ currency, points }];
+    return { accountId: account.id, currency, points };
   });
 
-  return series.length > 0 ? { series } : null;
+  return series.some((accountSeries) => accountSeries.points.length >= 2)
+    ? { series }
+    : null;
 }
 
 function actionFor(transaction: Transaction): string {

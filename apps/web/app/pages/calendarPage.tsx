@@ -157,12 +157,9 @@ export function CalendarPage({ events }: CalendarPageProps) {
     <main className="app-main">
       <div className="app-page">
         <header className="mb-5">
-          <p className="text-sm font-semibold uppercase tracking-wide text-action">
-            Corporate events
-          </p>
           <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="text-3xl font-semibold text-foreground">
+              <h1 className="text-3xl font-semibold text-action">
                 Calendar
               </h1>
               <p className="mt-2 max-w-3xl text-sm text-muted">

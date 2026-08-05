@@ -80,15 +80,9 @@ export function DividendMonthlyGrowthChart({
   return (
     <section className="app-panel p-5">
       <div className="border-b border-border pb-4 text-left">
-        <p className="text-xs font-semibold uppercase tracking-normal text-action">
-          Monthly growth
-        </p>
         <h2 className="mt-1 text-lg font-semibold text-foreground">
-          Dividend totals by month
+          Monthly Dividends
         </h2>
-        <p className="mt-1 text-sm text-muted">
-          Grouped by currency over the selected timeline
-        </p>
       </div>
 
       <div className="mt-5 h-80">

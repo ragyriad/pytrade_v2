@@ -72,8 +72,8 @@
   --color-calendar-declaration-badge: var(--color-error-border);
   --color-calendar-declaration-dot: #e11d48;
 
-  --color-currency-usd: var(--color-positive);
-  --color-currency-cad: var(--color-negative);
+  --color-currency-usd: #a67c00;
+  --color-currency-cad: #3f6f8f;
   --color-chart-grid: var(--color-border);
   --color-chart-axis: var(--color-muted);
   --color-chart-separator: var(--color-on-action);

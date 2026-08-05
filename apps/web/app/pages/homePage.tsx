@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { AllocationPieChart } from "../components/charts/allocationPieChart";
 import { PerformanceChart } from "../components/charts/performanceChart";
 import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
 import { FilterBar } from "../components/dashboard/filterBar";
@@ -21,7 +20,6 @@ import {
 import {
   getAggregateUnrealizedAmount,
   getAggregateUnrealizedPercent,
-  buildPositionAllocationSlices,
   getTotalMarketValue,
   getTotalUnrealized,
   getUnrealizedReturnPercent,
@@ -56,9 +54,9 @@ export function HomePage({ dashboard }: HomePageProps) {
     });
   }, [accountsById, dashboard.positions, filters]);
 
-  const pieSlices = useMemo(
-    () => buildPositionAllocationSlices(activePositions),
-    [activePositions]
+  const filteredAccounts = useMemo(
+    () => activeAccounts.filter((account) => accountMatchesFilters(account, filters)),
+    [activeAccounts, filters]
   );
 
   const totalMarketValue = useMemo(() => getTotalMarketValue(activePositions), [activePositions]);
@@ -198,11 +196,11 @@ export function HomePage({ dashboard }: HomePageProps) {
         </section>
 
         <section className="mt-6">
-          <PerformanceChart performance={dashboard.performance} />
-        </section>
-
-        <section className="mt-6">
-          <AllocationPieChart title="Position allocation" rows={pieSlices} />
+          <PerformanceChart
+            performance={dashboard.performance}
+            accountIds={filteredAccounts.map((account) => account.id)}
+            timeline={filters.timeline}
+          />
         </section>
 
         <section className="mt-6">

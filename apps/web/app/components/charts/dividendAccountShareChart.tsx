@@ -25,8 +25,11 @@ export function DividendAccountShareChart({ groups }: DividendAccountShareChartP
     <section className="app-panel p-4">
       <div className="border-b border-border pb-3 text-left">
         <h2 className="text-base font-semibold text-action">
-          Dividend share by account
+          Dividend by Account Percentage and Currency
         </h2>
+        <p className="mt-1 text-xs text-muted">
+          Each slice is an account&apos;s percentage of dividends in that currency.
+        </p>
       </div>
 
       <div className="mt-4">
@@ -39,46 +42,51 @@ export function DividendAccountShareChart({ groups }: DividendAccountShareChartP
             {groups.map((group) => (
               <div
                 key={group.currency}
-                className="h-56 min-w-0"
+                className="min-w-0"
               >
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={group.rows}
-                      dataKey="value"
-                      nameKey="label"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={58}
-                      outerRadius={92}
-                      paddingAngle={1}
-                      stroke={chartSeparatorColor}
-                      strokeWidth={2}
-                    >
-                      {group.rows.map((row, index) => (
-                        <Cell
-                          key={row.id}
-                          fill={chartAccountShareColors[index % chartAccountShareColors.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={chartTooltipContentStyle}
-                      labelStyle={chartTooltipLabelStyle}
-                      formatter={(value, _name, item) => {
-                        const payload = item.payload as DividendAccountShareGroupDto["rows"][number];
+                <h3 className="text-center text-sm font-semibold text-foreground">
+                  {group.currency} dividends
+                </h3>
+                <div className="h-52">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={group.rows}
+                        dataKey="value"
+                        nameKey="label"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={58}
+                        outerRadius={92}
+                        paddingAngle={1}
+                        stroke={chartSeparatorColor}
+                        strokeWidth={2}
+                      >
+                        {group.rows.map((row, index) => (
+                          <Cell
+                            key={row.id}
+                            fill={chartAccountShareColors[index % chartAccountShareColors.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={chartTooltipContentStyle}
+                        labelStyle={chartTooltipLabelStyle}
+                        formatter={(value, _name, item) => {
+                          const payload = item.payload as DividendAccountShareGroupDto["rows"][number];
 
-                        return [
-                          `${formatMoney({
-                            amount: Number(value),
-                            currency: payload.currency,
-                          })} (${formatPercent(payload.percentage)})`,
-                          payload.label,
-                        ];
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                          return [
+                            `${formatMoney({
+                              amount: Number(value),
+                              currency: payload.currency,
+                            })} (${formatPercent(payload.percentage)})`,
+                            payload.label,
+                          ];
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             ))}
           </div>

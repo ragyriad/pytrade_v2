@@ -21,7 +21,7 @@ pnpm test:e2e          Run Playwright browser journeys against E2E_BASE_URL.
 Individual packages also expose pnpm test (or pnpm test:unit for market-data)
 to run only that package's unit tests.
 
-Current automated coverage: 137 cases in 38 test files.
+Current automated coverage: 153 cases in 45 test files.
 
 UNIT TESTS
 ==========
@@ -127,15 +127,28 @@ apps/web/test/unit/services/portfolio.test.ts
   - Handles zero aggregate cost basis without producing an invalid percentage.
 
 apps/web/test/unit/services/performance.test.ts
+  - Aggregates only selected account histories and keeps CAD and USD separate.
+  - Stops each currency at the latest date complete across included accounts.
+  - Omits and reports accounts with no usable history without hiding valid data.
   - Shows portfolio gains after excluding net deposits and withdrawals.
   - Includes deposits in the value change only when requested.
-  - Calculates the annualized gain or loss percentage from the displayed gain.
+  - Rebases cumulative cash flow at the selected timeframe boundary.
+  - Calculates the displayed non-annualized gain or loss percentage.
+  - Selects daily, weekly, monthly, quarterly, half-year, YTD, yearly, and
+    all-time history with safe month-end handling.
 
 apps/web/test/unit/services/filter_timeline.test.ts
   - Anchors relative ranges on the newest transaction.
   - Uses UTC calendar arithmetic and safely clamps month-end ranges.
   - Defines ALL and NONE behavior deterministically.
   - Calculates month divisors and annualization factors safely.
+
+apps/web/test/unit/services/cash-presentation.test.ts
+  - Uses the shared negative-red class only for negative cash values and
+    payment actions.
+
+apps/web/test/unit/theme-currency-colors.test.ts
+  - Keeps the global CAD metallic-blue and USD dark-yellow currency tokens.
 
 COMPONENT AND PAGE TESTS
 ========================
@@ -165,8 +178,32 @@ apps/web/test/components/session-state.test.tsx
   - Prevents persisted state leaking between sessions and clears it on logout.
 
 apps/web/test/components/performance-chart.test.tsx
-  - Separates CAD and USD gains, annualizes them, and includes deposits only on request.
-  - Omits time-weighted, money-weighted, and SPY return metrics.
+  - Renders CAD and USD as simultaneous lines in one chart.
+  - Excludes deposits by default and includes them only on request.
+  - Changes both headline metrics and graph data between Value/Returns modes.
+  - Stops at complete data and responds to account and timeline scopes.
+  - Omits time-weighted, money-weighted, annualized, and SPY return metrics.
+
+apps/web/test/components/dividend-account-share-chart.test.tsx
+  - Explains that each donut slice is an account percentage within a currency.
+  - Labels the individual CAD and USD dividend charts.
+
+apps/web/test/components/dividend-growth-chart.test.tsx
+  - Shows cumulative total dividend amounts separately for CAD and USD.
+
+apps/web/test/components/dividend-distribution-chart.test.tsx
+  - Renders annual dividend payout distribution separately for CAD and USD.
+  - Switches legend values between percentage and currency amount.
+  - Omits the reference design's bottom portfolio navigation link.
+
+apps/web/test/pages/home-page-performance-filter.test.tsx
+  - Passes brokerage/account/type-filtered account IDs to portfolio performance.
+  - Passes the shared portfolio timeline filter to the performance chart.
+  - Confirms position allocation is no longer rendered on the home page.
+
+apps/web/test/pages/dividends-page-allocation.test.tsx
+  - Places position allocation immediately after Total Dividends.
+  - Recomputes position allocation from the dividend-page account filter.
 
 apps/web/test/pages/user-management.test.tsx
   - Displays linked identities and unmatched Clerk-only records.

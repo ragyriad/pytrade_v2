@@ -217,6 +217,7 @@ export type PerformancePointDto = {
 };
 
 export type PerformanceSeriesDto = {
+  accountId: string;
   currency: string;
   points: PerformancePointDto[];
 };

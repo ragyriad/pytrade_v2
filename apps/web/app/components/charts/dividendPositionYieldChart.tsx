@@ -96,7 +96,7 @@ export function DividendPositionYieldChart({
     <section className="app-panel p-6 text-center">
       <div className="border-b border-border pb-4 text-left">
         <h2 className="text-base font-semibold text-action">
-          Total dividends received, stacked by account
+          Total Dividends Per Asset
         </h2>
       </div>
 

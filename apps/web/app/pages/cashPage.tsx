@@ -38,6 +38,7 @@ import type {
   MoneyDto,
 } from "../lib/portfolioTypes";
 import { useSessionState } from "../state/sessionState";
+import { negativeCashClassName } from "../services/cashPresentation";
 
 type CashPageProps = {
   dashboard: CashDashboardDto;
@@ -294,6 +295,7 @@ function formatMoneyRows(values: MoneyDto[]) {
     id: value.currency,
     value: formatNumber(value.amount),
     suffix: value.currency,
+    className: negativeCashClassName(value.amount),
   }));
 }
 
@@ -641,7 +643,17 @@ export function CashPage({ dashboard }: CashPageProps) {
       key: "action",
       header: "Action",
       value: (transaction) => transaction.action ?? transaction.type,
-      render: (transaction) => transaction.action ?? transaction.type,
+      render: (transaction) => {
+        const amount = transactionDisplayAmount(
+          transaction,
+          accountsById.get(transaction.accountId)
+        );
+        return (
+          <span className={negativeCashClassName(amount, "text-foreground")}>
+            {transaction.action ?? transaction.type}
+          </span>
+        );
+      },
     },
     {
       key: "description",

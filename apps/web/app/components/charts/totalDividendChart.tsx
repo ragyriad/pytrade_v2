@@ -10,7 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import { formatDate, formatMoney } from "../../lib/formatters";
-import type { TransactionDto } from "../../lib/portfolioTypes";
+import type { MoneyBreakdownDto, TransactionDto } from "../../lib/portfolioTypes";
 import {
   chartAxisLine,
   chartAxisTick,
@@ -27,8 +27,9 @@ type ChartRow = {
   [currency: string]: string | number;
 };
 
-type DividendGrowthChartProps = {
+type TotalDividendsChartProps = {
   transactions: TransactionDto[];
+  totals: MoneyBreakdownDto[];
 };
 
 function buildChartRows(transactions: TransactionDto[]): {
@@ -63,21 +64,28 @@ function buildChartRows(transactions: TransactionDto[]): {
   };
 }
 
-export function DividendGrowthChart({ transactions }: DividendGrowthChartProps) {
+export function TotalDividendsChart({ transactions, totals }: TotalDividendsChartProps) {
   const { currencies, rows } = buildChartRows(transactions);
 
   return (
     <section className="app-panel p-5">
-      <div className="border-b border-border pb-4 text-left">
-        <p className="text-xs font-semibold uppercase tracking-normal text-action">
-          Dividend growth
-        </p>
-        <h2 className="mt-1 text-lg font-semibold text-foreground">
-          Cumulative dividends
-        </h2>
-        <p className="mt-1 text-sm text-muted">
-          Running dividend income based on the selected timeline
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-4 text-left">
+        <div>
+          <h2 className="mt-1 text-lg font-semibold text-action">
+            Total Dividends
+          </h2>
+          {totals.length > 0 ? (
+          <div className="flex flex-wrap gap-x-6 gap-y-2" aria-label="Total dividends by currency">
+            {totals.map((total) => (
+              <div key={total.currency} className="text-right">
+                <p className="mt-0.5 text-base font-semibold text-foreground">
+                  {formatMoney(total)}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : null}
+        </div>
       </div>
 
       <div className="mt-5 h-80">
