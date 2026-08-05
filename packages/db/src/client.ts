@@ -5,7 +5,10 @@ import * as schema from "./schemas/index_schema.js";
 
 dotenv.config({ path: getWorkspaceEnvPath() });
 
-const connectionString = process.env.DATABASE_URL!;
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL is required to initialize @repo/db.");
+}
 export const db = drizzle(connectionString, { schema: schema });
 
 export async function checkDbConnection() {

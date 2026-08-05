@@ -14,13 +14,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify:
-    name: Verify
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run lint
+        run: pnpm lint
+
+  build:
+    name: Build and type-check
     runs-on: ubuntu-latest
     timeout-minutes: 25
     # The production build imports database modules while collecting route
-    # metadata. postgres-js validates this URL during module initialization,
-    # but no CI build step connects to it.
+    # metadata. This placeholder is syntactically valid but is never queried.
     env:
       DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/pytrade_ci
 
@@ -43,23 +69,65 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm lint
-
       - name: Build all packages
+        # Keep this on the step as well: act can omit job-level environment
+        # variables from processes spawned during Next.js builds.
+        env:
+          DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/pytrade_ci
         run: pnpm build
 
-      # The API imports workspace packages whose type declarations are created
-      # by the build above.
       - name: Type-check API
         run: pnpm typecheck:api
+
+      - name: Upload workspace build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace-build
+          path: |
+            apps/*/dist/**
+            packages/*/dist/**
+          if-no-files-found: error
+          retention-days: 1
+
+  unit_tests:
+    name: Unit and browser tests
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore workspace build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: workspace-build
+          path: .
 
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
 
-      # Runs unit/component, integration, and browser test suites.
-      - name: Run all tests
-        run: pnpm test:ci
+      - name: Run unit and component tests
+        run: pnpm test
+
+      - name: Run browser tests
+        run: pnpm test:e2e
 
       - name: Upload Playwright failure artifacts
         if: ${{ failure() }}
@@ -71,3 +139,49 @@ jobs:
             test-results/
           if-no-files-found: ignore
           retention-days: 7
+
+  integration_tests:
+    name: PostgreSQL integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TEST_DATABASE_URL: postgresql://pytrade_test:pytrade_test@127.0.0.1:5432/pytrade_test
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: pytrade_test
+          POSTGRES_USER: pytrade_test
+          POSTGRES_PASSWORD: pytrade_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pytrade_test -d pytrade_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Global setup resets the public schema and applies every checked-in
+      # migration to this disposable database before the test suite runs.
+      - name: Run PostgreSQL integration tests
+        run: pnpm test:integration

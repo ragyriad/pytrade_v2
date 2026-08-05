@@ -10,18 +10,18 @@ to find without mixing test code into production modules.
 
 Commands
 --------
-pnpm test              Run all unit, service, HTTP, and tRPC tests.
+pnpm test              Run all non-database Vitest tests: unit, service,
+                       component/page, HTTP, authentication, and tRPC.
 pnpm test:watch        Run the same Vitest suites in watch mode.
-pnpm test:unit         Run the fast Node-only project.
-pnpm test:components   Run React component and server-page tests in jsdom.
-pnpm test:integration  Run database and multi-module integration tests.
+pnpm test:integration  Run database and multi-module integration tests. Locally,
+                       it manages a disposable Docker PostgreSQL database; CI
+                       supplies TEST_DATABASE_URL for its PostgreSQL service.
 pnpm test:e2e          Run Playwright browser journeys against E2E_BASE_URL.
-pnpm test:ci           Run unit, integration, then browser suites.
 
 Individual packages also expose pnpm test (or pnpm test:unit for market-data)
 to run only that package's unit tests.
 
-Current automated coverage: 111 cases in 31 test files.
+Current automated coverage: 137 cases in 38 test files.
 
 UNIT TESTS
 ==========
@@ -75,6 +75,10 @@ packages/snaptrade_sync/test/unit/activity_pagination.test.ts
 packages/snaptrade_sync/test/unit/mappers/account_balance_mapper.test.ts
   - Maps a valid SnapTrade balance to a current-snapshot upsert shape.
   - Rejects a balance that does not identify its currency.
+
+packages/snaptrade_sync/test/unit/mappers/account_value_history_mapper.test.ts
+  - Maps valid SnapTrade value history with normalized currency/source fields.
+  - Skips malformed dates and numeric values.
 
 packages/snaptrade_sync/test/unit/ingestion/cash_reconciliation.test.ts
   - Matches an exact Wealthsimple cash-to-card payment pair.
@@ -156,6 +160,10 @@ apps/web/test/components/dismissible-alert.test.tsx
   - Announces API failures as errors and invokes explicit dismissal.
   - Announces successful API messages as non-error status updates.
 
+apps/web/test/components/session-state.test.tsx
+  - Persists safe UI state across remounts in one Clerk session and tab.
+  - Prevents persisted state leaking between sessions and clears it on logout.
+
 apps/web/test/components/performance-chart.test.tsx
   - Separates CAD and USD gains, annualizes them, and includes deposits only on request.
   - Omits time-weighted, money-weighted, and SPY return metrics.
@@ -193,12 +201,44 @@ apps/web/test/http/admin-users-route.test.ts
   - Rejects non-admin callers before fetching, validation, provisioning,
     disabling, or role edits begin.
 
+POSTGRESQL INTEGRATION TESTS
+============================
+
+These tests run against a disposable PostgreSQL database. Global setup drops
+and recreates its public schema, then applies all checked-in migrations. The
+test database name must contain "test"; remote databases require explicit
+opt-in through ALLOW_REMOTE_TEST_DATABASE=true.
+
+packages/db/test/integration/migrations-and-constraints.test.ts
+  - Builds the complete schema from migration history.
+  - Verifies user defaults and uniqueness constraints.
+  - Verifies account deletion cascades to dependent records.
+
+packages/db/test/integration/persistence.test.ts
+  - Preserves an account's internal identity across SnapTrade upserts.
+  - Keeps transaction, balance, and value-history upserts idempotent.
+  - Rejects balance and value-history records for a different account.
+
+apps/api/test/integration/application-user.test.ts
+  - Resolves linked active users, rejects disabled users, and activates the
+    exact pending application identity from Clerk metadata.
+  - Leaves PostgreSQL unchanged for an unrelated Clerk identity.
+
+apps/api/test/integration/http-api.test.ts
+  - Verifies protected Fastify routes, bearer-identity ownership, disabled-user
+    rejection, and authenticated request validation against PostgreSQL.
+
+apps/api/test/integration/ownership-services.test.ts
+  - Builds a portfolio dashboard only from the authenticated user's records.
+  - Prevents a second user from reading shared-security transactions.
+
+apps/web/test/integration/admin-users-route.test.ts
+  - Persists matching local/Clerk IDs when creating users.
+  - Rejects duplicate identities before provisioning Clerk users.
+  - Bans and soft-disables linked users together.
+
 TEST LAYERS READY FOR ADDITION
 ==============================
-
-packages/db/test/integration/
-  Fresh migrations, constraints, cascades, persistence upserts, archival, and
-  source-scoped uniqueness. These should use a disposable PostgreSQL database.
 
 packages/snaptrade_sync/test/integration/
   Raw SnapTrade fixtures through mapping, normalization, deduplication, and
@@ -213,9 +253,8 @@ packages/questrade_legacy_import/test/integration/
   Representative SQLite fixture imported into an empty database without
   modifying unrelated source data.
 
-apps/api/test/http/ and apps/api/test/trpc/
-  Fastify inject tests for REST validation/status contracts and tRPC ownership,
-  authentication, filtering, and destructive-action safeguards.
+apps/api/test/trpc/
+  Authenticated router ownership, filtering, and destructive-action safeguards.
 
 apps/web/test/routes/
   Next proxy-route error/query behavior.

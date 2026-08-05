@@ -24,7 +24,7 @@ import { resolveApplicationUser } from "./auth/application-user.js";
 const port = Number(process.env.API_PORT ?? 3001);
 const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:3000";
 
-const fastify = Fastify({ logger: true });
+export const fastify = Fastify({ logger: process.env.NODE_ENV !== "test" });
 const clerkSecretKey = process.env.CLERK_SECRET_KEY;
 
 declare module "fastify" {
@@ -229,10 +229,12 @@ fastify.get("/api/performance", async (request, reply) => {
   return performance;
 });
 
-try {
-  const address = await fastify.listen({ port, host: "0.0.0.0" });
-  fastify.log.info(`Server listening at ${address}`);
-} catch (error) {
-  fastify.log.error(error);
-  process.exit(1);
+if (process.env.PYTRADE_API_NO_LISTEN !== "true") {
+  try {
+    const address = await fastify.listen({ port, host: "0.0.0.0" });
+    fastify.log.info(`Server listening at ${address}`);
+  } catch (error) {
+    fastify.log.error(error);
+    process.exit(1);
+  }
 }

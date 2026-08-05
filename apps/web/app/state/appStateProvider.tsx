@@ -25,6 +25,12 @@ type PersistedQueryCache = {
   version: 1;
 };
 
+declare global {
+  interface Window {
+    __TANSTACK_QUERY_CLIENT__?: QueryClient;
+  }
+}
+
 function createSessionQueryClient(sessionId: string | null): QueryClient {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -68,6 +74,18 @@ function ScopedAppState({
   sessionId: string | null;
 }) {
   const [queryClient] = useState(() => createSessionQueryClient(sessionId));
+
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "development") return;
+
+    window.__TANSTACK_QUERY_CLIENT__ = queryClient;
+
+    return () => {
+      if (window.__TANSTACK_QUERY_CLIENT__ === queryClient) {
+        delete window.__TANSTACK_QUERY_CLIENT__;
+      }
+    };
+  }, [queryClient]);
 
   useEffect(() => {
     if (!sessionId) return;
