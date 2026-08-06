@@ -2,8 +2,9 @@
 
 ## Purpose
 
-The `full` demo profile creates a realistic, repeatable portfolio for an
-existing application user. It is intended for demos, screenshots, UI testing,
+The `full` demo profile creates a realistic, repeatable portfolio and ensures
+that its application user is active and linked to an existing Clerk identity.
+It is intended for demos, screenshots, UI testing,
 and future development—not as a one-time database dump.
 
 The profile currently contains:
@@ -25,6 +26,20 @@ varied portfolio. They are not written as an `industry` field, do not require a
 schema migration, and are not exposed by the application.
 
 ## Commands
+
+Create the demo identity in Clerk first, then configure its Clerk `user_...`
+ID. Clerk's External ID is not used by PyTrade:
+
+```text
+DEMO_USERNAME=demouser
+DEMO_CLERK_USER_ID=user_REPLACE_ME
+DEMO_USER_EMAIL=demo@example.com
+```
+
+If `demouser` does not exist locally, `demo:seed` creates it with the `user`
+role and `active` status. If it already exists without a Clerk link, the
+command links and activates it. It refuses to overwrite a different existing
+Clerk link or reuse a Clerk ID/email owned by another application user.
 
 Preview without writing anything:
 
@@ -69,8 +84,9 @@ removes only calendar events whose DEMO provider ID begins with that user's
 application ID.
 
 The command does not delete or modify the user's ordinary accounts or imported
-activity. It does not create a Clerk identity or application user; the target
-username must already exist in the local `users` table.
+activity. It does not create the Clerk identity; that identity must already
+exist in Clerk. The corresponding PyTrade application user is created or
+activated automatically using `DEMO_CLERK_USER_ID`.
 
 Matching securities are reused by stable security key or by listing identity
 (symbol, currency, and exchange). Missing securities are added. Security,
@@ -91,6 +107,7 @@ packages/db/src/demo/
 |-- scenarios/
 |   `-- fullPortfolio.ts       Pure deterministic profile generator
 |-- cli.ts                     seed/reset command-line entry point
+|-- user.ts                    Demo user provisioning and Clerk linkage
 |-- persistence.ts             Transactional replacement and reuse rules
 |-- random.ts                  Seeded random and stable ID helpers
 `-- types.ts                   Scenario and report types
