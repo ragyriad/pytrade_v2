@@ -6,7 +6,7 @@
   },
   "deploy": {
     "numReplicas": 1,
-    "preDeployCommand": "pnpm exec drizzle-kit migrate --config packages/db/drizzle.config.ts && pnpm demo:seed -- --profile=full",
+    "preDeployCommand": "pnpm --filter @repo/db db:migrate && pnpm demo:seed -- --profile=full",
     "startCommand": "node scripts/start-railway.mjs",
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 120,
