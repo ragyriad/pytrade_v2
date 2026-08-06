@@ -1,7 +1,6 @@
 import "server-only";
 
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import { db, eq, users } from "@repo/db";
 
 export type ApplicationRole = "admin" | "user";
 
@@ -26,6 +25,7 @@ export async function getCurrentApplicationUser() {
   const { userId } = await auth();
   if (!userId) return null;
 
+  const { db, eq, users } = await import("@repo/db");
   const localRows = await db
     .select()
     .from(users)
@@ -52,6 +52,7 @@ export async function requireApplicationAdmin() {
 export async function listApplicationUsers(
   client: Awaited<ReturnType<typeof clerkClient>>
 ): Promise<{ users: ManagedUser[] }> {
+  const { db, users } = await import("@repo/db");
   const localUsersPromise = db.select().from(users);
   const clerkUsers: Awaited<ReturnType<typeof client.users.getUserList>>["data"] = [];
   const pageSize = 100;

@@ -7,6 +7,7 @@ RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.root.json ./
 COPY apps ./apps
 COPY packages ./packages
+COPY scripts ./scripts
 
 RUN pnpm install --frozen-lockfile
 
@@ -28,3 +29,5 @@ RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 COPY --from=build /app /app
 
 ENV NODE_ENV=production
+
+CMD ["node", "scripts/start-railway.mjs"]

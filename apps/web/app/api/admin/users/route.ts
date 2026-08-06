@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { db, eq, users } from "@repo/db";
 import {
   listApplicationUsers,
   requireApplicationAdmin,
@@ -74,6 +73,7 @@ export async function POST(request: Request) {
   let existingUsernameId: string | undefined;
   let existingEmailId: string | undefined;
   try {
+    const { db, eq, users } = await import("@repo/db");
     const [matchingUsername] = await db
       .select({ id: users.id })
       .from(users)
@@ -152,6 +152,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    const { db, eq, users } = await import("@repo/db");
     await db.insert(users).values({
       id: applicationUserId,
       clerkUserId: clerkUser.id,
@@ -205,6 +206,7 @@ export async function PATCH(request: Request) {
   }
 
   try {
+    const { db, eq, users } = await import("@repo/db");
     const localRows = await db
       .select()
       .from(users)

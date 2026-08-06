@@ -1,19 +1,15 @@
-.git
-.github
-.agents
-.codex
 node_modules
 **/node_modules
 .next
 **/.next
 dist
 **/dist
+.turbo
+.git
+.github
 .env
 .env.*
-.env_v2
-.turbo
-**/.turbo
+!.env.example
 coverage
-test-results
 playwright-report
-generated files
+test-results

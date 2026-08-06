@@ -21,7 +21,9 @@ import {
 } from "./services/securities.js";
 import { resolveApplicationUser } from "./auth/application-user.js";
 
-const port = Number(process.env.PORT ?? process.env.API_PORT ?? 3001);
+// Railway assigns PORT to the public web process. Keep Fastify on a separate
+// loopback port when both applications share the same Railway service.
+const port = Number(process.env.API_PORT ?? 3001);
 const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:3000";
 
 export const fastify = Fastify({ logger: process.env.NODE_ENV !== "test" });
