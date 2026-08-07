@@ -103,7 +103,12 @@ function authenticatedUserId(request: FastifyRequest): string {
 
 fastify.get("/", async () => ({ name: "pytrade-api", status: "ok" }));
 
-fastify.get("/health", async () => {
+// Liveness is used by Railway to confirm both processes in the single service
+// are reachable. Database readiness is exposed separately so a transient query
+// does not cause Railway to tear down an otherwise healthy deployment.
+fastify.get("/health", async () => ({ status: "ok" }));
+
+fastify.get("/ready", async () => {
   await checkDbConnection();
   return { status: "ok" };
 });
