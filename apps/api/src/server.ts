@@ -107,6 +107,7 @@ fastify.get("/", async () => ({ name: "pytrade-api", status: "ok" }));
 // are reachable. Database readiness is exposed separately so a transient query
 // does not cause Railway to tear down an otherwise healthy deployment.
 fastify.get("/health", async () => ({ status: "ok" }));
+fastify.get("/api/health", async () => ({ status: "ok" }));
 
 fastify.get("/ready", async () => {
   await checkDbConnection();
