@@ -30,4 +30,4 @@ COPY --from=build /app /app
 
 ENV NODE_ENV=production
 
-CMD ["node", "scripts/start-railway.mjs"]
+CMD ["node", "scripts/start-app.mjs"]

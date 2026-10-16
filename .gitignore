@@ -13,9 +13,6 @@ build/
 out/
 coverage/
 **/coverage/
-playwright-report/
-test-results/
-blob-report/
 
 # Turbo / TypeScript / framework caches
 .turbo/
@@ -48,6 +45,9 @@ pnpm-debug.log*
 Thumbs.db
 .vscode/
 .idea/
+
+# Local deployment metadata
+.vercel/
 
 # Local agent/tooling state
 .agents/
