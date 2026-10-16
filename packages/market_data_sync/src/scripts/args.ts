@@ -25,11 +25,6 @@ export function parseEodhdSyncArgs(argv: string[]): EodhdSyncOptions {
       continue;
     }
 
-    if (arg === "--includeInactive") {
-      options.includeInactive = true;
-      continue;
-    }
-
     const [key, value] = arg.split("=");
     if (!value) continue;
 
@@ -63,11 +58,6 @@ export function parseTiingoSyncArgs(argv: string[]): TiingoSyncOptions {
       continue;
     }
 
-    if (arg === "--includeInactive") {
-      options.includeInactive = true;
-      continue;
-    }
-
     const [key, value] = arg.split("=");
     if (!value) continue;
 
@@ -91,11 +81,6 @@ export function parseAlphaVantageSyncArgs(
   for (const arg of argv) {
     if (arg === "--force") {
       options.force = true;
-      continue;
-    }
-
-    if (arg === "--includeInactive") {
-      options.includeInactive = true;
       continue;
     }
 

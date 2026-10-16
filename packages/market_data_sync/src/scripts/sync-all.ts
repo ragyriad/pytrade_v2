@@ -1,7 +1,6 @@
 import { loadMarketDataEnv } from "../env.js";
-import { closeMarketDataSyncDbConnection } from "../sync/eodhd-sync.js";
+import { closeMarketDataSyncDbConnection, syncEodhdMarketData } from "../sync/eodhd-sync.js";
 import { syncAlphaVantageMarketData } from "../sync/alpha-vantage-sync.js";
-import { syncEodhdMarketData } from "../sync/eodhd-sync.js";
 import { syncTiingoMarketData } from "../sync/tiingo-sync.js";
 import {
   parseAlphaVantageSyncArgs,
@@ -28,45 +27,51 @@ async function main() {
   loadMarketDataEnv();
   const argv = process.argv.slice(2);
   const failures: SyncFailure[] = [];
+  const includeEodhd = argv.includes("--include-eodhd");
 
-  try {
-    const result = await syncEodhdMarketData(parseEodhdSyncArgs(argv));
-    console.log(
-      `EODHD: ${result.dividendEventCount} dividends, ` +
-        `${result.priceSnapshotCount} prices, ` +
-        `${result.forexRateSnapshotCount} FX rates.`
-    );
-    if (
-      result.results.some(
-        (row) => row.dividendStatus === "failed" || row.priceStatus === "failed"
-      ) ||
-      result.forexResults.some((row) => row.status === "failed")
-    ) {
-      failures.push({
-        provider: "eodhd",
-        error:
-          uniqueErrors(
-            result.results.filter(
-              (row) =>
-                row.dividendStatus === "failed" ||
-                row.priceStatus === "failed"
-            )
-          ) ||
-          uniqueErrors(
-            result.forexResults
-              .filter((row) => row.status === "failed")
-              .map((row) => ({ symbol: row.pair, errors: row.errors }))
-          ) ||
-          "One or more EODHD resources failed.",
-      });
-    }
-  } catch (error) {
-    failures.push({
-      provider: "eodhd",
-      error: error instanceof Error ? error.message : "Unknown EODHD failure",
-    });
+  if (!includeEodhd) {
+    console.log("EODHD: skipped (pass --include-eodhd to opt in).");
   }
 
+  if (includeEodhd) {
+    try {
+      const result = await syncEodhdMarketData(parseEodhdSyncArgs(argv));
+      console.log(
+        `EODHD: ${result.dividendEventCount} dividends, ` +
+          `${result.priceSnapshotCount} prices, ` +
+          `${result.forexRateSnapshotCount} FX rates.`
+      );
+      if (
+        result.results.some(
+          (row) => row.dividendStatus === "failed" || row.priceStatus === "failed"
+        ) ||
+        result.forexResults.some((row) => row.status === "failed")
+      ) {
+        failures.push({
+          provider: "eodhd",
+          error:
+            uniqueErrors(
+              result.results.filter(
+                (row) =>
+                  row.dividendStatus === "failed" ||
+                  row.priceStatus === "failed"
+              )
+            ) ||
+            uniqueErrors(
+              result.forexResults
+                .filter((row) => row.status === "failed")
+                .map((row) => ({ symbol: row.pair, errors: row.errors }))
+            ) ||
+            "One or more EODHD resources failed.",
+        });
+      }
+    } catch (error) {
+      failures.push({
+        provider: "eodhd",
+        error: error instanceof Error ? error.message : "Unknown EODHD failure",
+      });
+    }
+  }
   try {
     const result = await syncTiingoMarketData(parseTiingoSyncArgs(argv));
     const statusCounts = result.results.reduce(

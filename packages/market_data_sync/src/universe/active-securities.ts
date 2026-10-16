@@ -3,7 +3,6 @@ import type { DB, Security } from "@repo/db";
 import type { MarketDataSecurity } from "../shared/provider-types.js";
 
 export type SecurityUniverseOptions = {
-  includeInactive?: boolean;
   maxSecurities?: number;
 };
 
@@ -23,23 +22,28 @@ export async function getSecurityUniverse(
   database: DB = db,
   options: SecurityUniverseOptions = {}
 ): Promise<MarketDataSecurity[]> {
-  const rows = options.includeInactive
-    ? await database
-        .select()
-        .from(securities)
-        .where(eq(securities.isArchived, false))
-    : (
-        await database
-          .select({ security: securities })
-          .from(positions)
-          .innerJoin(securities, eq(positions.securityId, securities.id))
-          .where(
-            and(
-              sql`${positions.securityId} is not null and ${positions.units}::numeric <> 0`,
-              eq(securities.isArchived, false)
-            )
-          )
-      ).map((row) => row.security);
+  const eligibleInstrument = sql`(
+    upper(trim(coalesce(${securities.instrumentTypeCode}, ''))) in ('STOCK', 'ETF', 'CS', 'EQUITY')
+    or upper(trim(coalesce(${securities.instrumentTypeDescription}, ''))) in ('STOCK', 'ETF', 'EQUITY', 'COMMON STOCK')
+    or upper(coalesce(${securities.instrumentTypeDescription}, '')) ~ '(^|[^A-Z])(ETF|EXCHANGE[- ]TRADED FUND|COMMON STOCK|STOCK|EQUITY)([^A-Z]|$)'
+  )`;
+  const eligibleSecurity = and(
+    eq(securities.isArchived, false),
+    eq(securities.listingStatus, "ACTIVE"),
+    eligibleInstrument
+  );
+  const rows = (
+    await database
+      .select({ security: securities })
+      .from(positions)
+      .innerJoin(securities, eq(positions.securityId, securities.id))
+      .where(
+        and(
+          sql`${positions.securityId} is not null and ${positions.units}::numeric <> 0`,
+          eligibleSecurity
+        )
+      )
+  ).map((row) => row.security);
 
   const uniqueBySecurityId = new Map<string, Security>();
 

@@ -27,7 +27,6 @@ export type AlphaVantageSyncOptions = {
   horizon?: AlphaVantageEarningsHorizon;
   refreshEarningsAfterDays?: number;
   force?: boolean;
-  includeInactive?: boolean;
   maxSecurities?: number;
 };
 
@@ -80,7 +79,6 @@ export async function syncAlphaVantageMarketData(
   }
 
   const securities = await getSecurityUniverse(database, {
-    includeInactive: options.includeInactive ?? false,
     maxSecurities: options.maxSecurities,
   });
   const securitiesByTicker = indexSecurities(securities);

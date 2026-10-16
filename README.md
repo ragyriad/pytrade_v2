@@ -46,7 +46,8 @@ pnpm db:migrate              # apply migrations
 pnpm demo:seed               # create/replace the selected demo user data
 pnpm demo:reset              # remove the selected demo user generated data
 pnpm snaptrade:sync          # sync SnapTrade data
-pnpm market-data:sync        # sync market data
+pnpm market-data:sync -- --provider=tiingo  # sync one provider
+pnpm market-data:sync:all    # sync configured non-EODHD providers
 pnpm statements:extract      # extract statement data for review
 pnpm statements:import       # import statement data
 pnpm sqlite:import            # import legacy SQLite data

@@ -37,7 +37,6 @@ export type EodhdSyncOptions = {
   refreshForexAfterDays?: number;
   concurrency?: number;
   force?: boolean;
-  includeInactive?: boolean;
   maxSecurities?: number;
 };
 
@@ -83,7 +82,6 @@ type SyncContext = Required<
     | "refreshForexAfterDays"
     | "concurrency"
     | "force"
-    | "includeInactive"
   >
 > &
   Pick<EodhdSyncOptions, "maxSecurities">;
@@ -100,7 +98,6 @@ function normalizeOptions(options: EodhdSyncOptions = {}): SyncContext {
     refreshForexAfterDays: options.refreshForexAfterDays ?? 1,
     concurrency: options.concurrency ?? 2,
     force: options.force ?? false,
-    includeInactive: options.includeInactive ?? false,
     maxSecurities: options.maxSecurities,
   };
 }

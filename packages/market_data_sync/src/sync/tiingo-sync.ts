@@ -19,7 +19,6 @@ export type TiingoSyncOptions = {
   refreshDividendsAfterDays?: number;
   concurrency?: number;
   force?: boolean;
-  includeInactive?: boolean;
   maxSecurities?: number;
 };
 
@@ -47,7 +46,6 @@ type SyncContext = Required<
     | "refreshDividendsAfterDays"
     | "concurrency"
     | "force"
-    | "includeInactive"
   >
 > &
   Pick<TiingoSyncOptions, "maxSecurities">;
@@ -63,7 +61,6 @@ function normalizeOptions(options: TiingoSyncOptions = {}): SyncContext {
     refreshDividendsAfterDays: options.refreshDividendsAfterDays ?? 7,
     concurrency: options.concurrency ?? 2,
     force: options.force ?? false,
-    includeInactive: options.includeInactive ?? false,
     maxSecurities: options.maxSecurities,
   };
 }
