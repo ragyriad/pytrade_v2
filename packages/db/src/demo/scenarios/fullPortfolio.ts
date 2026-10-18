@@ -80,6 +80,18 @@ export function buildFullPortfolioScenario(input: FullPortfolioScenarioOptions):
       balance: 5_800,
     },
     {
+      key: "closed-tfsa",
+      name: "Demo Closed TFSA",
+      brokerage: "Questrade",
+      currency: "CAD",
+      type: "Investment",
+      subType: "TFSA",
+      management: "Self-Managed",
+      isRegistered: true,
+      balance: 0,
+      status: "closed",
+    },
+    {
       key: "cash",
       name: "Demo Cash",
       brokerage: "Wealthsimple",
@@ -111,7 +123,7 @@ export function buildFullPortfolioScenario(input: FullPortfolioScenarioOptions):
     accountCurrency: account.currency,
     balanceAmount: roundMoney(account.balance),
     balanceCurrency: account.currency,
-    status: "active" as const,
+    status: account.status ?? "active",
     type: account.type,
     subType: account.subType,
     rawType: account.subType,
@@ -189,10 +201,20 @@ export function buildFullPortfolioScenario(input: FullPortfolioScenarioOptions):
     lastSeenAt: asOfDate,
   }));
   const securityIdBySymbol = new Map(securities.map((security) => [security.symbol, security.id!]));
-  const accountForSecurity = (currency: "CAD" | "USD", index: number) =>
-    currency === "USD"
+  const closedDemoSecurity = shuffledCatalog
+    .slice(0, 22)
+    .find((security) => security.currency === "CAD");
+  const accountForSecurity = (
+    security: (typeof shuffledCatalog)[number],
+    index: number
+  ) => {
+    if (security.symbol === closedDemoSecurity?.symbol) {
+      return accountIdByKey.get("closed-tfsa")!;
+    }
+    return security.currency === "USD"
       ? accountIdByKey.get("margin")!
       : accountIdByKey.get(index % 2 === 0 ? "tfsa" : "rrsp")!;
+  };
 
   const positions = shuffledCatalog.slice(0, 22).map((security, index) => {
     const currentPrice = security.referencePrice * random.between(0.82, 1.24);
@@ -202,7 +224,7 @@ export function buildFullPortfolioScenario(input: FullPortfolioScenarioOptions):
       : random.integer(4, 65);
     return {
       id: id("position", security.symbol),
-      accountId: accountForSecurity(security.currency, index),
+      accountId: accountForSecurity(security, index),
       securityId: securityIdBySymbol.get(security.symbol),
       symbol: security.symbol,
       rawSymbol: security.symbol,
@@ -239,7 +261,7 @@ export function buildFullPortfolioScenario(input: FullPortfolioScenarioOptions):
   };
 
   shuffledCatalog.forEach((security, index) => {
-    const accountId = accountForSecurity(security.currency, index);
+    const accountId = accountForSecurity(security, index);
     const securityId = securityIdBySymbol.get(security.symbol)!;
     const initialUnits = random.integer(8, 45);
     const secondUnits = random.integer(3, 25);

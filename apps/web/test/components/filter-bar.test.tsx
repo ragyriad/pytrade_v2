@@ -12,6 +12,7 @@ const accounts: AccountDto[] = [
     type: "Investment",
     management: "Self_Managed",
     subType: "TFSA",
+    isRegistered: true,
     status: "active",
     balance: { amount: 1_000, currency: "CAD" },
     lastSyncedAt: null,
@@ -23,6 +24,7 @@ const accounts: AccountDto[] = [
     accountCurrency: "CAD",
     type: "Expenses",
     subType: "CASH",
+    isRegistered: false,
     status: "open",
     balance: { amount: 500, currency: "CAD" },
     lastSyncedAt: null,
@@ -36,6 +38,8 @@ describe("FilterBar", () => {
       brokerages: [],
       accountIds: [],
       accountTypes: [],
+      subTypes: [],
+      registered: [],
       timeline: "ALL" as const,
     };
 
@@ -56,7 +60,7 @@ describe("FilterBar", () => {
     render(
       <FilterBar
         accounts={accounts}
-        value={{ brokerages: [], accountIds: [], accountTypes: [], timeline: "ALL" }}
+        value={{ brokerages: [], accountIds: [], accountTypes: [], subTypes: [], registered: [], timeline: "ALL" }}
         onChange={vi.fn()}
         costType={{ value: "both", onChange: onCostTypeChange }}
       />
@@ -67,5 +71,52 @@ describe("FilterBar", () => {
     });
 
     expect(onCostTypeChange).toHaveBeenCalledWith("taxes");
+  });
+
+  test("Select All restores every brokerage option after a partial selection", () => {
+    const onChange = vi.fn();
+    const value = {
+      brokerages: ["Questrade"],
+      accountIds: [],
+      accountTypes: [],
+      subTypes: [],
+      registered: [],
+      timeline: "ALL" as const,
+    };
+
+    render(<FilterBar accounts={accounts} value={value} onChange={onChange} />);
+    fireEvent.click(screen.getAllByText("Questrade")[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: "Select All" })[0]);
+
+    expect(onChange).toHaveBeenCalledWith({
+      ...value,
+      brokerages: ["Questrade", "Wealthsimple"],
+    });
+  });
+
+  test("shows the registration and subtype controls and can select all values", () => {
+    const onChange = vi.fn();
+    const value = {
+      brokerages: [],
+      accountIds: [],
+      accountTypes: [],
+      subTypes: [],
+      registered: [],
+      timeline: "ALL" as const,
+    };
+
+    render(<FilterBar accounts={accounts} value={value} onChange={onChange} />);
+    fireEvent.click(screen.getByText("All registration types"));
+    fireEvent.click(screen.getAllByRole("button", { name: "Select All" }).at(-1)!);
+
+    expect(onChange).toHaveBeenCalledWith({
+      ...value,
+      registered: ["Registered", "Non-registered"],
+    });
+
+    fireEvent.click(screen.getByText("All registration types"));
+    fireEvent.click(screen.getByText("All subtypes"));
+    fireEvent.click(screen.getAllByRole("button", { name: "Select All" }).at(-2)!);
+    expect(onChange).toHaveBeenLastCalledWith({ ...value, subTypes: ["Non registered", "TFSA"] });
   });
 });

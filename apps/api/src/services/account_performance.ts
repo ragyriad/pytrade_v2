@@ -10,7 +10,7 @@ import {
   type Account,
   type Transaction,
 } from "@repo/db";
-import { isInvestmentAccount } from "./account_scope.js";
+import { isInvestmentAccount, isOpenAccount } from "./account_scope.js";
 
 type Lot = {
   units: number;
@@ -85,7 +85,9 @@ export async function getPerformanceSummary(
     .select()
     .from(accounts)
     .where(and(eq(accounts.userId, requestedUserId), eq(accounts.isArchived, false)));
-  const investmentAccounts = accountRows.filter(isInvestmentAccount);
+  const investmentAccounts = accountRows.filter(
+    (account) => isInvestmentAccount(account) && isOpenAccount(account)
+  );
   const accountIds = investmentAccounts.map((account) => account.id);
   if (accountIds.length === 0) return null;
 

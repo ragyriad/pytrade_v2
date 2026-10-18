@@ -24,6 +24,27 @@ export type HistoricSecurityRow = Security & {
   isCurrentlyHeld: boolean;
 };
 
+export async function getHistoricSecurityAccountIds(
+  db: DB,
+  accountIds: string[]
+): Promise<Array<{ securityId: string; accountId: string }>> {
+  if (accountIds.length === 0) return [];
+
+  const rows = await db
+    .select({
+      securityId: sql<string | null>`coalesce(${transactions.underlyingSecurityId}, ${transactions.securityId})`,
+      accountId: transactions.accountId,
+    })
+    .from(transactions)
+    .where(and(inArray(transactions.accountId, accountIds), eq(transactions.isArchived, false)))
+    .groupBy(
+      sql`coalesce(${transactions.underlyingSecurityId}, ${transactions.securityId})`,
+      transactions.accountId
+    );
+
+  return rows.filter((row): row is { securityId: string; accountId: string } => row.securityId != null);
+}
+
 export async function upsertSecurities(
   db: DB,
   data: NewSecurity[]

@@ -5,6 +5,7 @@ import {
   desc,
   eq,
   getHistoricSecuritiesByAccounts,
+  getHistoricSecurityAccountIds,
   getSecurityById,
   getTransactionsBySecurity,
   type DB,
@@ -40,6 +41,15 @@ export type HistoricSecurityDto = {
   firstTradeDate: string | null;
   lastTradeDate: string | null;
   status: "active" | "closed";
+  accounts: Array<{
+    id: string;
+    name: string;
+    institutionName: string | null;
+    accountCurrency: string | null;
+    type: string | null;
+    subType: string | null;
+    isRegistered: boolean;
+  }>;
 };
 
 export type SecurityTransactionDto = {
@@ -115,6 +125,7 @@ function toHistoricSecurityDto(row: HistoricSecurityRow): HistoricSecurityDto {
     firstTradeDate: toIso(row.firstTradeDate),
     lastTradeDate: toIso(row.lastTradeDate),
     status: row.isCurrentlyHeld ? "active" : "closed",
+    accounts: [],
   };
 }
 
@@ -181,8 +192,33 @@ export async function getHistoricSecurities(
     database,
     accountRows.map((account) => account.id)
   );
+  const accountAssociations = await getHistoricSecurityAccountIds(
+    database,
+    accountRows.map((account) => account.id)
+  );
+  const accountsBySecurityId = new Map<string, Set<string>>();
+  for (const association of accountAssociations) {
+    const linkedIds = accountsBySecurityId.get(association.securityId) ?? new Set<string>();
+    linkedIds.add(association.accountId);
+    accountsBySecurityId.set(association.securityId, linkedIds);
+  }
+  const accountsById = new Map(accountRows.map((account) => [account.id, account]));
 
-  return rows.map(toHistoricSecurityDto);
+  return rows.map((row) => ({
+    ...toHistoricSecurityDto(row),
+    accounts: Array.from(accountsBySecurityId.get(row.id) ?? [])
+      .map((accountId) => accountsById.get(accountId))
+      .filter((account): account is (typeof accountRows)[number] => account != null)
+      .map((account) => ({
+        id: account.id,
+        name: account.name ?? account.brokerageAccountNumber ?? "Unknown account",
+        institutionName: account.brokerageName,
+        accountCurrency: account.accountCurrency,
+        type: account.type,
+        subType: account.subType,
+        isRegistered: account.isRegistered,
+      })),
+  }));
 }
 
 export async function getSecurityTransactions(

@@ -25,6 +25,8 @@ vi.mock("../../app/components/dashboard/filterBar", () => ({
         brokerages: ["Broker A"],
         accountIds: [],
         accountTypes: [],
+        subTypes: [],
+        registered: [],
         timeline: "3M",
       })}
     >
@@ -40,7 +42,9 @@ vi.mock("../../app/components/dashboard/dataTable", () => ({
   DataTable: () => null,
 }));
 vi.mock("../../app/components/dashboard/statCard", () => ({
-  StatCard: () => null,
+  StatCard: ({ label, value }: { label: string; value: string }) => (
+    <div>{label}: {value}</div>
+  ),
 }));
 
 import { HomePage } from "../../app/pages/homePage";
@@ -48,9 +52,9 @@ import { HomePage } from "../../app/pages/homePage";
 const dashboard: PortfolioDashboardDto = {
   summary: {
     user: { id: "user", username: "user" },
-    totalValue: { amount: 0, currency: "CAD" },
+    totalValue: { amount: 1_000, currency: "CAD" },
     totalValueByCurrency: [],
-    totalUnrealizedGainLoss: { amount: 0, currency: "CAD" },
+    totalUnrealizedGainLoss: { amount: 250, currency: "CAD" },
     totalUnrealizedGainLossByCurrency: [],
     accountCount: 2,
     positionCount: 0,
@@ -65,6 +69,7 @@ const dashboard: PortfolioDashboardDto = {
       type: "Investment",
       management: "Self_Managed",
       subType: "TFSA",
+      isRegistered: true,
       status: "active",
       isInvestmentAccount: true,
       balance: { amount: 100, currency: "CAD" },
@@ -77,6 +82,7 @@ const dashboard: PortfolioDashboardDto = {
       type: "Investment",
       management: "Managed",
       subType: "RRSP",
+      isRegistered: true,
       status: "active",
       isInvestmentAccount: true,
       balance: { amount: 100, currency: "CAD" },
@@ -88,6 +94,7 @@ const dashboard: PortfolioDashboardDto = {
       institutionName: "Broker C",
       type: "Expenses",
       subType: "CASH",
+      isRegistered: false,
       status: "active",
       isInvestmentAccount: false,
       balance: { amount: 100, currency: "CAD" },
@@ -111,6 +118,8 @@ describe("HomePage performance filters", () => {
     expect(screen.getByTestId("performance-scope")).toHaveTextContent(
       "account-a,account-b:ALL"
     );
+    expect(screen.getByText(/Filtered market value:/)).toHaveTextContent("0.00 CAD");
+    expect(screen.getByText(/Unrealized gain\/loss:/)).toHaveTextContent("0.00 CAD");
 
     fireEvent.click(screen.getByRole("button", { name: "Apply portfolio filters" }));
 

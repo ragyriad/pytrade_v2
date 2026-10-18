@@ -19,7 +19,7 @@ import {
   getPerformanceSummary,
   type PerformanceSummaryDto,
 } from "./account_performance.js";
-import { isInvestmentAccount } from "./account_scope.js";
+import { isInvestmentAccount, isOpenAccount } from "./account_scope.js";
 
 export type AccountDto = {
   id: string;
@@ -383,7 +383,9 @@ export async function getPortfolioDashboard(
     .select()
     .from(accounts)
     .where(and(eq(accounts.userId, requestedUserId), eq(accounts.isArchived, false)));
-  const investmentAccountRows = accountRows.filter(isInvestmentAccount);
+  const investmentAccountRows = accountRows.filter(
+    (account) => isInvestmentAccount(account) && isOpenAccount(account)
+  );
   const selectedAccountRows = options.includeAllAccountTypes
     ? accountRows
     : investmentAccountRows;

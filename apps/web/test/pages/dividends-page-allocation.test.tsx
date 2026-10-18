@@ -29,6 +29,8 @@ vi.mock("../../app/components/dashboard/filterBar", () => ({
         brokerages: ["Broker A"],
         accountIds: [],
         accountTypes: [],
+        subTypes: [],
+        registered: [],
         timeline: "ALL",
       })}
     >
@@ -100,6 +102,7 @@ const dashboard: PortfolioDashboardDto = {
       type: "Investment",
       management: "Self_Managed",
       subType: "TFSA",
+      isRegistered: true,
       status: "active",
       isInvestmentAccount: true,
       balance: { amount: 100, currency: "CAD" },
@@ -112,6 +115,7 @@ const dashboard: PortfolioDashboardDto = {
       type: "Investment",
       management: "Managed",
       subType: "RRSP",
+      isRegistered: true,
       status: "active",
       isInvestmentAccount: true,
       balance: { amount: 200, currency: "CAD" },

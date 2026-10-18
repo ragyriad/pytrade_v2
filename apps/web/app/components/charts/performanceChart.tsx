@@ -16,8 +16,6 @@ import {
   buildPortfolioGainPoints,
   filterPerformancePoints,
   gainPercent,
-  performanceRanges,
-  type PerformanceRange,
 } from "../../services/performance";
 import type { TimelineRange } from "../../services/filter_timeline";
 import { useSessionState } from "../../state/sessionState";
@@ -51,10 +49,6 @@ export function PerformanceChart({
     "portfolio:performance:include-deposits",
     false
   );
-  const [selectedRange, setSelectedRange] = useSessionState<PerformanceRange>(
-    "portfolio:performance:range",
-    "ALL"
-  );
   const [chartMode, setChartMode] = useSessionState<"value" | "returns">(
     "portfolio:performance:mode",
     "returns"
@@ -65,7 +59,7 @@ export function PerformanceChart({
     : [])
     .flatMap((series): DisplaySeries[] => {
       const filterScopedPoints = filterPerformancePoints(series.points, timeline);
-      const visiblePoints = filterPerformancePoints(filterScopedPoints, selectedRange);
+      const visiblePoints = filterScopedPoints;
       if (visiblePoints.length < 2) return [];
       const points = buildPortfolioGainPoints(visiblePoints, includeDeposits);
       return [{
@@ -90,7 +84,7 @@ export function PerformanceChart({
   }
 
   const chartRows = mergeChartRows(displaySeries);
-  const period = periodLabel(selectedRange, timeline, displaySeries[0].points);
+  const period = timelineLabel[timeline];
 
   return (
     <section className="app-panel overflow-hidden p-5">
@@ -159,17 +153,7 @@ export function PerformanceChart({
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
-        <div className="flex flex-wrap gap-1" role="group" aria-label="Time range">
-          {performanceRanges.map((range) => (
-            <ToggleButton
-              key={range}
-              label={range}
-              selected={range === selectedRange}
-              onClick={() => setSelectedRange(range)}
-            />
-          ))}
-        </div>
+      <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-3">
         <div className="inline-flex rounded-lg bg-surface-muted p-1" role="group" aria-label="Chart display">
           <ToggleButton
             label="Value"
@@ -294,16 +278,6 @@ function currencyColor(currency: string): string {
   return "var(--color-chart-series-1)";
 }
 
-function periodLabel(
-  selectedRange: PerformanceRange,
-  timeline: TimelineRange,
-  points: DisplaySeries["points"]
-): string {
-  if (timeline === "ALL") return rangeLabel[selectedRange];
-  if (selectedRange === "ALL") return timelineLabel[timeline];
-  return `${formatDate(points[0].date)} to ${formatDate(points.at(-1)!.date)}`;
-}
-
 function dataThroughLabel(series: DisplaySeries[]): string {
   const labels = series.map((row) => {
     const omitted = row.excludedAccountCount > 0
@@ -314,19 +288,8 @@ function dataThroughLabel(series: DisplaySeries[]): string {
   return labels.join(" | ");
 }
 
-const rangeLabel: Record<PerformanceRange, string> = {
-  "1D": "today",
-  "1W": "past week",
-  "1M": "past month",
-  "3M": "past 3 months",
-  "6M": "past 6 months",
-  YTD: "year to date",
-  "1Y": "past year",
-  ALL: "all time",
-};
-
 const timelineLabel: Record<TimelineRange, string> = {
-  NONE: "selected period",
+  NONE: "all time",
   "1M": "past month",
   "3M": "past 3 months",
   "6M": "past 6 months",

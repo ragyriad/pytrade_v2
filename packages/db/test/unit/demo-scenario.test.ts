@@ -32,15 +32,18 @@ describe("full demo portfolio scenario", () => {
     const actions = new Set(scenario.transactions.map((transaction) => transaction.action));
     const eventTypes = new Set(scenario.calendarEvents.map((event) => event.eventType));
 
-    expect(scenario.accounts).toHaveLength(5);
+    expect(scenario.accounts).toHaveLength(6);
     expect(accountSubTypes).toEqual(new Set(["TFSA", "RRSP", "MARGIN", "CASH", "CREDIT CARD"]));
     expect(accountTypes).toEqual(new Set(["Investment", "Cash", "Card"]));
-    expect(scenario.accounts.filter((account) => account.type === "Investment")).toHaveLength(3);
+    expect(scenario.accounts.filter((account) => account.type === "Investment")).toHaveLength(4);
     expect(scenario.accounts.filter((account) => account.type === "Cash" || account.type === "Card")).toHaveLength(2);
-    expect(scenario.accounts.filter((account) => account.isRegistered).map((account) => account.subType)).toEqual([
-      "TFSA",
-      "RRSP",
-    ]);
+    expect(new Set(scenario.accounts.filter((account) => account.isRegistered).map((account) => account.subType))).toEqual(
+      new Set(["TFSA", "RRSP"])
+    );
+    const closedAccount = scenario.accounts.find((account) => account.status === "closed");
+    expect(closedAccount).toMatchObject({ type: "Investment", subType: "TFSA", isRegistered: true });
+    expect(scenario.positions.some((position) => position.accountId === closedAccount?.id)).toBe(true);
+    expect(scenario.transactions.some((transaction) => transaction.accountId === closedAccount?.id)).toBe(true);
     expect(scenario.accounts.find((account) => account.subType === "RRSP")?.management).toBe("Managed");
     expect(scenario.accounts.find((account) => account.subType === "TFSA")?.management).toBe("Self-Managed");
     expect(scenario.positions.length).toBeGreaterThanOrEqual(20);
@@ -111,6 +114,15 @@ describe("full demo portfolio scenario", () => {
       new Set(["open", "closed", "expired"])
     );
     expect(scenario.transactions.some((transaction) => transaction.assetType === "OPTION")).toBe(true);
+  });
+
+  it("seeds account registration, subtype, and status values for filter demos", () => {
+    const scenario = buildFullPortfolioScenario(baseInput);
+    expect(scenario.accounts.every((account) => typeof account.isRegistered === "boolean")).toBe(true);
+    expect(scenario.accounts.every((account) => typeof account.subType === "string")).toBe(true);
+    expect(new Set(scenario.accounts.map((account) => account.status))).toEqual(
+      new Set(["active", "closed"])
+    );
   });
 
   it("marks every replaceable row with the target demo owner", () => {

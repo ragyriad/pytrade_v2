@@ -3,21 +3,12 @@
 import { useMemo } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faBuildingColumns,
-  faCalendarDays,
-  faCheck,
-  faChevronDown,
   faCreditCard,
-  faFilter,
-  faLayerGroup,
   faMoneyBillWave,
-  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-import { DetailsDropdown } from "../components/ui/detailsDropdown";
 import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
 import { MetricValueList } from "../components/dashboard/metricValueList";
 import { StatCard } from "../components/dashboard/statCard";
-import { SelectField } from "../components/ui/select";
 import {
   formatDate,
   formatMoney,
@@ -27,7 +18,6 @@ import {
 } from "../lib/formatters";
 import {
   filterTransactionsByTimeline,
-  timelineOptions,
   type TimelineRange,
 } from "../services/filter_timeline";
 import type {
@@ -39,6 +29,7 @@ import type {
 } from "../lib/portfolioTypes";
 import { useSessionState } from "../state/sessionState";
 import { negativeCashClassName } from "../services/cashPresentation";
+import { FilterBar } from "../components/dashboard/filterBar";
 
 type CashPageProps = {
   dashboard: CashDashboardDto;
@@ -60,23 +51,17 @@ type CashFilterState = {
   brokerages: string[];
   accountIds: string[];
   accountTypes: string[];
+  subTypes: string[];
+  registered: string[];
   timeline: TimelineRange;
-};
-
-type CashFilterMultiSelectProps = {
-  label: string;
-  icon: typeof faFilter;
-  emptyLabel: string;
-  options: Array<{ value: string; label: string }>;
-  value: string[];
-  onChange: (value: string[]) => void;
-  className?: string;
 };
 
 const defaultFilters: CashFilterState = {
   brokerages: [],
   accountIds: [],
   accountTypes: [],
+  subTypes: [],
+  registered: [],
   timeline: "ALL",
 };
 
@@ -99,7 +84,9 @@ function accountMatchesFilters(
       filters.brokerages.includes(accountBrokerage(account))) &&
     (filters.accountIds.length === 0 || filters.accountIds.includes(account.id)) &&
     (filters.accountTypes.length === 0 ||
-      filters.accountTypes.includes(accountType(account)))
+      filters.accountTypes.includes(accountType(account))) &&
+    (filters.subTypes.length === 0 || filters.subTypes.includes(account.subType ?? accountType(account))) &&
+    (filters.registered.length === 0 || filters.registered.includes(account.isRegistered ? "Registered" : "Non-registered"))
   );
 }
 
@@ -360,191 +347,6 @@ function formatInterestRows(values: Array<{ currency: string; percent: number | 
   }));
 }
 
-function CashFilterMultiSelect({
-  label,
-  icon,
-  emptyLabel,
-  options,
-  value,
-  onChange,
-  className,
-}: CashFilterMultiSelectProps) {
-  const selected = new Set(value);
-  const buttonLabel =
-    value.length === 0
-      ? emptyLabel
-      : value.length === 1
-        ? options.find((option) => option.value === value[0])?.label ?? value[0]
-        : `${value.length} selected`;
-
-  const toggleValue = (nextValue: string) => {
-    onChange(
-      selected.has(nextValue)
-        ? value.filter((item) => item !== nextValue)
-        : [...value, nextValue]
-    );
-  };
-
-  return (
-    <div className={`relative max-w-full flex-none ${className ?? ""}`}>
-      <div className="mb-1 inline-flex items-center gap-2 text-xs font-medium uppercase text-muted">
-        <FontAwesomeIcon icon={icon} className="h-3 w-3" />
-        {label}
-      </div>
-      <DetailsDropdown className="group relative">
-        <summary className="app-control-focus flex h-10 w-full cursor-pointer list-none items-center justify-between gap-3 rounded-md border border-border bg-surface px-3 text-left text-sm text-foreground shadow-sm outline-none transition hover:border-interactive-border">
-          <span className="min-w-0 truncate">{buttonLabel}</span>
-          <span className="flex items-center gap-2">
-            {value.length > 0 ? (
-              <span className="rounded-full bg-interactive-surface px-2 py-0.5 text-xs font-semibold text-action">
-                {value.length}
-              </span>
-            ) : null}
-            <FontAwesomeIcon
-              icon={faChevronDown}
-              className="h-3 w-3 text-muted transition group-open:rotate-180"
-            />
-          </span>
-        </summary>
-        <div className="absolute left-0 z-40 mt-2 max-h-80 w-full min-w-64 overflow-auto rounded-md border border-border bg-surface p-2 shadow-xl">
-          <div className="mb-2 flex items-center justify-between gap-2 border-b border-border px-2 pb-2">
-            <span className="text-xs font-semibold uppercase text-muted">{label}</span>
-            {value.length > 0 ? (
-              <button
-                type="button"
-                onClick={() => onChange([])}
-                className="inline-flex items-center gap-1 rounded px-1.5 py-1 text-xs font-medium text-action hover:bg-interactive-surface"
-              >
-                <FontAwesomeIcon icon={faXmark} className="h-3 w-3" />
-                Clear
-              </button>
-            ) : null}
-          </div>
-          <div className="grid gap-1">
-            {options.map((option) => {
-              const checked = selected.has(option.value);
-
-              return (
-                <label
-                  key={option.value}
-                  className={`flex cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm transition ${
-                    checked
-                      ? "bg-interactive-surface text-action-strong"
-                      : "text-foreground hover:bg-surface-muted"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => toggleValue(option.value)}
-                    className="sr-only"
-                  />
-                  <span
-                    className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
-                      checked
-                        ? "border-action bg-action text-on-action"
-                        : "border-border bg-surface"
-                    }`}
-                  >
-                    {checked ? <FontAwesomeIcon icon={faCheck} className="h-2.5 w-2.5" /> : null}
-                  </span>
-                  <span className="min-w-0 truncate">{option.label}</span>
-                </label>
-              );
-            })}
-          </div>
-        </div>
-      </DetailsDropdown>
-    </div>
-  );
-}
-
-function CashFilterBar({
-  accounts,
-  value,
-  onChange,
-}: {
-  accounts: CashAccountDto[];
-  value: CashFilterState;
-  onChange: (value: CashFilterState) => void;
-}) {
-  const brokerages = useMemo(
-    () => Array.from(new Set(accounts.map(accountBrokerage))).sort(),
-    [accounts]
-  );
-  const accountTypes = useMemo(
-    () => Array.from(new Set(accounts.map(accountType))).sort(),
-    [accounts]
-  );
-  const selectableAccounts = useMemo(() => {
-    return accounts
-      .filter((account) => {
-        const brokerageMatch =
-          value.brokerages.length === 0 ||
-          value.brokerages.includes(accountBrokerage(account));
-        const typeMatch =
-          value.accountTypes.length === 0 ||
-          value.accountTypes.includes(accountType(account));
-        return brokerageMatch && typeMatch;
-      })
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [accounts, value.accountTypes, value.brokerages]);
-
-  return (
-    <div className="flex flex-wrap items-end gap-3">
-      <CashFilterMultiSelect
-        label="Brokerage"
-        icon={faBuildingColumns}
-        emptyLabel="All brokerages"
-        options={brokerages.map((brokerage) => ({ value: brokerage, label: brokerage }))}
-        value={value.brokerages}
-        onChange={(brokerages) => onChange({ ...value, brokerages })}
-        className="w-fit min-w-48"
-      />
-      <CashFilterMultiSelect
-        label="Account"
-        icon={faFilter}
-        emptyLabel="All accounts"
-        options={selectableAccounts.map((account) => ({
-          value: account.id,
-          label: account.name,
-        }))}
-        value={value.accountIds}
-        onChange={(accountIds) => onChange({ ...value, accountIds })}
-        className="w-fit min-w-64"
-      />
-      <CashFilterMultiSelect
-        label="Account type"
-        icon={faLayerGroup}
-        emptyLabel="All types"
-        options={accountTypes.map((type) => ({ value: type, label: type }))}
-        value={value.accountTypes}
-        onChange={(accountTypes) => onChange({ ...value, accountTypes })}
-        className="w-fit min-w-40"
-      />
-      <SelectField
-        label={
-          <>
-            <FontAwesomeIcon icon={faCalendarDays} className="h-3 w-3" />
-            Timeline
-          </>
-        }
-        value={value.timeline}
-        onChange={(event) =>
-          onChange({ ...value, timeline: event.target.value as TimelineRange })
-        }
-        className="min-w-40"
-      >
-        {timelineOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </SelectField>
-    </div>
-  );
-}
-
 export function CashPage({ dashboard }: CashPageProps) {
   const [filters, setFilters] = useSessionState("cash:filters", defaultFilters);
   const [showClosedBalances, setShowClosedBalances] = useSessionState(
@@ -750,7 +552,15 @@ export function CashPage({ dashboard }: CashPageProps) {
     <main className="app-main">
       <div className="app-page">
         <section className="app-panel p-4">
-          <CashFilterBar accounts={dashboard.accounts} value={filters} onChange={setFilters} />
+          <FilterBar
+            accounts={dashboard.accounts.map((account) => ({
+              ...account,
+              subType: account.subType ?? (account.category === "credit" ? "Credit card" : "Cash"),
+            }))}
+            value={filters}
+            onChange={setFilters}
+            show={{ accountType: false }}
+          />
         </section>
 
         <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">

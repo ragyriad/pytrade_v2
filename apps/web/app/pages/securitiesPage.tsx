@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { DataTable, type TableColumn } from "../components/dashboard/dataTable";
+import { FilterBar } from "../components/dashboard/filterBar";
 import { MoneySpinner } from "../components/loading/pageLoading";
 import { Button } from "../components/ui/button";
 import {
@@ -18,6 +19,7 @@ import type {
   SecurityTransactionsResponseDto,
   TransactionDto,
 } from "../lib/portfolioTypes";
+import { accountMatchesFilters, defaultFilterBarState } from "../lib/accountFilters";
 import { queryKeys } from "../state/queryKeys";
 import { useSessionState } from "../state/sessionState";
 
@@ -41,6 +43,29 @@ async function fetchSecurityTransactions(
 }
 
 export function SecuritiesPage({ securities }: SecuritiesPageProps) {
+  const [filters, setFilters] = useSessionState(
+    "securities:filters",
+    defaultFilterBarState
+  );
+  const filterAccounts = useMemo(() => {
+    const accountsById = new Map(
+      securities.flatMap((security) => security.accounts ?? []).map((account) => [account.id, account])
+    );
+    return Array.from(accountsById.values());
+  }, [securities]);
+  const filteredSecurities = useMemo(() => {
+    const hasAccountFilters =
+      filters.brokerages.length > 0 ||
+      filters.accountIds.length > 0 ||
+      filters.accountTypes.length > 0 ||
+      (filters.subTypes?.length ?? 0) > 0 ||
+      (filters.registered?.length ?? 0) > 0;
+    if (!hasAccountFilters) return securities;
+
+    return securities.filter((security) =>
+      (security.accounts ?? []).some((account) => accountMatchesFilters(account, filters))
+    );
+  }, [filters, securities]);
   const [expandedSecurityIds, setExpandedSecurityIds] = useState<Set<string>>(
     () => new Set()
   );
@@ -175,13 +200,25 @@ export function SecuritiesPage({ securities }: SecuritiesPageProps) {
   return (
     <main className="app-main">
       <div className="app-page flex flex-col gap-6">
+        <section className="app-panel p-4">
+          <FilterBar
+            accounts={filterAccounts}
+            value={filters}
+            onChange={setFilters}
+            show={{ accountType: false, timeline: false }}
+          />
+        </section>
         <DataTable
           title="Historic Securities"
           stateKey="securities:history"
-          rows={securities}
+          rows={filteredSecurities}
           columns={securityColumns}
           getRowKey={(security) => security.id}
-          emptyMessage="No security history found. Run the SnapTrade sync to populate securities."
+          emptyMessage={
+            securities.length === 0
+              ? "No security history found. Run the SnapTrade sync to populate securities."
+              : "No securities match the selected account filters."
+          }
           isRowExpanded={(security) => expandedSecurityIds.has(security.id)}
           renderExpandedRow={(security) => (
             <SecurityTransactionsSubTable

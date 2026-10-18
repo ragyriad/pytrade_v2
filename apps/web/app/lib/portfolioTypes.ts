@@ -285,6 +285,9 @@ export type HistoricSecurityDto = {
   firstTradeDate: string | null;
   lastTradeDate: string | null;
   status: "active" | "closed";
+  accounts?: Array<Pick<AccountDto,
+    "id" | "name" | "institutionName" | "accountCurrency" | "type" | "subType" | "isRegistered"
+  >>;
 };
 
 export type SecuritiesHistoryResponseDto = {

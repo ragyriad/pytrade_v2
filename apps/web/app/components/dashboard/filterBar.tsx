@@ -2,10 +2,11 @@ import { useEffect, useMemo } from "react";
 import {
   getSelectableAccounts,
   getUniqueAccountTypes,
+  getUniqueAccountSubTypes,
   getUniqueBrokerages,
+  type AccountFilterDto,
   type PortfolioFilterState,
 } from "../../lib/accountFilters";
-import type { AccountDto } from "../../lib/portfolioTypes";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBuildingColumns,
@@ -23,7 +24,7 @@ import { timelineOptions } from "../../services/filter_timeline";
 export type CostTypeFilterValue = "both" | "fees" | "taxes";
 
 type FilterBarProps = {
-  accounts: AccountDto[];
+  accounts: AccountFilterDto[];
   value: PortfolioFilterState;
   onChange: (value: PortfolioFilterState) => void;
   /** Presence is the sentinel that enables this costs-only control. */
@@ -31,6 +32,7 @@ type FilterBarProps = {
     value: CostTypeFilterValue;
     onChange: (value: CostTypeFilterValue) => void;
   };
+  show?: Partial<Record<"brokerage" | "account" | "accountType" | "subType" | "registered" | "timeline", boolean>>;
 };
 
 type FilterBarMultiSelectProps = {
@@ -49,7 +51,7 @@ type AccountFilterOption = {
   accountIds: string[];
 };
 
-function accountOptionKey(account: AccountDto): string {
+function accountOptionKey(account: AccountFilterDto): string {
   const normalize = (value: string | null | undefined) =>
     value?.trim().toLowerCase().replace(/\s+/g, " ") ?? "";
 
@@ -73,8 +75,9 @@ function FilterBarMultiSelect({
   className,
 }: FilterBarMultiSelectProps) {
   const selected = new Set(value);
+  const allSelected = options.length > 0 && options.every((option) => selected.has(option.value));
   const buttonLabel =
-    value.length === 0
+    value.length === 0 || allSelected
       ? emptyLabel
       : value.length === 1
         ? options.find((option) => option.value === value[0])?.label ?? value[0]
@@ -112,7 +115,16 @@ function FilterBarMultiSelect({
         <div className="absolute left-0 z-40 mt-2 max-h-80 w-full min-w-64 overflow-auto rounded-md border border-border bg-surface p-2 shadow-xl">
           <div className="mb-2 flex items-center justify-between gap-2 border-b border-border px-2 pb-2">
             <span className="text-xs font-semibold uppercase text-muted">{label}</span>
-            {value.length > 0 ? (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onChange(options.map((option) => option.value))}
+                disabled={allSelected || options.length === 0}
+                className="inline-flex items-center gap-1 rounded px-1.5 py-1 text-xs font-medium text-action hover:bg-interactive-surface disabled:cursor-default disabled:opacity-50"
+              >
+                Select All
+              </button>
+              {value.length > 0 ? (
               <button
                 type="button"
                 onClick={() => onChange([])}
@@ -121,7 +133,8 @@ function FilterBarMultiSelect({
                 <FontAwesomeIcon icon={faXmark} className="h-3 w-3" />
                 Clear
               </button>
-            ) : null}
+              ) : null}
+            </div>
           </div>
           <div className="grid gap-1">
             {options.map((option) => {
@@ -167,9 +180,11 @@ export function FilterBar({
   value,
   onChange,
   costType,
+  show = {},
 }: FilterBarProps) {
   const brokerages = useMemo(() => getUniqueBrokerages(accounts), [accounts]);
   const accountTypes = useMemo(() => getUniqueAccountTypes(accounts), [accounts]);
+  const accountSubTypes = useMemo(() => getUniqueAccountSubTypes(accounts), [accounts]);
   const selectableAccounts = useMemo(
     () => getSelectableAccounts(accounts, value),
     [accounts, value]
@@ -201,7 +216,7 @@ export function FilterBar({
 
   return (
     <div className="flex flex-wrap items-end gap-3">
-      <FilterBarMultiSelect
+      {show.brokerage !== false ? <FilterBarMultiSelect
         label="Brokerage"
         icon={faBuildingColumns}
         emptyLabel="All brokerages"
@@ -212,9 +227,9 @@ export function FilterBar({
         value={value.brokerages}
         onChange={(brokerages) => onChange({ ...value, brokerages })}
         className="w-fit min-w-48"
-      />
+      /> : null}
 
-      <FilterBarMultiSelect
+      {show.account !== false ? <FilterBarMultiSelect
         label="Account"
         icon={faFilter}
         emptyLabel="All accounts"
@@ -231,9 +246,9 @@ export function FilterBar({
           })
         }
         className="w-fit min-w-64"
-      />
+      /> : null}
 
-      <FilterBarMultiSelect
+      {show.accountType !== false ? <FilterBarMultiSelect
         label="Account type"
         icon={faLayerGroup}
         emptyLabel="All types"
@@ -244,9 +259,29 @@ export function FilterBar({
         value={value.accountTypes}
         onChange={(accountTypes) => onChange({ ...value, accountTypes })}
         className="w-fit min-w-40"
-      />
+      /> : null}
 
-      <SelectField
+      {show.subType !== false ? <FilterBarMultiSelect
+        label="Subtype"
+        icon={faLayerGroup}
+        emptyLabel="All subtypes"
+        options={accountSubTypes.map((type) => ({ value: type, label: type }))}
+        value={value.subTypes ?? []}
+        onChange={(subTypes) => onChange({ ...value, subTypes })}
+        className="w-fit min-w-40"
+      /> : null}
+
+      {show.registered !== false ? <FilterBarMultiSelect
+        label="Registration"
+        icon={faFilter}
+        emptyLabel="All registration types"
+        options={[{ value: "Registered", label: "Registered" }, { value: "Non-registered", label: "Non-registered" }]}
+        value={value.registered ?? []}
+        onChange={(registered) => onChange({ ...value, registered })}
+        className="w-fit min-w-44"
+      /> : null}
+
+      {show.timeline !== false ? <SelectField
         label={
           <>
           <FontAwesomeIcon icon={faCalendarDays} className="h-3 w-3" />
@@ -264,7 +299,7 @@ export function FilterBar({
               {option.label}
             </option>
           ))}
-      </SelectField>
+      </SelectField> : null}
 
       {costType ? (
         <SelectField

@@ -171,11 +171,17 @@ export function HomePage({ dashboard }: HomePageProps) {
         <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatCard
             label="Filtered market value"
-            value={formatMoneyBreakdown(totalMarketValue, dashboard.summary.totalValue)}
+            value={formatMoneyBreakdown(totalMarketValue, {
+              amount: 0,
+              currency: dashboard.summary.totalValue.currency,
+            })}
           />
           <StatCard
             label="Unrealized gain/loss"
-            value={formatMoneyBreakdown(totalUnrealized, dashboard.summary.totalUnrealizedGainLoss)}
+            value={formatMoneyBreakdown(totalUnrealized, {
+              amount: 0,
+              currency: dashboard.summary.totalUnrealizedGainLoss.currency,
+            })}
             tone={totalUnrealizedAmount > 0 ? "positive" : totalUnrealizedAmount < 0 ? "negative" : "neutral"}
           />
           <StatCard

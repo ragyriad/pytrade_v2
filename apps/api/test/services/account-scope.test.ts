@@ -1,5 +1,5 @@
 import { assert, test } from "vitest";
-import { isCashPageAccount, isInvestmentAccount } from "../../src/services/account_scope.js";
+import { isCashPageAccount, isInvestmentAccount, isOpenAccount } from "../../src/services/account_scope.js";
 
 test("investment pages include every non-archived Investment account regardless of status", () => {
   const base = { isArchived: false };
@@ -8,6 +8,16 @@ test("investment pages include every non-archived Investment account regardless 
   assert.equal(isInvestmentAccount({ ...base, type: "Card" }), false);
   assert.equal(isInvestmentAccount({ ...base, type: null }), false);
   assert.equal(isInvestmentAccount({ ...base, type: "Investment", isArchived: true }), false);
+});
+
+test("portfolio account scope treats active and open accounts as open", () => {
+  const base = { isArchived: false, type: "Investment" };
+  assert.equal(isOpenAccount({ ...base, status: "active" }), true);
+  assert.equal(isOpenAccount({ ...base, status: "open" }), true);
+  assert.equal(isOpenAccount({ ...base, status: "CLOSED" }), false);
+  assert.equal(isOpenAccount({ ...base, status: "inactive" }), false);
+  assert.equal(isOpenAccount({ ...base, status: "error" }), false);
+  assert.equal(isOpenAccount({ ...base, status: null }), true);
 });
 
 test("cash scope accepts only non-archived Cash and Card account types", () => {
