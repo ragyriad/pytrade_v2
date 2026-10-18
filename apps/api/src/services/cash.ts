@@ -16,13 +16,17 @@ import {
   calculateCreditCardBalances,
   type CalculatedCreditCardBalance,
 } from "./credit-card-balances.js";
+import { isCashPageAccount } from "./account_scope.js";
 
 export type CashAccountDto = {
   id: string;
   name: string;
   institutionName: string | null;
   accountCurrency: string | null;
-  type: string | null;
+  type: Account["type"];
+  subType: string | null;
+  management: string | null;
+  isRegistered: boolean;
   status: string | null;
   category: "cash" | "credit";
   balance: MoneyDto;
@@ -92,35 +96,11 @@ function normalizedText(...values: Array<string | null | undefined>): string {
 }
 
 function isCashAccount(account: Account): boolean {
-  const value = normalizedText(
-    account.type,
-    account.rawType,
-    account.snaptradeMetaType,
-    account.snaptradeUnifiedAccountType,
-    account.name
-  );
-
-  return value.includes("MSB") || value.includes("CASH");
+  return isCashPageAccount(account) && account.type === "Cash";
 }
 
 function isCreditAccount(account: Account): boolean {
-  const accountTypes = normalizedText(
-    account.type,
-    account.rawType,
-    account.snaptradeMetaType,
-    account.snaptradeUnifiedAccountType
-  );
-  const accountName = normalizedText(account.name);
-
-  if (accountTypes.includes("DEBIT")) return false;
-  if (accountTypes.includes("CREDIT_CARD") || accountTypes.includes("CREDIT CARD")) {
-    return true;
-  }
-
-  return (
-    (accountName.includes("CREDIT_CARD") || accountName.includes("CREDIT CARD")) &&
-    !accountName.includes("DEBIT")
-  );
+  return isCashPageAccount(account) && account.type === "Card";
 }
 
 function groupMoney(values: MoneyDto[]): MoneyBreakdownDto[] {
@@ -208,6 +188,9 @@ function toCashAccountDto(
     institutionName: account.brokerageName,
     accountCurrency: account.accountCurrency,
     type: account.type,
+    subType: account.subType,
+    management: account.management,
+    isRegistered: account.isRegistered,
     status: account.status,
     category,
     balance: primaryBalance,

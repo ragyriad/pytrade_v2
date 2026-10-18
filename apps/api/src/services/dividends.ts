@@ -12,6 +12,7 @@ import {
   type Position,
 } from "@repo/db";
 import type { MoneyBreakdownDto } from "../shared/money.js";
+import { isInvestmentAccount } from "./account_scope.js";
 
 export type DividendIncomeHoldingDto = {
   accountId: string;
@@ -163,7 +164,9 @@ export async function getDividendIncomeSummary(
     .select()
     .from(accounts)
     .where(and(eq(accounts.userId, requestedUserId), eq(accounts.isArchived, false)));
-  const accountIds = accountRows.map((account) => account.id);
+  const accountIds = accountRows
+    .filter(isInvestmentAccount)
+    .map((account) => account.id);
   if (accountIds.length === 0) {
     return {
       projectedAnnualIncome: [],
@@ -236,7 +239,7 @@ export async function getDividendIncomeSummary(
         accountId: position.accountId,
         accountName: account?.name ?? account?.brokerageAccountNumber ?? "Account",
         brokerageName: account?.brokerageName ?? null,
-        accountType: account?.type ?? null,
+    accountType: account?.subType ?? null,
         securityId: security?.id ?? null,
         symbol: position.symbol,
         description: position.description,

@@ -13,6 +13,7 @@ import {
   transactions,
   type CalendarEvent,
 } from "@repo/db";
+import { isInvestmentAccount } from "./account_scope.js";
 
 export type CalendarEventDto = {
   id: string;
@@ -83,10 +84,12 @@ function toCalendarEventDto(event: CalendarEvent): CalendarEventDto {
 
 export async function getCalendarEvents(userId: string): Promise<CalendarEventDto[]> {
   const ownedAccounts = await db
-    .select({ id: accounts.id })
+    .select()
     .from(accounts)
     .where(and(eq(accounts.userId, userId), eq(accounts.isArchived, false)));
-  const accountIds = ownedAccounts.map((account) => account.id);
+  const accountIds = ownedAccounts
+    .filter(isInvestmentAccount)
+    .map((account) => account.id);
   if (accountIds.length === 0) return [];
 
   const [heldSecurities, tradedSecurities] = await Promise.all([

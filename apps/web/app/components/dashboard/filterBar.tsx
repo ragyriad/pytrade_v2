@@ -58,7 +58,7 @@ function accountOptionKey(account: AccountDto): string {
   return [
     normalize(account.institutionName),
     normalize(account.name),
-    normalize(account.type),
+      normalize(account.subType ?? account.type),
     normalize(account.accountCurrency),
   ].join(":");
 }

@@ -20,7 +20,6 @@ export const statusEnum = pgEnum("status", [
   "open",
   "closed"
 ]);
-
 export const accounts = pgTable(
   "accounts",
   {
@@ -35,6 +34,9 @@ export const accounts = pgTable(
     accountCurrency: varchar("account_currency", { length: 10 }),
     status: statusEnum().default("active"),
     type: varchar("type", { length: 100 }),
+    subType: varchar("sub_type", { length: 100 }),
+    management: varchar("management", { length: 100 }),
+    isRegistered: boolean("is_registered").notNull().default(false),
     rawType: varchar("raw_type", { length: 100 }),
     snaptradeMetaType: varchar("snaptrade_meta_type", { length: 100 }),
     snaptradeUnifiedAccountType: varchar("snaptrade_unified_account_type", {
@@ -87,6 +89,7 @@ export const accounts = pgTable(
     uniqueIndex("brokerage_account_number_idx").on(table.brokerageAccountNumber),
     index("linked_account_idx").on(table.linkedAccountId),
     index("account_type_idx").on(table.type),
+    index("account_sub_type_idx").on(table.subType),
     index("accounts_is_archived_idx").on(table.isArchived),
   ]
 );
@@ -102,6 +105,10 @@ export type AccountSummary = Pick<
   | "brokerageAccountNumber"
   | "name"
   | "type"
+  | "subType"
+  | "management"
+  | "isRegistered"
+  | "snaptradeUnifiedAccountType"
   | "balanceAmount"
   | "balanceCurrency"
   | "firstTransactionDate"

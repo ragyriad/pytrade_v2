@@ -8,7 +8,6 @@ import { StatCard } from "../components/dashboard/statCard";
 import {
   accountMatchesFilters,
   defaultFilterBarState,
-  isActiveAccount,
 } from "../lib/accountFilters";
 import {
   formatMoney,
@@ -43,14 +42,14 @@ export function HomePage({ dashboard }: HomePageProps) {
 
   const activeAccounts = useMemo(() => {
     return dashboard.accounts.filter(
-      (account) => isActiveAccount(account) && account.isInvestmentAccount !== false
+      (account) => account.type === "Investment"
     );
   }, [dashboard.accounts]);
 
   const activePositions = useMemo(() => {
     return dashboard.positions.filter((position) => {
       const account = accountsById.get(position.accountId);
-      return isActiveAccount(account) && accountMatchesFilters(account, filters);
+      return account?.type === "Investment" && accountMatchesFilters(account, filters);
     });
   }, [accountsById, dashboard.positions, filters]);
 

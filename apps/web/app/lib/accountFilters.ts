@@ -21,7 +21,7 @@ export function getAccountBrokerage(account: AccountDto | undefined): string {
 }
 
 export function getAccountType(account: AccountDto | undefined): string {
-  return normalizeAccountType(account?.type ?? null);
+  return normalizeAccountType(account?.subType ?? account?.type ?? null);
 }
 
 export function getUniqueBrokerages(accounts: AccountDto[]): string[] {

@@ -16,6 +16,7 @@ type PaymentAccount = {
   id: string;
   brokerageName: string | null;
   type: string | null;
+  subType: string | null;
   rawType: string | null;
   snaptradeMetaType: string | null;
   snaptradeUnifiedAccountType: string | null;
@@ -43,10 +44,10 @@ function normalizedText(...values: Array<string | null | undefined>): string {
 
 function isCreditCardAccount(account: PaymentAccount): boolean {
   const types = normalizedText(
-    account.type,
+    account.subType,
     account.rawType,
     account.snaptradeMetaType,
-    account.snaptradeUnifiedAccountType
+     account.snaptradeUnifiedAccountType
   );
   const name = normalizedText(account.name);
   return (
@@ -59,10 +60,10 @@ function isCreditCardAccount(account: PaymentAccount): boolean {
 function isCashAccount(account: PaymentAccount): boolean {
   if (isCreditCardAccount(account)) return false;
   const value = normalizedText(
-    account.type,
+    account.subType,
     account.rawType,
     account.snaptradeMetaType,
-    account.snaptradeUnifiedAccountType,
+     account.snaptradeUnifiedAccountType,
     account.name
   );
   return value.includes("CASH") || value.includes("MSB") || value.includes("DEBIT");

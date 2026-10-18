@@ -10,6 +10,7 @@ import {
   type Account,
   type Transaction,
 } from "@repo/db";
+import { isInvestmentAccount } from "./account_scope.js";
 
 type Lot = {
   units: number;
@@ -75,27 +76,6 @@ function externalCashFlow(transaction: Transaction): number | null {
   if (action === "DEPOSIT" || action === "CONTRIBUTION") return amount;
   if (action === "WITHDRAWAL") return -amount;
   return null;
-}
-
-function isInvestmentAccount(account: Account): boolean {
-  const classification = [
-    account.type,
-    account.rawType,
-    account.snaptradeMetaType,
-    account.snaptradeUnifiedAccountType,
-    account.name,
-    account.brokerageName,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toUpperCase();
-
-  return ![
-    "MSB",
-    "CASH",
-    "CREDIT",
-    "CARD",
-  ].some((term) => classification.includes(term));
 }
 
 export async function getPerformanceSummary(
@@ -203,7 +183,7 @@ function getBucket(
     accountId: transaction.accountId,
     accountName: account.name ?? account.brokerageAccountNumber ?? "Account",
     brokerageName: account.brokerageName,
-    accountType: account.type,
+    accountType: account.subType,
     currency,
     realizedGain: 0,
     dividendIncome: 0,
@@ -253,7 +233,8 @@ export async function getAnnualAccountGains(
     .select()
     .from(accounts)
     .where(and(eq(accounts.userId, requestedUserId), eq(accounts.isArchived, false)));
-  const accountIds = accountRows.map((account) => account.id);
+  const investmentAccounts = accountRows.filter(isInvestmentAccount);
+  const accountIds = investmentAccounts.map((account) => account.id);
   if (accountIds.length === 0) return { rows: [] };
 
   const transactionRows = await db
@@ -267,7 +248,7 @@ export async function getAnnualAccountGains(
     )
     .orderBy(transactions.tradeDate);
 
-  const accountById = new Map(accountRows.map((account) => [account.id, account]));
+  const accountById = new Map(investmentAccounts.map((account) => [account.id, account]));
   const lotsByAccountSecurityCurrency = new Map<string, Lot[]>();
   const buckets = new Map<string, GainBucket>();
 

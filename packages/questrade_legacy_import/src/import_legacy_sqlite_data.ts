@@ -1053,13 +1053,13 @@ function isCashPlaceholderSymbol(
 async function normalizeTransactionsInPlace(): Promise<number> {
   await db
     .update(accounts)
-    .set({ type: "CASH", updatedAt: new Date() })
-    .where(inArray(accounts.type, ["CASH_USD", "CASH_CAD"]));
+    .set({ subType: "CASH", updatedAt: new Date() })
+    .where(inArray(accounts.subType, ["CASH_USD", "CASH_CAD"]));
 
   const rows = await db
     .select({
       transaction: transactions,
-      accountType: accounts.type,
+      accountType: accounts.subType,
       security: securities,
     })
     .from(transactions)
@@ -1352,7 +1352,8 @@ async function main() {
       balanceCurrency: account.currency,
       status: "closed",
       isArchived: true,
-      type: normalizeAccountType(account.type),
+      type: null,
+      subType: normalizeAccountType(account.type),
       name: `${account.brokerName ?? "Legacy"} ${normalizeAccountType(account.type)} ${account.currency}`,
       linkedAccountId: account.linkedAccountId,
       firstTransactionDate: null,

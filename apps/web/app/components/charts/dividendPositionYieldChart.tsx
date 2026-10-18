@@ -57,14 +57,14 @@ export function DividendPositionYieldChart({
   ).sort((a, b) => {
     const accountA = accountsById.get(a);
     const accountB = accountsById.get(b);
-    const labelA = `${normalizeAccountType(accountA?.type ?? null)} ${accountA?.institutionName ?? ""}`;
-    const labelB = `${normalizeAccountType(accountB?.type ?? null)} ${accountB?.institutionName ?? ""}`;
+  const labelA = `${normalizeAccountType(accountA?.subType ?? accountA?.type ?? null)} ${accountA?.institutionName ?? ""}`;
+  const labelB = `${normalizeAccountType(accountB?.subType ?? accountB?.type ?? null)} ${accountB?.institutionName ?? ""}`;
     return labelA.localeCompare(labelB);
   });
   const accountLabels = new Map(
     visibleAccountIds.map((accountId) => {
       const account = accountsById.get(accountId);
-      const accountType = normalizeAccountType(account?.type ?? null);
+  const accountType = normalizeAccountType(account?.subType ?? account?.type ?? null);
       const brokerage = account?.institutionName ?? "Unknown";
       return [accountId, `${accountType} ${brokerage}`];
     })

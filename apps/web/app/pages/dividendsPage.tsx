@@ -177,7 +177,7 @@ export function DividendsPage({
           <div>
             <p className="font-medium text-foreground">{account?.name ?? "Unknown"}</p>
             <p className="text-xs text-content-tertiary">
-              {[account?.institutionName, normalizeAccountType(account?.type ?? null)]
+        {[account?.institutionName, normalizeAccountType(account?.subType ?? account?.type ?? null)]
                 .filter(Boolean)
                 .join(" / ")}
             </p>

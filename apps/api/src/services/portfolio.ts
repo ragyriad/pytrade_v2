@@ -19,6 +19,7 @@ import {
   getPerformanceSummary,
   type PerformanceSummaryDto,
 } from "./account_performance.js";
+import { isInvestmentAccount } from "./account_scope.js";
 
 export type AccountDto = {
   id: string;
@@ -27,7 +28,11 @@ export type AccountDto = {
   name: string;
   institutionName: string | null;
   accountCurrency: string | null;
-  type: string | null;
+  type: Account["type"];
+  subType: string | null;
+  management: string | null;
+  snaptradeUnifiedAccountType: string | null;
+  isRegistered: boolean;
   status: string | null;
   isInvestmentAccount: boolean;
   balance: MoneyDto;
@@ -149,23 +154,6 @@ function marketValueForPosition(position: Position): number {
 }
 
 function toAccountDto(account: Account): AccountDto {
-  const accountClassification = [
-    account.type,
-    account.rawType,
-    account.snaptradeMetaType,
-    account.snaptradeUnifiedAccountType,
-    account.name,
-    account.brokerageName,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toUpperCase();
-  const isCashOrCreditAccount =
-    accountClassification.includes("MSB") ||
-    accountClassification.includes("CASH") ||
-    accountClassification.includes("CREDIT") ||
-    accountClassification.includes("CARD");
-
   return {
     id: account.id,
     brokerageAccountNumber: account.brokerageAccountNumber,
@@ -174,8 +162,12 @@ function toAccountDto(account: Account): AccountDto {
     institutionName: account.brokerageName,
     accountCurrency: account.accountCurrency,
     type: account.type,
+    subType: account.subType,
+    management: account.management,
+    snaptradeUnifiedAccountType: account.snaptradeUnifiedAccountType,
+    isRegistered: account.isRegistered,
     status: account.status,
-    isInvestmentAccount: !isCashOrCreditAccount,
+    isInvestmentAccount: account.type === "Investment",
     balance: {
       amount: toNumber(account.balanceAmount),
       currency: account.balanceCurrency ?? account.accountCurrency ?? "USD",
@@ -342,7 +334,7 @@ function buildDividendSummary(
         id: accountId,
         label: account?.name ?? "Unknown account",
         brokerageName: account?.institutionName ?? null,
-        accountType: account?.type ?? null,
+        accountType: account?.subType ?? null,
         totalByCurrency: groupMoney(rows.map(toMoney)),
         transactionCount: rows.length,
       };
@@ -376,7 +368,8 @@ function buildFeeSummary(transactions: TransactionDto[]): FeeSummaryDto {
 }
 
 export async function getPortfolioDashboard(
-  requestedUserId: string
+  requestedUserId: string,
+  options: { includeAllAccountTypes?: boolean } = {}
 ): Promise<PortfolioDashboardDto | null> {
   const userRows = await db
     .select({ id: users.id, username: users.username })
@@ -390,7 +383,11 @@ export async function getPortfolioDashboard(
     .select()
     .from(accounts)
     .where(and(eq(accounts.userId, requestedUserId), eq(accounts.isArchived, false)));
-  const accountIds = accountRows.map((account) => account.id);
+  const investmentAccountRows = accountRows.filter(isInvestmentAccount);
+  const selectedAccountRows = options.includeAllAccountTypes
+    ? accountRows
+    : investmentAccountRows;
+  const accountIds = selectedAccountRows.map((account) => account.id);
 
   const positionRows =
     accountIds.length === 0
@@ -434,7 +431,7 @@ export async function getPortfolioDashboard(
           );
   const optionsById = new Map(optionRows.map((option) => [option.id, option]));
 
-  const accountDtos = accountRows.map(toAccountDto);
+  const accountDtos = selectedAccountRows.map(toAccountDto);
   const positionDtos = positionRows.map(toPositionDto);
   const transactionDtos = transactionRows.map((transaction) =>
     toTransactionDto(

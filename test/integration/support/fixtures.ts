@@ -11,6 +11,7 @@ export const USER_A_ID = "10000000-0000-4000-8000-000000000001";
 export const USER_B_ID = "20000000-0000-4000-8000-000000000002";
 export const ACCOUNT_A_ID = "30000000-0000-4000-8000-000000000003";
 export const ACCOUNT_B_ID = "40000000-0000-4000-8000-000000000004";
+export const ACCOUNT_C_ID = "60000000-0000-4000-8000-000000000006";
 export const SECURITY_A_ID = "50000000-0000-4000-8000-000000000005";
 
 export async function seedTwoUserPortfolio(): Promise<void> {
@@ -40,7 +41,8 @@ export async function seedTwoUserPortfolio(): Promise<void> {
       brokerageAccountNumber: "INTEGRATION-A",
       brokerageName: "Test Brokerage",
       name: "User A account",
-      type: "TFSA",
+      type: "Investment",
+      subType: "TFSA",
       accountCurrency: "CAD",
       balanceAmount: "1000.00",
       balanceCurrency: "CAD",
@@ -51,10 +53,23 @@ export async function seedTwoUserPortfolio(): Promise<void> {
       brokerageAccountNumber: "INTEGRATION-B",
       brokerageName: "Test Brokerage",
       name: "User B account",
-      type: "RRSP",
+      type: "Investment",
+      subType: "RRSP",
       accountCurrency: "USD",
       balanceAmount: "9000.00",
       balanceCurrency: "USD",
+    },
+    {
+      id: ACCOUNT_C_ID,
+      userId: USER_A_ID,
+      brokerageAccountNumber: "INTEGRATION-A-CASH",
+      brokerageName: "Test Bank",
+      name: "User A cash account",
+      type: "Cash",
+      subType: "CASH",
+      accountCurrency: "CAD",
+      balanceAmount: "250.00",
+      balanceCurrency: "CAD",
     },
   ]);
 
@@ -117,6 +132,16 @@ export async function seedTwoUserPortfolio(): Promise<void> {
       currencyCode: "USD",
       symbol: "PRIVATE-B",
       tradeDate: new Date("2026-01-03T12:00:00.000Z"),
+    },
+    {
+      snaptradeTransactionId: "integration-transaction-c",
+      accountId: ACCOUNT_C_ID,
+      type: "DEPOSIT",
+      action: "DEPOSIT",
+      assetType: "Cash",
+      amount: "250.00",
+      currencyCode: "CAD",
+      tradeDate: new Date("2026-01-04T12:00:00.000Z"),
     },
   ]);
 }

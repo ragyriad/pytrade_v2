@@ -10,7 +10,11 @@ and future development—not as a one-time database dump.
 The profile currently contains:
 
 - 26 underlying US and Canadian stocks and ETFs.
-- 5 accounts: TFSA, RRSP, USD margin, cash, and credit card.
+- 5 accounts: three `Investment` accounts (TFSA, RRSP, and USD margin), one
+  `Cash` account, and one `Card` account. The RRSP is marked `Managed`, the
+  TFSA and margin account are `Self`, and only the TFSA and RRSP are marked
+  registered. Brokerage account classifications are stored separately from
+  their `subType`/SnapTrade account subtype.
 - 22 current positions and current account balances.
 - Two years of buys, sells, CAD and USD dividends in every account,
   withholding taxes, fees, payroll, interest, purchases, card charges, and
@@ -82,6 +86,12 @@ the selected user as their DEMO owner. Account-owned balances, positions, and
 transactions are removed through their existing database cascades. It also
 removes only calendar events whose DEMO provider ID begins with that user's
 application ID.
+
+Reset ownership is determined by the demo-owner marker, not by account type,
+management, or registration status. Therefore the reset continues to find and
+remove demo accounts across schema classification changes without touching
+ordinary accounts; no separate cleanup branch is needed for the new account
+fields.
 
 The command does not delete or modify the user's ordinary accounts or imported
 activity. It does not create the Clerk identity; that identity must already

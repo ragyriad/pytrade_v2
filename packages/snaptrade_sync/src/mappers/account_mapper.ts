@@ -63,7 +63,10 @@ export function mapSnaptradeAccount(
     //account info
     name: rawData.name,
     linkedAccountId: meta?.linked_account_id ?? null,
-    type: normalizeAccountType(meta?.unifiedAccountType ?? meta?.type),
+    type: null,
+    subType: normalizeAccountType(meta?.unifiedAccountType ?? meta?.type),
+    management: null,
+    isRegistered: meta?.type?.trim().toUpperCase() === "REGISTERED",
     rawType: rawAccount.raw_type ?? null,
     snaptradeMetaType: meta?.type ?? null,
     snaptradeUnifiedAccountType: meta?.unifiedAccountType ?? null,

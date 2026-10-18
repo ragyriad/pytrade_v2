@@ -5,7 +5,3 @@
  * generated cl-internal-* selectors because those may change between releases.
  */
 
-.cl-userButtonPopoverFooter,
-.cl-userButtonPopoverCard .cl-footer {
-  display: none !important;
-}

@@ -2,6 +2,7 @@ export type WealthsimpleAccount = {
   id: string;
   brokerageName: string | null;
   type: string | null;
+  subType: string | null;
   rawType: string | null;
   snaptradeMetaType: string | null;
   snaptradeUnifiedAccountType: string | null;
@@ -30,10 +31,10 @@ function normalizedText(...values: Array<string | null | undefined>): string {
 
 function isCreditCardAccount(account: WealthsimpleAccount): boolean {
   const types = normalizedText(
-    account.type,
+    account.subType,
     account.rawType,
     account.snaptradeMetaType,
-    account.snaptradeUnifiedAccountType
+     account.snaptradeUnifiedAccountType
   );
   return types.includes("CREDIT_CARD") || types.includes("CREDIT CARD") || normalizedText(account.name).includes("CREDIT CARD");
 }
@@ -41,10 +42,10 @@ function isCreditCardAccount(account: WealthsimpleAccount): boolean {
 function isCashAccount(account: WealthsimpleAccount): boolean {
   if (isCreditCardAccount(account)) return false;
   const value = normalizedText(
-    account.type,
+    account.subType,
     account.rawType,
     account.snaptradeMetaType,
-    account.snaptradeUnifiedAccountType,
+     account.snaptradeUnifiedAccountType,
     account.name
   );
   return value.includes("CASH") || value.includes("MSB") || value.includes("DEBIT");
@@ -53,10 +54,10 @@ function isCashAccount(account: WealthsimpleAccount): boolean {
 function isInvestmentAccount(account: WealthsimpleAccount): boolean {
   if (isCashAccount(account) || isCreditCardAccount(account)) return false;
   const value = normalizedText(
-    account.type,
+    account.subType,
     account.rawType,
     account.snaptradeMetaType,
-    account.snaptradeUnifiedAccountType
+     account.snaptradeUnifiedAccountType
   );
   return !value.includes("LOAN") && !value.includes("MORTGAGE");
 }

@@ -67,6 +67,19 @@ describe("Fastify HTTP and PostgreSQL integration", () => {
     );
   });
 
+  test("Data dashboard returns all account types for the authenticated user", async () => {
+    const response = await fastify.inject({
+      method: "GET",
+      url: "/api/data/dashboard",
+      headers: { authorization: "Bearer user_integration_a" },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json().accounts.map((account: { type: string }) => account.type).sort())
+      .toEqual(["Cash", "Investment"]);
+    expect(response.json().transactions).toHaveLength(2);
+  });
+
   test("blocks a valid Clerk session when the local user is disabled", async () => {
     await db.update(users).set({ status: "disabled" }).where(eq(users.id, USER_A_ID));
 

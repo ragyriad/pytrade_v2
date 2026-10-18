@@ -140,10 +140,16 @@ export function DataPage({ dashboard }: DataPageProps) {
       render: (account) => account.institutionName ?? "Unknown",
     },
     {
-      key: "type",
-      header: "Type",
-      value: (account) => normalizeAccountType(account.type),
-      render: (account) => normalizeAccountType(account.type),
+      key: "category",
+      header: "Category",
+      value: (account) => account.type ?? "Unclassified",
+      render: (account) => account.type ?? "Unclassified",
+    },
+    {
+      key: "subType",
+      header: "Subtype",
+      value: (account) => normalizeAccountType(account.subType ?? null),
+      render: (account) => normalizeAccountType(account.subType ?? null),
     },
     {
       key: "balance",

@@ -8,6 +8,8 @@ export type MoneyBreakdownDto = {
   currency: string;
 };
 
+export type AccountType = string;
+
 export type AccountDto = {
   id: string;
   brokerageAccountNumber?: string | null;
@@ -15,7 +17,11 @@ export type AccountDto = {
   name: string;
   institutionName: string | null;
   accountCurrency?: string | null;
-  type: string | null;
+  type: AccountType | null;
+  subType?: string | null;
+  management?: string | null;
+  snaptradeUnifiedAccountType?: string | null;
+  isRegistered?: boolean;
   status: string | null;
   isInvestmentAccount?: boolean;
   balance: MoneyDto;
@@ -295,7 +301,11 @@ export type CashAccountDto = {
   name: string;
   institutionName: string | null;
   accountCurrency: string | null;
-  type: string | null;
+  type: AccountType | null;
+  subType?: string | null;
+  management?: string | null;
+  snaptradeUnifiedAccountType?: string | null;
+  isRegistered?: boolean;
   status: string | null;
   category: "cash" | "credit";
   balance: MoneyDto;

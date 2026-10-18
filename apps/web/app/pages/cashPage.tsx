@@ -85,7 +85,7 @@ function accountBrokerage(account: CashAccountDto): string {
 }
 
 function accountType(account: CashAccountDto): string {
-  return account.type ?? (account.category === "credit" ? "Credit card" : "Cash");
+  return account.subType ?? (account.category === "credit" ? "Credit card" : "Cash");
 }
 
 function accountMatchesFilters(

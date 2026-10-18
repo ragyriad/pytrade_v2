@@ -27,12 +27,22 @@ describe("full demo portfolio scenario", () => {
 
   it("covers every dashboard with a substantial two-year dataset", () => {
     const scenario = buildFullPortfolioScenario(baseInput);
+    const accountSubTypes = new Set(scenario.accounts.map((account) => account.subType));
     const accountTypes = new Set(scenario.accounts.map((account) => account.type));
     const actions = new Set(scenario.transactions.map((transaction) => transaction.action));
     const eventTypes = new Set(scenario.calendarEvents.map((event) => event.eventType));
 
     expect(scenario.accounts).toHaveLength(5);
-    expect(accountTypes).toEqual(new Set(["TFSA", "RRSP", "MARGIN", "CASH", "CREDIT CARD"]));
+    expect(accountSubTypes).toEqual(new Set(["TFSA", "RRSP", "MARGIN", "CASH", "CREDIT CARD"]));
+    expect(accountTypes).toEqual(new Set(["Investment", "Cash", "Card"]));
+    expect(scenario.accounts.filter((account) => account.type === "Investment")).toHaveLength(3);
+    expect(scenario.accounts.filter((account) => account.type === "Cash" || account.type === "Card")).toHaveLength(2);
+    expect(scenario.accounts.filter((account) => account.isRegistered).map((account) => account.subType)).toEqual([
+      "TFSA",
+      "RRSP",
+    ]);
+    expect(scenario.accounts.find((account) => account.subType === "RRSP")?.management).toBe("Managed");
+    expect(scenario.accounts.find((account) => account.subType === "TFSA")?.management).toBe("Self-Managed");
     expect(scenario.positions.length).toBeGreaterThanOrEqual(20);
     expect(scenario.transactions.length).toBeGreaterThan(330);
     for (const action of [

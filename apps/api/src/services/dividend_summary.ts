@@ -670,7 +670,7 @@ function getDividendMetrics(
 function accountDividendLabel(account: AccountDto | undefined): string {
   if (!account) return "Unknown account";
 
-  const accountType = account.type ? normalizeAccountType(account.type) : null;
+    const accountType = account.subType ? normalizeAccountType(account.subType) : null;
   const brokerage = account.institutionName?.trim() || account.name.trim();
 
   return [accountType, brokerage].filter(Boolean).join(" ");

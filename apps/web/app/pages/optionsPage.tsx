@@ -57,9 +57,15 @@ export function OptionsPage({ dashboard }: OptionsPageProps) {
     string | null
   >("options:selected-security", null);
 
+  const investmentAccounts = useMemo(
+    () => dashboard.accounts.filter((account) =>
+      account.type === "Investment"
+    ),
+    [dashboard.accounts]
+  );
   const accountsById = useMemo(() => {
-    return new Map(dashboard.accounts.map((account) => [account.id, account]));
-  }, [dashboard.accounts]);
+    return new Map(investmentAccounts.map((account) => [account.id, account]));
+  }, [investmentAccounts]);
 
   const scopedOptionTransactions = useMemo(() => {
     return dashboard.transactions.filter((transaction) => {
@@ -272,7 +278,7 @@ export function OptionsPage({ dashboard }: OptionsPageProps) {
     <main className="app-main">
       <div className="app-page">
         <section className="app-panel p-4">
-          <FilterBar accounts={dashboard.accounts} value={filters} onChange={setFilters} />
+      <FilterBar accounts={investmentAccounts} value={filters} onChange={setFilters} />
         </section>
 
         <section className="mt-6 grid gap-4 md:grid-cols-3">

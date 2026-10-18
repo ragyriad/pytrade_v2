@@ -1,10 +1,10 @@
 import { DataPage } from "../pages/dataPage";
-import { fetchPortfolioDashboardFromBackend } from "../repositories/dashboard";
+import { fetchDataDashboardFromBackend } from "../repositories/dashboard";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const result = await fetchPortfolioDashboardFromBackend()
+  const result = await fetchDataDashboardFromBackend()
     .then((dashboard) => ({ dashboard }))
     .catch((caught) => ({
       error: caught instanceof Error ? caught.message : "Unable to load portfolio data.",

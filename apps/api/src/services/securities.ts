@@ -13,6 +13,7 @@ import {
   type Account,
 } from "@repo/db";
 import { toMoneyDto, type MoneyDto } from "../shared/money.js";
+import { isInvestmentAccount } from "./account_scope.js";
 
 export type HistoricSecurityDto = {
   id: string;
@@ -129,7 +130,7 @@ function toTransactionDto(
     accountId: transaction.accountId,
     accountName: account?.name ?? account?.brokerageAccountNumber ?? null,
     brokerageName: account?.brokerageName ?? null,
-    accountType: account?.type ?? null,
+      accountType: account?.subType ?? null,
     securityId: transaction.securityId,
     underlyingSecurityId: transaction.underlyingSecurityId,
     optionId: transaction.optionId,
@@ -172,8 +173,9 @@ export async function getHistoricSecurities(
   requestedUserId: string,
   database: DB = db
 ): Promise<HistoricSecurityDto[] | null> {
-  const accountRows = await getUserAccounts(database, requestedUserId);
-  if (!accountRows) return null;
+  const allAccountRows = await getUserAccounts(database, requestedUserId);
+  if (!allAccountRows) return null;
+  const accountRows = allAccountRows.filter(isInvestmentAccount);
 
   const rows = await getHistoricSecuritiesByAccounts(
     database,
@@ -188,8 +190,9 @@ export async function getSecurityTransactions(
   requestedUserId: string,
   database: DB = db
 ): Promise<SecurityTransactionsResponseDto | null> {
-  const accountRows = await getUserAccounts(database, requestedUserId);
-  if (!accountRows) return null;
+  const allAccountRows = await getUserAccounts(database, requestedUserId);
+  if (!allAccountRows) return null;
+  const accountRows = allAccountRows.filter(isInvestmentAccount);
 
   const security = await getSecurityById(database, securityId);
   if (!security) return null;

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   fetchPortfolioDashboard: vi.fn(),
+  fetchDataDashboard: vi.fn(),
   fetchCashDashboard: vi.fn(),
   fetchHistoricSecurities: vi.fn(),
 }));
@@ -10,6 +11,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("../../app/repositories/dashboard", () => ({
   backendApiBaseUrl: "http://api.test",
   fetchPortfolioDashboardFromBackend: mocks.fetchPortfolioDashboard,
+  fetchDataDashboardFromBackend: mocks.fetchDataDashboard,
 }));
 
 vi.mock("../../app/repositories/cash", () => ({
@@ -23,6 +25,12 @@ vi.mock("../../app/repositories/securities", () => ({
 vi.mock("../../app/pages/homePage", () => ({
   HomePage: ({ dashboard }: { dashboard: { marker: string } }) => (
     <div>Home dashboard: {dashboard.marker}</div>
+  ),
+}));
+
+vi.mock("../../app/pages/dataPage", () => ({
+  DataPage: ({ dashboard }: { dashboard: { marker: string } }) => (
+    <div>Data dashboard: {dashboard.marker}</div>
   ),
 }));
 
@@ -41,10 +49,12 @@ vi.mock("../../app/pages/securitiesPage", () => ({
 import HomeRoute from "../../app/page";
 import CashRoute from "../../app/cash/page";
 import SecuritiesRoute from "../../app/securities/page";
+import DataRoute from "../../app/data/page";
 
 describe("server page orchestration", () => {
   beforeEach(() => {
     mocks.fetchPortfolioDashboard.mockReset();
+    mocks.fetchDataDashboard.mockReset();
     mocks.fetchCashDashboard.mockReset();
     mocks.fetchHistoricSecurities.mockReset();
   });
@@ -66,6 +76,15 @@ describe("server page orchestration", () => {
     expect(screen.getByText("Portfolio unavailable")).toBeInTheDocument();
     expect(screen.getByText("Portfolio API unavailable")).toBeInTheDocument();
     expect(screen.getByText(/http:\/\/api\.test\/api\/portfolio\/dashboard/)).toBeInTheDocument();
+  });
+
+  test("the Data page loads the all-account dashboard feed", async () => {
+    mocks.fetchDataDashboard.mockResolvedValue({ marker: "all accounts" });
+
+    render(await DataRoute());
+
+    expect(mocks.fetchDataDashboard).toHaveBeenCalledWith();
+    expect(screen.getByText("Data dashboard: all accounts")).toBeInTheDocument();
   });
 
   test("the cash page renders fetched dashboard data", async () => {

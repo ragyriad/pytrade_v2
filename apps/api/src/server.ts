@@ -122,6 +122,16 @@ fastify.get("/api/portfolio/dashboard", async (request, reply) => {
   return dashboard;
 });
 
+fastify.get("/api/data/dashboard", async (request, reply) => {
+  const dashboard = await getPortfolioDashboard(authenticatedUserId(request), {
+    includeAllAccountTypes: true,
+  });
+  if (!dashboard) {
+    return reply.status(404).send({ error: "No account data found for this user." });
+  }
+  return dashboard;
+});
+
 fastify.get("/api/cash/dashboard", async (request, reply) => {
   const dashboard = await getCashDashboard(authenticatedUserId(request));
   if (!dashboard) {

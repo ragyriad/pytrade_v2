@@ -58,17 +58,6 @@ function UserMenu({
       <UserButton
         showName={isLoaded && !compact}
         userProfileMode="modal"
-        userProfileProps={{
-          appearance: {
-            elements: {
-              profileSection__emailAddresses: { display: "none" },
-              profileSection__password: { display: "none" },
-              navbarButtons: {
-                "& .cl-navbarButton__security": { display: "none" },
-              },
-            },
-          },
-        }}
         appearance={{
           elements: {
             userButtonTrigger: "nav-user-button-trigger",

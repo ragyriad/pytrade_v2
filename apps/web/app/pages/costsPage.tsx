@@ -45,8 +45,7 @@ function isNonCashAccount(account: AccountDto): boolean {
     return account.isInvestmentAccount;
   }
 
-  const classification = `${account.type ?? ""} ${account.name}`.toLowerCase();
-  return !/\b(?:cash|credit|card|msb)\b/.test(classification);
+  return account.type === "Investment";
 }
 
 function CostTypeBadge({ kind }: { kind: CostKind }) {

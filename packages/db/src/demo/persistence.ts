@@ -31,6 +31,8 @@ async function insertBatches<T>(
 }
 
 async function demoAccountIds(db: DatabaseExecutor, userId: string): Promise<string[]> {
+  // Ownership is intentionally independent of type/subType/management/isRegistered so reset
+  // keeps working as demo account classifications evolve.
   const rows = await db
     .select({ id: accounts.id })
     .from(accounts)

@@ -28,6 +28,18 @@ describe("service ownership integration", () => {
     expect(dashboard?.transactions.map((transaction) => transaction.symbol)).toEqual(["TST"]);
   });
 
+  test("the Data dashboard includes every account type and its transactions", async () => {
+    const dashboard = await getPortfolioDashboard(USER_A_ID, {
+      includeAllAccountTypes: true,
+    });
+
+    expect(dashboard?.accounts.map((account) => account.type).sort()).toEqual([
+      "Cash",
+      "Investment",
+    ]);
+    expect(dashboard?.transactions).toHaveLength(2);
+  });
+
   test("does not return another user's transactions for a shared security lookup", async () => {
     const ownerResult = await getSecurityTransactions(SECURITY_A_ID, USER_A_ID, db);
     const otherUserResult = await getSecurityTransactions(SECURITY_A_ID, USER_B_ID, db);
