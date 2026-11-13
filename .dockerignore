@@ -11,3 +11,13 @@ dist
 .env.*
 !.env.example
 coverage
+*.log
+npm-debug.log*
+pnpm-debug.log*
+python_sync_service/
+ws-api-python/
+generated files/
+.agents/
+.codex/
+test-results/
+playwright-report/

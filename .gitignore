@@ -27,8 +27,8 @@ next-env.d.ts
 # Environment and local config
 .env
 .env.*
-.env_v2
 !.env.example
+!.env.docker.example
 !.env.sample
 *.local
 

@@ -8,11 +8,9 @@ import { MoneySpinner } from "../components/loading/pageLoading";
 import { Button } from "../components/ui/button";
 import {
   formatDate,
-  formatMoney,
   formatNumber,
   formatPercent,
   formatSource,
-  signedValueClassName,
 } from "../lib/formatters";
 import type {
   HistoricSecurityDto,
@@ -30,23 +28,33 @@ type SecuritiesPageProps = {
 const EMPTY_TRANSACTIONS: TransactionDto[] = [];
 
 async function fetchSecurityTransactions(
-  securityId: string
+  securityIds: string[]
 ): Promise<SecurityTransactionsResponseDto> {
-  const response = await fetch(`/api/securities/${securityId}/transactions`);
+  const responses = await Promise.all(securityIds.map(async (securityId) => {
+    const response = await fetch(`/api/securities/${securityId}/transactions`);
+    if (!response.ok) {
+      const body = await response.json().catch(() => null);
+      throw new Error(body?.error ?? "Unable to load transactions.");
+    }
+    return response.json() as Promise<SecurityTransactionsResponseDto>;
+  }));
 
-  if (!response.ok) {
-    const body = await response.json().catch(() => null);
-    throw new Error(body?.error ?? "Unable to load transactions.");
-  }
-
-  return response.json();
+  return {
+    security: responses[0].security,
+    transactions: responses
+      .flatMap((response) => response.transactions)
+      .sort((left, right) => right.tradeDate.localeCompare(left.tradeDate)),
+  };
 }
+
+type DisplaySecurity = HistoricSecurityDto & { securityIds: string[] };
 
 export function SecuritiesPage({ securities }: SecuritiesPageProps) {
   const [filters, setFilters] = useSessionState(
     "securities:filters",
     defaultFilterBarState
   );
+  const [showClosed, setShowClosed] = useState(false);
   const filterAccounts = useMemo(() => {
     const accountsById = new Map(
       securities.flatMap((security) => security.accounts ?? []).map((account) => [account.id, account])
@@ -60,12 +68,65 @@ export function SecuritiesPage({ securities }: SecuritiesPageProps) {
       filters.accountTypes.length > 0 ||
       (filters.subTypes?.length ?? 0) > 0 ||
       (filters.registered?.length ?? 0) > 0;
-    if (!hasAccountFilters) return securities;
+    const grouped = new Map<string, DisplaySecurity>();
+    for (const security of securities) {
+      const linkedAccounts = security.accounts ?? [];
+      const visibleAccounts = hasAccountFilters
+        ? linkedAccounts.filter((account) => accountMatchesFilters(account, filters))
+        : linkedAccounts;
+      if (hasAccountFilters && visibleAccounts.length === 0) continue;
 
-    return securities.filter((security) =>
-      (security.accounts ?? []).some((account) => accountMatchesFilters(account, filters))
-    );
-  }, [filters, securities]);
+      const isCurrentlyHeld = security.status === "active";
+      if (!showClosed && !isCurrentlyHeld) continue;
+
+      const key = [
+        security.symbol.trim().toUpperCase(),
+        security.currencyCode ?? "",
+        security.exchangeMicCode ?? security.exchangeCode ?? security.exchangeName ?? "",
+      ].join(":");
+      const existing = grouped.get(key);
+      const scopedSecurity: DisplaySecurity = {
+        ...security,
+        accounts: visibleAccounts,
+        status: isCurrentlyHeld ? "active" : "closed",
+        securityIds: [security.id],
+      };
+      if (!existing) {
+        grouped.set(key, scopedSecurity);
+        continue;
+      }
+
+      const totalGainLoss = existing.totalGainLoss.amount + scopedSecurity.totalGainLoss.amount;
+      const totalBuyCost =
+        (existing.totalBuyCost?.amount ?? 0) + (scopedSecurity.totalBuyCost?.amount ?? 0);
+      grouped.set(key, {
+        ...existing,
+        securityIds: [...new Set([...existing.securityIds, scopedSecurity.id])],
+        accounts: Array.from(new Map(
+          [...(existing.accounts ?? []), ...visibleAccounts].map((account) => [account.id, account])
+        ).values()),
+        status: existing.status === "active" || scopedSecurity.status === "active" ? "active" : "closed",
+        listingStatus: existing.listingStatus === "ACTIVE" || scopedSecurity.listingStatus === "ACTIVE"
+          ? "ACTIVE"
+          : "DELISTED",
+        transactionCount: existing.transactionCount + scopedSecurity.transactionCount,
+        buyCount: existing.buyCount + scopedSecurity.buyCount,
+        sellCount: existing.sellCount + scopedSecurity.sellCount,
+        dividendCount: existing.dividendCount + scopedSecurity.dividendCount,
+        totalGainLoss: { amount: totalGainLoss, currency: existing.totalGainLoss.currency },
+        totalBuyCost: { amount: totalBuyCost, currency: existing.totalGainLoss.currency },
+        totalGainLossPercent: totalBuyCost > 0 ? (totalGainLoss / totalBuyCost) * 100 : null,
+        firstTradeDate: [existing.firstTradeDate, scopedSecurity.firstTradeDate]
+          .filter((date): date is string => date != null)
+          .sort()[0] ?? null,
+        lastTradeDate: [existing.lastTradeDate, scopedSecurity.lastTradeDate]
+          .filter((date): date is string => date != null)
+          .sort()
+          .at(-1) ?? null,
+      });
+    }
+    return Array.from(grouped.values());
+  }, [filters, securities, showClosed]);
   const [expandedSecurityIds, setExpandedSecurityIds] = useState<Set<string>>(
     () => new Set()
   );
@@ -79,7 +140,7 @@ export function SecuritiesPage({ securities }: SecuritiesPageProps) {
     });
   }
 
-  const securityColumns: TableColumn<HistoricSecurityDto>[] = [
+  const securityColumns: TableColumn<DisplaySecurity>[] = [
     {
       key: "symbol",
       header: "Symbol",
@@ -146,7 +207,30 @@ export function SecuritiesPage({ securities }: SecuritiesPageProps) {
       key: "type",
       header: "Type",
       value: (security) => security.instrumentType ?? "Unknown",
-      render: (security) => security.instrumentType ?? "Unknown",
+      render: (security) => renderCategoryTag(security.instrumentType ?? "Unknown"),
+    },
+    {
+      key: "accounts",
+      header: "Accounts",
+      value: (security) => (security.accounts ?? []).map((account) => account.name).join(", "),
+      render: (security) => (security.accounts?.length ?? 0) > 0 ? (
+        <div className="flex flex-wrap gap-1">
+          {security.accounts?.map((account) => (
+            <span
+              key={account.id}
+              className="rounded bg-surface-muted px-2 py-0.5 text-xs text-content-secondary"
+            >
+              {account.name}
+            </span>
+          ))}
+        </div>
+      ) : "-",
+    },
+    {
+      key: "currency",
+      header: "Currency",
+      value: (security) => security.currencyCode ?? security.totalGainLoss.currency,
+      render: (security) => security.currencyCode ?? security.totalGainLoss.currency,
     },
     {
       key: "status",
@@ -161,26 +245,15 @@ export function SecuritiesPage({ securities }: SecuritiesPageProps) {
       render: (security) => formatNumber(security.transactionCount),
     },
     {
-      key: "dividends",
-      header: "Dividends",
-      value: (security) => security.dividendCount,
-      render: (security) => formatNumber(security.dividendCount),
-    },
-    {
       key: "gainLoss",
       header: "Net Gain/Loss",
       value: (security) => security.totalGainLoss.amount,
       render: (security) =>
         security.status === "active" ? (
-          <div className="inline-flex flex-col items-center gap-1">
-            <span className="rounded bg-warning-surface px-2 py-1 text-xs font-semibold text-warning-text">
-              Open position
-            </span>
-            <span className="text-xs text-content-tertiary">Not realized</span>
-          </div>
+          <span className="font-semibold text-foreground">N/A</span>
         ) : (
-          <span className={`font-medium ${signedValueClassName(security.totalGainLoss.amount)}`}>
-            {formatMoney(security.totalGainLoss)}
+          <span className="font-semibold text-foreground">
+            {formatNumber(security.totalGainLoss.amount)}
             {security.totalGainLossPercent == null ? null : (
               <span className="ml-1 text-xs font-semibold text-muted">
                 ({formatPercent(security.totalGainLossPercent)})
@@ -211,6 +284,16 @@ export function SecuritiesPage({ securities }: SecuritiesPageProps) {
         <DataTable
           title="Historic Securities"
           stateKey="securities:history"
+          searchAccessory={(
+            <label className="inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap text-sm text-content-secondary">
+              <input
+                type="checkbox"
+                checked={showClosed}
+                onChange={(event) => setShowClosed(event.target.checked)}
+              />
+              Show Closed
+            </label>
+          )}
           rows={filteredSecurities}
           columns={securityColumns}
           getRowKey={(security) => security.id}
@@ -224,7 +307,8 @@ export function SecuritiesPage({ securities }: SecuritiesPageProps) {
             <SecurityTransactionsSubTable
               key={security.id}
               isExpanded={expandedSecurityIds.has(security.id)}
-              securityId={security.id}
+              securityIds={security.securityIds}
+              accountIds={(security.accounts ?? []).map((account) => account.id)}
             />
           )}
         />
@@ -235,18 +319,24 @@ export function SecuritiesPage({ securities }: SecuritiesPageProps) {
 
 function SecurityTransactionsSubTable({
   isExpanded,
-  securityId,
+  securityIds,
+  accountIds,
 }: {
   isExpanded: boolean;
-  securityId: string;
+  securityIds: string[];
+  accountIds: string[];
 }) {
   const transactionsQuery = useQuery({
-    queryKey: queryKeys.securityTransactions(securityId),
-    queryFn: () => fetchSecurityTransactions(securityId),
+    queryKey: queryKeys.securityTransactions(securityIds.join(",")),
+    queryFn: () => fetchSecurityTransactions(securityIds),
     enabled: isExpanded,
     staleTime: 5 * 60 * 1000,
   });
-  const transactions = transactionsQuery.data?.transactions ?? EMPTY_TRANSACTIONS;
+  const fetchedTransactions = transactionsQuery.data?.transactions ?? EMPTY_TRANSACTIONS;
+  const allowedAccountIds = new Set(accountIds);
+  const transactions = accountIds.length === 0
+    ? fetchedTransactions
+    : fetchedTransactions.filter((transaction) => allowedAccountIds.has(transaction.accountId));
   const isLoading = transactionsQuery.isPending;
   const error = transactionsQuery.error instanceof Error
     ? transactionsQuery.error.message
@@ -255,7 +345,7 @@ function SecurityTransactionsSubTable({
       : null;
   const pageSize = 20;
   const [pageIndex, setPageIndex] = useSessionState(
-    `securities:${securityId}:transactions-page`,
+    `securities:${securityIds.join(",")}:transactions-page`,
     0
   );
 
@@ -305,6 +395,7 @@ function SecurityTransactionsSubTable({
               <th className="px-4 py-3 text-center font-medium">Action</th>
               <th className="px-4 py-3 text-center font-medium">Source</th>
               <th className="px-4 py-3 text-left font-medium">Account</th>
+              <th className="px-4 py-3 text-center font-medium">Currency</th>
               <th className="px-4 py-3 text-center font-medium">Units</th>
               <th className="px-4 py-3 text-center font-medium">Price</th>
               <th className="px-4 py-3 text-center font-medium">Amount</th>
@@ -320,7 +411,7 @@ function SecurityTransactionsSubTable({
               >
                 <td className="px-4 py-3 text-center">{formatDate(transaction.tradeDate)}</td>
                 <td className="px-4 py-3 text-center">
-                  {transaction.action ?? transaction.type}
+                  {renderCategoryTag(transaction.action ?? transaction.type)}
                 </td>
                 <td className="px-4 py-3 text-center">
                   {formatSource(transaction.source)}
@@ -329,12 +420,8 @@ function SecurityTransactionsSubTable({
                   <p className="font-medium text-foreground">
                     {transaction.accountName ?? transaction.accountId}
                   </p>
-                  <p className="text-xs text-content-tertiary">
-                    {[transaction.brokerageName, transaction.accountType]
-                      .filter(Boolean)
-                      .join(" / ")}
-                  </p>
                 </td>
+                <td className="px-4 py-3 text-center">{transaction.amount.currency}</td>
                 <td className="px-4 py-3 text-center">
                   {transaction.units == null ? (
                     "-"
@@ -344,26 +431,18 @@ function SecurityTransactionsSubTable({
                 </td>
                 <td className="px-4 py-3 text-center">
                   {transaction.price ? (
-                    <span className={signedValueClassName(transaction.price.amount)}>
-                      {formatMoney(transaction.price)}
+                    <span className="font-semibold text-foreground">
+                      {formatNumber(transaction.price.amount)}
                     </span>
                   ) : (
                     "-"
                   )}
                 </td>
-                <td
-                  className={`px-4 py-3 text-center font-medium ${signedValueClassName(
-                    transaction.amount.amount
-                  )}`}
-                >
-                  {formatMoney(transaction.amount)}
+                <td className={`px-4 py-3 text-center font-semibold ${valueColorClass(transaction.amount.amount)}`}>
+                  {formatNumber(transaction.amount.amount)}
                 </td>
-                <td
-                  className={`px-4 py-3 text-center ${signedValueClassName(
-                    transaction.fee.amount
-                  )}`}
-                >
-                  {formatMoney(transaction.fee)}
+                <td className={`px-4 py-3 text-center font-semibold ${transaction.fee.amount < 0 ? "text-negative" : "text-foreground"}`}>
+                  {formatNumber(transaction.fee.amount)}
                 </td>
                 <td className="px-4 py-3 text-left">{transaction.description ?? "-"}</td>
               </tr>
@@ -402,5 +481,31 @@ function SecurityTransactionsSubTable({
         </div>
       </div>
     </div>
+  );
+}
+
+function valueColorClass(value: number): string {
+  if (value > 0) return "text-positive";
+  if (value < 0) return "text-negative";
+  return "text-foreground";
+}
+
+function renderCategoryTag(value: string) {
+  const normalized = value.trim() || "Unknown";
+  const paletteIndex = Array.from(normalized.toLocaleLowerCase()).reduce(
+    (hash, character) => (hash * 31 + (character.codePointAt(0) ?? 0)) % 8,
+    0
+  ) + 1;
+
+  return (
+    <span
+      className="inline-flex rounded px-2 py-0.5 text-xs font-semibold"
+      style={{
+        backgroundColor: `var(--color-tag-${paletteIndex}-surface)`,
+        color: `var(--color-tag-${paletteIndex}-text)`,
+      }}
+    >
+      {normalized}
+    </span>
   );
 }

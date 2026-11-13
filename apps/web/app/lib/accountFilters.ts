@@ -105,8 +105,3 @@ export function accountMatchesFilters(
 
   return brokerageMatch && accountMatch && typeMatch && subTypeMatch && registrationMatch;
 }
-
-export function isActiveAccount(account: AccountDto | undefined): boolean {
-  if (!account?.status) return true;
-  return ["active", "open"].includes(account.status.toLowerCase());
-}

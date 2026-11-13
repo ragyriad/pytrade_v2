@@ -38,6 +38,7 @@ export type HistoricSecurityDto = {
   dividendCount: number;
   totalGainLoss: MoneyDto;
   totalGainLossPercent: number | null;
+  totalBuyCost: MoneyDto;
   firstTradeDate: string | null;
   lastTradeDate: string | null;
   status: "active" | "closed";
@@ -122,6 +123,7 @@ function toHistoricSecurityDto(row: HistoricSecurityRow): HistoricSecurityDto {
       row.totalBuyCostAmount > 0
         ? (row.totalGainLossAmount / row.totalBuyCostAmount) * 100
         : null,
+    totalBuyCost: toMoneyDto(row.totalBuyCostAmount, row.totalGainLossCurrency),
     firstTradeDate: toIso(row.firstTradeDate),
     lastTradeDate: toIso(row.lastTradeDate),
     status: row.isCurrentlyHeld ? "active" : "closed",

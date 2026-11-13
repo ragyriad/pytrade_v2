@@ -152,6 +152,14 @@ export type DividendYieldingPositionDto = {
   yieldOnCostPercent: number | null;
 };
 
+export type CurrentDividendYieldPositionDto = {
+  securityId: string;
+  accountId: string;
+  symbol: string;
+  marketValue: MoneyBreakdownDto;
+  currentYieldPercent: number;
+};
+
 export type DividendCalendarEventDto = {
   id: string;
   securityId: string | null;
@@ -207,6 +215,7 @@ export type DividendDashboardSummaryDto = {
   accountShareGroups: DividendAccountShareGroupDto[];
   positionYields: DividendPositionYieldDto[];
   positionRows: DividendYieldingPositionDto[];
+  currentYieldPositions?: CurrentDividendYieldPositionDto[];
   transactions: TransactionDto[];
   calendarEvents: DividendCalendarEventDto[];
 };
@@ -282,6 +291,7 @@ export type HistoricSecurityDto = {
   dividendCount: number;
   totalGainLoss: MoneyDto;
   totalGainLossPercent: number | null;
+  totalBuyCost?: MoneyDto;
   firstTradeDate: string | null;
   lastTradeDate: string | null;
   status: "active" | "closed";

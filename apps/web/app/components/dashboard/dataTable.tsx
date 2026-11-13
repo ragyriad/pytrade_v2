@@ -46,12 +46,17 @@ type DataTableProps<T> = {
   title: string;
   stateKey?: string;
   titleAccessory?: ReactNode;
+  searchAccessory?: ReactNode;
   rows: T[];
   columns: TableColumn<T>[];
   getRowKey: (row: T) => string;
   emptyMessage: string;
   isRowExpanded?: (row: T) => boolean;
   renderExpandedRow?: (row: T) => ReactNode;
+  onRowClick?: (row: T) => void;
+  isRowClickable?: (row: T) => boolean;
+  defaultSorting?: SortingState;
+  transparentRows?: boolean;
 };
 
 type TableSearchProps = {
@@ -93,12 +98,17 @@ export function DataTable<T>({
   title,
   stateKey,
   titleAccessory,
+  searchAccessory,
   rows,
   columns,
   getRowKey,
   emptyMessage,
   isRowExpanded,
   renderExpandedRow,
+  onRowClick,
+  isRowClickable,
+  defaultSorting,
+  transparentRows = false,
 }: DataTableProps<T>) {
   const [pagination, setPagination] = useSessionState<PaginationState>(
     stateKey ? `table:${stateKey}:pagination` : null,
@@ -109,7 +119,7 @@ export function DataTable<T>({
   );
   const [sorting, setSorting] = useSessionState<SortingState>(
     stateKey ? `table:${stateKey}:sorting` : null,
-    []
+    defaultSorting ?? []
   );
   const [columnFilters, setColumnFilters] = useSessionState<ColumnFiltersState>(
     stateKey ? `table:${stateKey}:column-filters` : null,
@@ -193,6 +203,12 @@ export function DataTable<T>({
     }
   }, [filteredRowCount, setPagination]);
 
+  useEffect(() => {
+    if (sorting.length === 0 && defaultSorting && defaultSorting.length > 0) {
+      setSorting(defaultSorting);
+    }
+  }, [defaultSorting, setSorting, sorting]);
+
   const alignClassName = (align?: "left" | "center" | "right") => {
     if (align === "right") return "text-right";
     if (align === "left") return "text-left";
@@ -249,7 +265,10 @@ export function DataTable<T>({
             <h2 className="text-base font-semibold text-foreground">{title}</h2>
             {titleAccessory}
           </div>
-          <TableSearch value={globalFilter} onChange={setGlobalFilter} />
+          <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+            <TableSearch value={globalFilter} onChange={setGlobalFilter} />
+            {searchAccessory}
+          </div>
         </div>
         <div className="flex items-center gap-3 text-sm text-muted">
           <span>{filteredRowCount} of {rows.length} rows</span>
@@ -368,11 +387,12 @@ export function DataTable<T>({
             ) : (
               table.getRowModel().rows.map((row, rowIndex) => {
                 const expanded = isRowExpanded?.(row.original) ?? false;
-                const rowShade = rowIndex % 2 === 0 ? "bg-surface" : "bg-surface-muted";
+                const clickable = isRowClickable?.(row.original) ?? Boolean(onRowClick);
+                const rowShade = transparentRows ? "bg-transparent" : rowIndex % 2 === 0 ? "bg-surface" : "bg-surface-muted";
 
                 return (
                   <Fragment key={row.id}>
-                    <tr className={`${rowShade} transition-colors hover:bg-interactive-surface`}>
+                    <tr onClick={() => onRowClick?.(row.original)} className={`${rowShade} transition-colors ${clickable ? "cursor-pointer hover:bg-interactive-surface" : ""}`}>
                       {row.getVisibleCells().map((cell) => {
                         const align = alignByColumnId.get(cell.column.id);
 
@@ -418,11 +438,12 @@ export function DataTable<T>({
         ) : (
           table.getRowModel().rows.map((row, rowIndex) => {
             const expanded = isRowExpanded?.(row.original) ?? false;
-            const rowShade = rowIndex % 2 === 0 ? "bg-surface" : "bg-surface-muted";
+            const clickable = isRowClickable?.(row.original) ?? Boolean(onRowClick);
+            const rowShade = transparentRows ? "bg-transparent" : rowIndex % 2 === 0 ? "bg-surface" : "bg-surface-muted";
 
             return (
               <Fragment key={row.id}>
-                <article className={`${rowShade} px-4 py-3 transition-colors active:bg-interactive-surface`}>
+                <article onClick={() => onRowClick?.(row.original)} className={`${rowShade} px-4 py-3 transition-colors ${clickable ? "cursor-pointer active:bg-interactive-surface" : ""}`}>
                   <dl className="grid gap-3">
                     {columns.map((column) => (
                       <div

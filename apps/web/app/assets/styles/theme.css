@@ -41,6 +41,23 @@
   --color-warning-text-medium: #92400e;
   --color-warning-text-strong: #78350f;
 
+  --color-tag-1-surface: #eff6ff;
+  --color-tag-1-text: #1e40af;
+  --color-tag-2-surface: #ecfdf5;
+  --color-tag-2-text: #065f46;
+  --color-tag-3-surface: #f5f3ff;
+  --color-tag-3-text: #5b21b6;
+  --color-tag-4-surface: #fffbeb;
+  --color-tag-4-text: #92400e;
+  --color-tag-5-surface: #ecfeff;
+  --color-tag-5-text: #155e75;
+  --color-tag-6-surface: #fdf2f8;
+  --color-tag-6-text: #9d174d;
+  --color-tag-7-surface: #eef2ff;
+  --color-tag-7-text: #3730a3;
+  --color-tag-8-surface: #fff7ed;
+  --color-tag-8-text: #9a3412;
+
   --color-calendar-default-surface: #f8fafc;
   --color-calendar-default-border: #cbd5e1;
   --color-calendar-default-text: #0f172a;

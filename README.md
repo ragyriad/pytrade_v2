@@ -22,16 +22,27 @@ The development command starts the web app and API. For initial Clerk administra
 
 ## Docker
 
-Build the image from the repository root, providing the public Clerk build arguments required by Next.js:
+VS Code continues to use the root `.env`. Docker loads that file and then applies `.env.docker`, which overrides only values that differ inside the container. Neither file is committed to Git.
 
 ```powershell
-docker build -t pytrade `
-  --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_replace_me `
-  --build-arg NEXT_PUBLIC_APP_URL=https://example.com .
-
-# Run with runtime environment variables configured for the container
-docker run --rm -p 3000:3000 -p 3001:3001 --env-file .env pytrade
+Copy-Item .env.docker.example .env.docker
 ```
+
+Edit `.env.docker` and set `DATABASE_URL`. For PostgreSQL running directly on this computer, use `host.docker.internal` as its hostname instead of `localhost`. Keep the same database username, password, port, and name. Put the Clerk **publishable** key (`pk_...`) in root `.env` as `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`; do not use `CLERK_SECRET_KEY` for this value.
+
+From the repository root, build and start the app with Docker Compose:
+
+```powershell
+docker compose up --build
+```
+
+Open [http://localhost:3000](http://localhost:3000) to check the app. Stop it with **Ctrl+C**. Docker checks the web `/api/health` endpoint, which also verifies that the API is responding. To see the health status in another PowerShell window:
+
+```powershell
+docker compose ps
+```
+
+The `STATUS` column reports whether the container is healthy. Use `docker compose down` to stop and remove the container after it has stopped.
 
 Run database migrations separately with `pnpm db:migrate`.
 

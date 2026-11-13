@@ -1,11 +1,15 @@
 import { HomePage } from "./pages/homePage";
 import { backendApiBaseUrl, fetchPortfolioDashboardFromBackend } from "./repositories/dashboard";
+import { fetchHistoricSecuritiesFromBackend } from "./repositories/securities";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const result = await fetchPortfolioDashboardFromBackend()
-    .then((dashboard) => ({ dashboard }))
+  const result = await Promise.all([
+    fetchPortfolioDashboardFromBackend(),
+    fetchHistoricSecuritiesFromBackend().catch(() => ({ securities: [] })),
+  ])
+    .then(([dashboard, securities]) => ({ dashboard, securities }))
     .catch((caught) => ({
       error: caught instanceof Error ? caught.message : "Unable to load portfolio.",
     }));
@@ -23,5 +27,5 @@ export default async function Page() {
     );
   }
 
-  return <HomePage dashboard={result.dashboard} />;
+  return <HomePage dashboard={result.dashboard} historicSecurities={result.securities.securities} />;
 }

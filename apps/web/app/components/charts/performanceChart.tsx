@@ -114,7 +114,7 @@ export function PerformanceChart({
           Include deposits
         </label>
       </div>
-      <div className="mt-5 h-72 sm:h-80">
+      <div className="mt-5 h-56 sm:h-64">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartRows} margin={{ left: 4, right: 4, top: 12, bottom: 8 }}>
             <XAxis dataKey="displayDate" hide />
@@ -191,12 +191,7 @@ function HeadlineMetric({
 
   return (
     <div>
-      <div className="flex items-center gap-2">
-        <span
-          className="h-2.5 w-2.5 rounded-full"
-          style={{ backgroundColor: currencyColor(series.currency) }}
-          aria-hidden="true"
-        />
+      <div>
         <p className={`text-2xl font-semibold tracking-tight sm:text-3xl ${
           chartMode === "returns" ? valueTone(series.gain) : "text-foreground"
         }`}>
@@ -256,13 +251,13 @@ function ToggleButton({
 }
 
 function formatSignedMoney(value: number, currency: string): string {
-  const prefix = value > 0 ? "+" : value < 0 ? "-" : "";
+  const prefix = value < 0 ? "-" : "";
   return `${prefix}${formatMoney({ amount: value, currency })}`;
 }
 
 function formatSignedPercent(value: number | null): string {
   if (value == null) return "--";
-  const prefix = value > 0 ? "+" : value < 0 ? "-" : "";
+  const prefix = value < 0 ? "-" : "";
   return `${prefix}${formatPercent(value)}`;
 }
 

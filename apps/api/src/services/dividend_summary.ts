@@ -7,6 +7,11 @@ import {
 } from "@repo/db";
 import type { MoneyBreakdownDto, MoneyDto } from "../shared/money.js";
 import {
+  getQualifyingDividendYieldPercent,
+  getRecurringDividendRates,
+  type DividendRate,
+} from "./dividendHoldingRules.js";
+import {
   getPortfolioDashboard,
   type AccountDto,
   type PositionDto,
@@ -73,6 +78,14 @@ export type DividendYieldingPositionDto = {
   yieldOnCostPercent: number | null;
 };
 
+export type CurrentDividendYieldPositionDto = {
+  securityId: string;
+  accountId: string;
+  symbol: string;
+  marketValue: MoneyBreakdownDto;
+  currentYieldPercent: number;
+};
+
 export type DividendCalendarEventDto = {
   id: string;
   securityId: string | null;
@@ -103,6 +116,7 @@ export type DividendDashboardSummaryDto = {
   accountShareGroups: DividendAccountShareGroupDto[];
   positionYields: DividendPositionYieldDto[];
   positionRows: DividendYieldingPositionDto[];
+  currentYieldPositions: CurrentDividendYieldPositionDto[];
   transactions: TransactionDto[];
   calendarEvents: DividendCalendarEventDto[];
 };
@@ -114,11 +128,6 @@ export type DividendSummaryOptions = {
 };
 
 type TransactionsByDividendKey = Map<string, TransactionDto[]>;
-
-type DividendRate = {
-  annualDividendPerShare: number;
-  currency: string | null;
-};
 
 type BuyCostBasis = {
   costPerUnit: number | null;
@@ -226,6 +235,7 @@ function emptySummary(timeline: DividendTimelineRange): DividendDashboardSummary
     accountShareGroups: [],
     positionYields: [],
     positionRows: [],
+    currentYieldPositions: [],
     transactions: [],
     calendarEvents: [],
   };
@@ -955,6 +965,32 @@ function getDividendRates(events: DividendEvent[]): Map<string, DividendRate> {
   return ratesBySecurityId;
 }
 
+function getCurrentDividendYieldPositions(
+  positions: PositionDto[],
+  latestPricesBySecurityId: Map<string, MoneyBreakdownDto>,
+  ratesBySecurityId: Map<string, DividendRate>
+): CurrentDividendYieldPositionDto[] {
+  return positions.flatMap((position) => {
+    if (position.units <= 0 || position.isCashEquivalent || !position.securityId) return [];
+    const rate = ratesBySecurityId.get(position.securityId);
+    if (!rate || rate.annualDividendPerShare <= 0) return [];
+    const price = latestPricesBySecurityId.get(position.securityId) ?? position.price;
+    const currentYieldPercent = getQualifyingDividendYieldPercent(
+      rate,
+      price,
+      position.marketValue.currency
+    );
+    if (currentYieldPercent == null) return [];
+    return [{
+      securityId: position.securityId,
+      accountId: position.accountId,
+      symbol: position.symbol,
+      marketValue: position.marketValue,
+      currentYieldPercent,
+    }];
+  });
+}
+
 export async function getDividendDashboardSummary(
   options: DividendSummaryOptions
 ): Promise<DividendDashboardSummaryDto | null> {
@@ -1000,6 +1036,7 @@ export async function getDividendDashboardSummary(
     allTransactions
   );
   const dividendRatesBySecurityId = getDividendRates(dividendEvents);
+  const recurringDividendRatesBySecurityId = getRecurringDividendRates(dividendEvents);
   const transactionsByKey = buildTransactionsByDividendKey(allTransactions);
   const positionYields = getActiveDividendPositionYields(
     timelineTransactions,
@@ -1023,6 +1060,11 @@ export async function getDividendDashboardSummary(
       selectedPositions,
       latestPricesBySecurityId,
       dividendRatesBySecurityId
+    ),
+    currentYieldPositions: getCurrentDividendYieldPositions(
+      activePositions,
+      latestPricesBySecurityId,
+      recurringDividendRatesBySecurityId
     ),
     transactions: timelineTransactions,
     calendarEvents: timelineDividendEvents.map(toDividendCalendarEventDto),

@@ -41,8 +41,8 @@ export async function getHistoricSecurityAccountIds(
       sql`coalesce(${transactions.underlyingSecurityId}, ${transactions.securityId})`,
       transactions.accountId
     );
-
-  return rows.filter((row): row is { securityId: string; accountId: string } => row.securityId != null);
+  return rows
+    .filter((row): row is { securityId: string; accountId: string } => row.securityId != null);
 }
 
 export async function upsertSecurities(
